@@ -1,0 +1,20 @@
+# Go
+go.sum
+
+# Wails build output
+build/bin/
+
+# Frontend dependencies & build artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/package-lock.json
+frontend/package.json.md5
+
+# Wails auto-generated bindings
+frontend/wailsjs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
