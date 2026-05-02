@@ -7,7 +7,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unsafe"
 
+	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/registry"
 )
 
@@ -21,13 +23,13 @@ const (
 
 // PatchDef 描述一个补丁点
 type PatchDef struct {
-	ID          string // 唯一标识
-	Name        string // 显示名称
-	RVA         uint32 // 补丁目标 RVA
-	OrigBytes   []byte // 原始字节（用于校验和恢复）
-	PatchSize   int    // 补丁覆盖的字节数
-	NeedCave    bool   // 是否需要代码跳板
-	CallTarget  uint32 // 跳板中 call 的目标 RVA（仅 NeedCave 时使用）
+	ID         string // 唯一标识
+	Name       string // 显示名称
+	RVA        uint32 // 补丁目标 RVA
+	OrigBytes  []byte // 原始字节（用于校验和恢复）
+	PatchSize  int    // 补丁覆盖的字节数
+	NeedCave   bool   // 是否需要代码跳板
+	CallTarget uint32 // 跳板中 call 的目标 RVA（仅 NeedCave 时使用）
 }
 
 var patchDefs = []PatchDef{
@@ -71,8 +73,12 @@ type StatusInfo struct {
 // ── App ──
 
 type App struct {
-	ctx     context.Context
-	exePath string
+	ctx        context.Context
+	exePath    string
+	hProcess   windows.Handle
+	moduleBase uintptr
+	managerPtr uintptr
+	charaPID   uint32
 }
 
 func NewApp() *App { return &App{} }
@@ -256,9 +262,14 @@ func applyDirectPatch(data []byte, offset uint32, def PatchDef, value uint32) er
 	// 剩余字节填 NOP
 	switch def.PatchSize - 5 {
 	case 4: // 9 字节: mov eax,imm32 + 4-byte NOP (0F 1F 40 00)
-		patch[5] = 0x0F; patch[6] = 0x1F; patch[7] = 0x40; patch[8] = 0x00
+		patch[5] = 0x0F
+		patch[6] = 0x1F
+		patch[7] = 0x40
+		patch[8] = 0x00
 	case 3: // 8 字节: mov eax,imm32 + 3-byte NOP (0F 1F 00)
-		patch[5] = 0x0F; patch[6] = 0x1F; patch[7] = 0x00
+		patch[5] = 0x0F
+		patch[6] = 0x1F
+		patch[7] = 0x00
 	default: // 其他情况用单字节 NOP 填充
 		for i := 5; i < def.PatchSize; i++ {
 			patch[i] = 0x90
@@ -303,7 +314,8 @@ func applyCavePatch(data []byte, offset uint32, def PatchDef, value uint32, alre
 	cave := make([]byte, caveSize)
 	cave[0] = 0xB8
 	binary.LittleEndian.PutUint32(cave[1:5], value)
-	cave[5] = 0x89; cave[6] = 0x01 // mov [rcx], eax
+	cave[5] = 0x89
+	cave[6] = 0x01 // mov [rcx], eax
 
 	// call <target>: E8 rel32, rel32 = target - (cave_call_rva + 5)
 	cave[7] = 0xE8
@@ -469,22 +481,36 @@ func findPatchDef(id string) *PatchDef {
 // ── PE / 工具函数 ──
 
 func bytesEqual(a, b []byte) bool {
-	if len(a) != len(b) { return false }
-	for i := range a { if a[i] != b[i] { return false } }
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
 	return true
 }
 
 func bytesToHex(b []byte) string {
 	parts := make([]string, len(b))
-	for i, v := range b { parts[i] = fmt.Sprintf("%02X", v) }
+	for i, v := range b {
+		parts[i] = fmt.Sprintf("%02X", v)
+	}
 	return strings.Join(parts, " ")
 }
 
 func rvaToFileOffset(data []byte, rva uint32) (uint32, bool) {
-	if len(data) < 64 { return 0, false }
-	if data[0] != 'M' || data[1] != 'Z' { return 0, false }
+	if len(data) < 64 {
+		return 0, false
+	}
+	if data[0] != 'M' || data[1] != 'Z' {
+		return 0, false
+	}
 	peOffset := binary.LittleEndian.Uint32(data[0x3C:0x40])
-	if int(peOffset)+24 > len(data) { return 0, false }
+	if int(peOffset)+24 > len(data) {
+		return 0, false
+	}
 	if data[peOffset] != 'P' || data[peOffset+1] != 'E' || data[peOffset+2] != 0 || data[peOffset+3] != 0 {
 		return 0, false
 	}
@@ -492,19 +518,27 @@ func rvaToFileOffset(data []byte, rva uint32) (uint32, bool) {
 	numSections := binary.LittleEndian.Uint16(data[coffHeader+2 : coffHeader+4])
 	optHeaderSize := binary.LittleEndian.Uint16(data[coffHeader+16 : coffHeader+18])
 	optHeader := coffHeader + 20
-	if int(optHeader)+2 > len(data) { return 0, false }
+	if int(optHeader)+2 > len(data) {
+		return 0, false
+	}
 	magic := binary.LittleEndian.Uint16(data[optHeader : optHeader+2])
-	if magic != 0x020B { return 0, false }
+	if magic != 0x020B {
+		return 0, false
+	}
 	sectionStart := optHeader + uint32(optHeaderSize)
 	for i := uint16(0); i < numSections; i++ {
 		off := sectionStart + uint32(i)*40
-		if int(off)+40 > len(data) { return 0, false }
+		if int(off)+40 > len(data) {
+			return 0, false
+		}
 		virtualSize := binary.LittleEndian.Uint32(data[off+8 : off+12])
 		virtualAddr := binary.LittleEndian.Uint32(data[off+12 : off+16])
 		rawSize := binary.LittleEndian.Uint32(data[off+16 : off+20])
 		rawPtr := binary.LittleEndian.Uint32(data[off+20 : off+24])
 		span := rawSize
-		if virtualSize > span { span = virtualSize }
+		if virtualSize > span {
+			span = virtualSize
+		}
 		if rva >= virtualAddr && rva < virtualAddr+span {
 			return rawPtr + (rva - virtualAddr), true
 		}
@@ -519,17 +553,26 @@ func findSteamLibraryFolders() []string {
 	steamPath := ""
 	for _, keyPath := range []string{`SOFTWARE\Valve\Steam`, `SOFTWARE\WOW6432Node\Valve\Steam`} {
 		k, err := registry.OpenKey(registry.LOCAL_MACHINE, keyPath, registry.QUERY_VALUE)
-		if err != nil { continue }
+		if err != nil {
+			continue
+		}
 		val, _, err := k.GetStringValue("InstallPath")
 		k.Close()
-		if err == nil && val != "" { steamPath = val; dirs = append(dirs, val); break }
+		if err == nil && val != "" {
+			steamPath = val
+			dirs = append(dirs, val)
+			break
+		}
 	}
 	if steamPath == "" {
 		k, err := registry.OpenKey(registry.CURRENT_USER, `SOFTWARE\Valve\Steam`, registry.QUERY_VALUE)
 		if err == nil {
 			val, _, err := k.GetStringValue("SteamPath")
 			k.Close()
-			if err == nil && val != "" { steamPath = filepath.FromSlash(val); dirs = append(dirs, steamPath) }
+			if err == nil && val != "" {
+				steamPath = filepath.FromSlash(val)
+				dirs = append(dirs, steamPath)
+			}
 		}
 	}
 	if steamPath != "" {
@@ -543,8 +586,15 @@ func findSteamLibraryFolders() []string {
 		`D:\Steam`, `D:\SteamLibrary`, `E:\Steam`, `E:\SteamLibrary`,
 	} {
 		found := false
-		for _, d := range dirs { if strings.EqualFold(d, fb) { found = true; break } }
-		if !found { dirs = append(dirs, fb) }
+		for _, d := range dirs {
+			if strings.EqualFold(d, fb) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			dirs = append(dirs, fb)
+		}
 	}
 	return dirs
 }
@@ -555,12 +605,291 @@ func parseLibraryPaths(content string) []string {
 		line = strings.TrimSpace(line)
 		if strings.HasPrefix(line, `"path"`) {
 			parts := strings.SplitN(line, `"path"`, 2)
-			if len(parts) < 2 { continue }
+			if len(parts) < 2 {
+				continue
+			}
 			val := strings.TrimSpace(parts[1])
 			val = strings.Trim(val, `"`)
 			val = strings.ReplaceAll(val, `\\`, `\`)
-			if val != "" { paths = append(paths, val) }
+			if val != "" {
+				paths = append(paths, val)
+			}
 		}
 	}
 	return paths
+}
+
+// ── 角色使用次数 (运行时内存读写) ──
+
+const (
+	charaProcessName = "granblue_fantasy_relink.exe"
+	managerPtrRVA    = 0x68CFBB8
+	charalistOffset  = 0xD80
+	countOffset      = 0x3114
+	charaStride      = 0x3120
+	maxCharacters    = 40
+)
+
+var charaNames = [maxCharacters]string{
+	"古兰", "姬塔", "卡塔莉娜", "拉卡姆", "伊欧", "欧根",
+	"", "萝赛塔", "冈达葛萨", "菲莉", "兰斯洛特", "巴恩", "珀西瓦尔",
+	"", "齐格飞", "夏洛特", "索恩", "尤达拉哈", "娜露梅",
+	"", "塞达", "伊德", "巴萨拉卡",
+	"", "卡莉奥丝特罗",
+	"", "", "圣德芬", "希耶提",
+	"", "", "", "", "", "", "", "", "", "", "",
+}
+
+type CharaProcessInfo struct {
+	PID        uint32 `json:"pid"`
+	ModuleBase uint64 `json:"moduleBase"`
+	Manager    uint64 `json:"manager"`
+	Connected  bool   `json:"connected"`
+}
+
+type CharaInfo struct {
+	Index int    `json:"index"`
+	Name  string `json:"name"`
+	Count int32  `json:"count"`
+}
+
+// CharaAttach finds the game process, opens a handle, reads module base and manager pointer.
+func (a *App) CharaAttach() (CharaProcessInfo, error) {
+	// Close existing handle if any
+	if a.hProcess != 0 {
+		windows.CloseHandle(a.hProcess)
+		a.hProcess = 0
+	}
+
+	pid, err := findProcessByName(charaProcessName)
+	if err != nil {
+		return CharaProcessInfo{}, fmt.Errorf("未找到游戏进程，请先启动游戏")
+	}
+
+	h, err := windows.OpenProcess(windows.PROCESS_ALL_ACCESS, false, pid)
+	if err != nil {
+		return CharaProcessInfo{}, fmt.Errorf("无法打开进程 (错误 %v)，请以管理员身份运行", err)
+	}
+
+	modBase, err := getModuleBase(h)
+	if err != nil {
+		windows.CloseHandle(h)
+		return CharaProcessInfo{}, fmt.Errorf("无法获取模块基址 (ptrSize=%d): %v", unsafe.Sizeof(uintptr(0)), err)
+	}
+
+	// Read manager pointer
+	ptrAddr := modBase + managerPtrRVA
+	var manager uintptr
+	err = readProcessMemory(h, ptrAddr, unsafe.Pointer(&manager), unsafe.Sizeof(manager))
+	if err != nil || manager == 0 {
+		windows.CloseHandle(h)
+		return CharaProcessInfo{}, fmt.Errorf("管理器指针为空，请确保已进入游戏存档")
+	}
+
+	a.hProcess = h
+	a.moduleBase = modBase
+	a.managerPtr = manager
+	a.charaPID = pid
+
+	return CharaProcessInfo{
+		PID:        pid,
+		ModuleBase: uint64(modBase),
+		Manager:    uint64(manager),
+		Connected:  true,
+	}, nil
+}
+
+// CharaDetach closes the process handle.
+func (a *App) CharaDetach() {
+	if a.hProcess != 0 {
+		windows.CloseHandle(a.hProcess)
+		a.hProcess = 0
+	}
+	a.moduleBase = 0
+	a.managerPtr = 0
+	a.charaPID = 0
+}
+
+// CharaGetAll reads all character counts, returns valid characters (skipping empty slots).
+func (a *App) CharaGetAll() ([]CharaInfo, error) {
+	if a.hProcess == 0 {
+		return nil, fmt.Errorf("未连接游戏进程")
+	}
+
+	// Re-read manager pointer each time (handles game restart)
+	var manager uintptr
+	ptrAddr := a.moduleBase + managerPtrRVA
+	err := readProcessMemory(a.hProcess, ptrAddr, unsafe.Pointer(&manager), unsafe.Sizeof(manager))
+	if err != nil || manager == 0 {
+		return nil, fmt.Errorf("管理器指针无效，请确保在游戏存档中")
+	}
+	a.managerPtr = manager
+
+	var result []CharaInfo
+	for i := 0; i < maxCharacters; i++ {
+		countAddr := manager + charalistOffset + uintptr(i)*charaStride + countOffset
+		var val int32
+		err := readProcessMemory(a.hProcess, countAddr, unsafe.Pointer(&val), unsafe.Sizeof(val))
+		if err != nil {
+			continue
+		}
+		if charaNames[i] == "" && val == 0 {
+			continue // skip empty slots
+		}
+		if val == -1 {
+			continue // skip uninitialized slots
+		}
+		name := charaNames[i]
+		if name == "" {
+			name = fmt.Sprintf("槽位 %d", i)
+		}
+		result = append(result, CharaInfo{Index: i, Name: name, Count: val})
+	}
+	return result, nil
+}
+
+// CharaSetOne sets a single character's count by slot index.
+func (a *App) CharaSetOne(index int, value int) error {
+	if a.hProcess == 0 {
+		return fmt.Errorf("未连接游戏进程")
+	}
+	if index < 0 || index >= maxCharacters {
+		return fmt.Errorf("无效的角色索引: %d", index)
+	}
+
+	// Re-read manager pointer
+	var manager uintptr
+	ptrAddr := a.moduleBase + managerPtrRVA
+	err := readProcessMemory(a.hProcess, ptrAddr, unsafe.Pointer(&manager), unsafe.Sizeof(manager))
+	if err != nil || manager == 0 {
+		return fmt.Errorf("管理器指针无效")
+	}
+
+	countAddr := manager + charalistOffset + uintptr(index)*charaStride + countOffset
+	val := int32(value)
+	return writeProcessMemory(a.hProcess, countAddr, unsafe.Pointer(&val), unsafe.Sizeof(val))
+}
+
+// CharaSetAll sets all valid character counts to the given value, returns number modified.
+func (a *App) CharaSetAll(value int) (int, error) {
+	if a.hProcess == 0 {
+		return 0, fmt.Errorf("未连接游戏进程")
+	}
+
+	// Re-read manager pointer
+	var manager uintptr
+	ptrAddr := a.moduleBase + managerPtrRVA
+	err := readProcessMemory(a.hProcess, ptrAddr, unsafe.Pointer(&manager), unsafe.Sizeof(manager))
+	if err != nil || manager == 0 {
+		return 0, fmt.Errorf("管理器指针无效")
+	}
+
+	modified := 0
+	newVal := int32(value)
+	for i := 0; i < maxCharacters; i++ {
+		countAddr := manager + charalistOffset + uintptr(i)*charaStride + countOffset
+		var cur int32
+		err := readProcessMemory(a.hProcess, countAddr, unsafe.Pointer(&cur), unsafe.Sizeof(cur))
+		if err != nil {
+			continue
+		}
+		if cur == -1 {
+			continue // skip empty slots
+		}
+		err = writeProcessMemory(a.hProcess, countAddr, unsafe.Pointer(&newVal), unsafe.Sizeof(newVal))
+		if err == nil {
+			modified++
+		}
+	}
+	return modified, nil
+}
+
+// ── Windows 进程操作辅助函数 ──
+
+func findProcessByName(name string) (uint32, error) {
+	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, 0)
+	if err != nil {
+		return 0, err
+	}
+	defer windows.CloseHandle(snap)
+
+	var pe windows.ProcessEntry32
+	pe.Size = uint32(unsafe.Sizeof(pe))
+	err = windows.Process32First(snap, &pe)
+	if err != nil {
+		return 0, err
+	}
+	for {
+		exeName := windows.UTF16ToString(pe.ExeFile[:])
+		if strings.EqualFold(exeName, name) {
+			return pe.ProcessID, nil
+		}
+		err = windows.Process32Next(snap, &pe)
+		if err != nil {
+			break
+		}
+	}
+	return 0, fmt.Errorf("进程未找到: %s", name)
+}
+
+var (
+	modNtdll                      = windows.NewLazySystemDLL("ntdll.dll")
+	procNtQueryInformationProcess = modNtdll.NewProc("NtQueryInformationProcess")
+)
+
+// getModuleBase reads the image base address from the remote process's PEB.
+// This avoids module enumeration APIs which can fail with ERROR_PARTIAL_COPY.
+func getModuleBase(hProcess windows.Handle) (uintptr, error) {
+	// PROCESS_BASIC_INFORMATION (64-bit layout):
+	//   ExitStatus          uintptr  (offset 0)
+	//   PebBaseAddress      uintptr  (offset 8)
+	//   AffinityMask        uintptr  (offset 16)
+	//   BasePriority        uintptr  (offset 24)
+	//   UniqueProcessId     uintptr  (offset 32)
+	//   InheritedFromUnique uintptr  (offset 40)
+	type processBasicInformation struct {
+		ExitStatus                   uintptr
+		PebBaseAddress               uintptr
+		AffinityMask                 uintptr
+		BasePriority                 uintptr
+		UniqueProcessId              uintptr
+		InheritedFromUniqueProcessId uintptr
+	}
+
+	var pbi processBasicInformation
+	var retLen uint32
+	r1, _, _ := procNtQueryInformationProcess.Call(
+		uintptr(hProcess),
+		0, // ProcessBasicInformation
+		uintptr(unsafe.Pointer(&pbi)),
+		unsafe.Sizeof(pbi),
+		uintptr(unsafe.Pointer(&retLen)),
+	)
+	if r1 != 0 {
+		return 0, fmt.Errorf("NtQueryInformationProcess 失败: NTSTATUS 0x%X", r1)
+	}
+	if pbi.PebBaseAddress == 0 {
+		return 0, fmt.Errorf("PEB 地址为空")
+	}
+
+	// Read ImageBaseAddress from PEB (offset 0x10 in 64-bit PEB)
+	var imageBase uintptr
+	err := readProcessMemory(hProcess, pbi.PebBaseAddress+0x10, unsafe.Pointer(&imageBase), unsafe.Sizeof(imageBase))
+	if err != nil {
+		return 0, fmt.Errorf("读取 PEB.ImageBaseAddress 失败: %v", err)
+	}
+	if imageBase == 0 {
+		return 0, fmt.Errorf("ImageBaseAddress 为空")
+	}
+	return imageBase, nil
+}
+
+func readProcessMemory(h windows.Handle, addr uintptr, buf unsafe.Pointer, size uintptr) error {
+	var read uintptr
+	return windows.ReadProcessMemory(h, addr, (*byte)(buf), size, &read)
+}
+
+func writeProcessMemory(h windows.Handle, addr uintptr, buf unsafe.Pointer, size uintptr) error {
+	var written uintptr
+	return windows.WriteProcessMemory(h, addr, (*byte)(buf), size, &written)
 }

@@ -1,6 +1,6 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
-import { AutoDetect, SetExePath, GetStatus, PatchFile, BackupFile, RestoreFile } from '../../wailsjs/go/main/App'
+import { AutoDetect, SetExePath, GetStatus, PatchFile, BackupFile, RestoreFile, CharaAttach, CharaDetach, CharaGetAll, CharaSetOne, CharaSetAll } from '../../wailsjs/go/main/App'
 import { WindowMinimise, Quit } from '../../wailsjs/runtime/runtime'
 
 const state = reactive({
@@ -102,12 +102,77 @@ const CARD_COLORS = {
 }
 
 const CARD_HINTS = {
-  likes: '被点赞后生效',
+  mission: '此修改不影响存档',
+  likes: '被点赞后生效（影响存档）',
 }
 
 function showStatus(msg, type) {
   saveStatus.value = msg; statusType.value = type
   setTimeout(() => { saveStatus.value = '' }, 3000)
+}
+
+// ── 角色使用次数 ──
+const charaEditEnabled = false // 开关：是否显示次数修改功能
+const charaConnected = ref(false)
+const charaInfo = reactive({ pid: 0, moduleBase: 0, manager: 0 })
+const charaList = ref([])
+const charaEditValues = reactive({})
+const charaBatchValue = ref('')
+const charaLoading = ref(false)
+const charaSortDesc = ref(false)
+const charaSorted = computed(() => {
+  if (!charaSortDesc.value) return charaList.value
+  return [...charaList.value].sort((a, b) => b.count - a.count)
+})
+
+function charaConnect() {
+  charaLoading.value = true
+  CharaAttach()
+    .then((info) => {
+      charaConnected.value = true
+      Object.assign(charaInfo, info)
+      return charaRefresh()
+    })
+    .catch((err) => showStatus(String(err), 'error'))
+    .finally(() => { charaLoading.value = false })
+}
+
+function charaDisconnect() {
+  CharaDetach()
+    .then(() => {
+      charaConnected.value = false
+      charaList.value = []
+      Object.assign(charaInfo, { pid: 0, moduleBase: 0, manager: 0 })
+    })
+    .catch((err) => showStatus(String(err), 'error'))
+}
+
+function charaRefresh() {
+  return CharaGetAll()
+    .then((list) => {
+      charaList.value = list || []
+      list.forEach(c => {
+        if (charaEditValues[c.index] === undefined) charaEditValues[c.index] = String(c.count)
+      })
+    })
+    .catch((err) => showStatus(String(err), 'error'))
+}
+
+function charaSetSingle(index) {
+  const v = parseInt(charaEditValues[index])
+  if (isNaN(v) || v < 0) { showStatus('请输入有效数值', 'error'); return }
+  CharaSetOne(index, v)
+    .then(() => charaRefresh())
+    .then(() => showStatus('设置成功', 'success'))
+    .catch((err) => showStatus(String(err), 'error'))
+}
+
+function charaSetBatch() {
+  const v = parseInt(charaBatchValue.value)
+  if (isNaN(v) || v < 0) { showStatus('请输入有效数值', 'error'); return }
+  CharaSetAll(v)
+    .then((n) => charaRefresh().then(() => showStatus(`已设置 ${n} 个角色`, 'success')))
+    .catch((err) => showStatus(String(err), 'error'))
 }
 </script>
 
@@ -185,10 +250,58 @@ function showStatus(msg, type) {
               <input type="checkbox" v-model="forceBackup" />
               <span>强制覆盖已有备份</span>
             </label>
-            <div v-if="state.backupExists" class="backup-info">备份: {{ (state.backupSize / 1024 / 1024).toFixed(1) }} MB</div>
+            <div v-if="state.backupExists" class="backup-info">备份: {{ (state.backupSize / 1024 / 1024).toFixed(1) }} MB (仅 exe)</div>
           </div>
         </div>
       </transition>
+
+      <!-- 角色使用次数 -->
+      <div class="chara-section">
+        <div class="chara-header">
+          <span class="chara-title">角色使用次数</span>
+          <span class="chara-hint">需游戏运行中使用 · 修改后需对应角色需结算一局<br/>
+            （修改功能需自行编译 影响存档）</span>
+        </div>
+        <div class="chara-connect-row">
+          <button v-if="!charaConnected" class="btn-chara-connect" @click="charaConnect" :disabled="charaLoading">
+            {{ charaLoading ? '连接中...' : '连接游戏进程' }}
+          </button>
+          <button v-else class="btn-chara-disconnect" @click="charaDisconnect">断开连接</button>
+          <span v-if="charaConnected" class="chara-pid">PID: {{ charaInfo.pid }}</span>
+        </div>
+
+        <template v-if="charaConnected && charaList.length">
+          <div v-if="charaEditEnabled" class="chara-batch-row">
+            <input v-model="charaBatchValue" type="number" min="0" class="chara-batch-input" placeholder="目标值" />
+            <button class="btn-chara-batch" @click="charaSetBatch" :disabled="!charaBatchValue || isNaN(parseInt(charaBatchValue))">全部设置为</button>
+            <button class="btn-chara-refresh" @click="charaRefresh">刷新</button>
+          </div>
+          <div v-else class="chara-batch-row">
+            <button class="btn-chara-refresh" @click="charaRefresh">刷新</button>
+            <button class="btn-chara-sort" @click="charaSortDesc = !charaSortDesc">
+              {{ charaSortDesc ? '恢复原序' : '按次数排序' }}
+            </button>
+          </div>
+          <div class="chara-table">
+            <div class="chara-row chara-row-header">
+              <span class="chara-col-idx">#</span>
+              <span class="chara-col-name">角色</span>
+              <span class="chara-col-count">次数</span>
+              <span v-if="charaEditEnabled" class="chara-col-edit">修改</span>
+            </div>
+            <div v-for="c in charaSorted" :key="c.index" class="chara-row">
+              <span class="chara-col-idx">{{ c.index }}</span>
+              <span class="chara-col-name">{{ c.name }}</span>
+              <span class="chara-col-count">{{ c.count }}</span>
+              <div v-if="charaEditEnabled" class="chara-col-edit">
+                <input v-model="charaEditValues[c.index]" type="number" min="0" class="chara-edit-input" @keyup.enter="charaSetSingle(c.index)" />
+                <button class="btn-chara-set" @click="charaSetSingle(c.index)">设置</button>
+              </div>
+            </div>
+          </div>
+        </template>
+        <div v-else-if="charaConnected" class="chara-empty">未读取到角色数据，请确保已进入游戏存档</div>
+      </div>
 
       <transition name="fade">
         <div v-if="!isLoaded && !isDetecting" class="placeholder">
@@ -196,7 +309,7 @@ function showStatus(msg, type) {
           <p class="placeholder-tip">建议先备份原始文件再进行补丁操作</p>
         </div>
       </transition>
-      <div class="footer-hint">关闭游戏后使用<br>本补丁不修改存档，验证完整性后可恢复真实数值</div>
+      <div class="footer-hint"><a href="https://github.com/BitterG/GBFR-PE-Patch-Tool" target="_blank" class="footer-link">github.com/BitterG/GBFR-PE-Patch-Tool</a></div>
     </main>
   </div>
 </template>
@@ -269,9 +382,47 @@ function showStatus(msg, type) {
 .placeholder-tip { font-size:0.78rem; color:rgba(255,255,255,0.18); margin-top:8px; }
 
 .footer-hint { width:100%; text-align:center; font-size:0.72rem; color:rgba(255,255,255,0.2); margin-top:auto; padding-top:16px; }
+.footer-link { color:rgba(255,255,255,0.25); text-decoration:none; transition:color 0.2s; }
+.footer-link:hover { color:rgba(103,232,249,0.6); }
 
 .fade-enter-active, .fade-leave-active { transition:opacity 0.3s ease; }
 .fade-enter-from, .fade-leave-to { opacity:0; }
 .slide-up-enter-active { transition:all 0.4s cubic-bezier(0.25,0.46,0.45,0.94); }
 .slide-up-enter-from { opacity:0; transform:translateY(24px); }
+
+.chara-section { width:100%; border-radius:16px; padding:16px 18px; background:linear-gradient(135deg, rgba(56,189,248,0.12) 0%, rgba(103,232,249,0.06) 100%); border:1px solid rgba(103,232,249,0.15); display:flex; flex-direction:column; gap:10px; }
+.chara-header { display:flex; align-items:center; justify-content:space-between; }
+.chara-title { font-size:0.88rem; font-weight:600; color:rgba(255,255,255,0.65); letter-spacing:1px; }
+.chara-hint { font-size:0.68rem; color:rgba(255,255,255,0.25); }
+.chara-connect-row { display:flex; align-items:center; gap:10px; }
+.btn-chara-connect { padding:8px 18px; border-radius:8px; border:1px solid rgba(34,197,94,0.4); background:rgba(34,197,94,0.12); color:#4ade80; font-size:0.82rem; font-weight:600; cursor:pointer; transition:background 0.2s,transform 0.15s; }
+.btn-chara-connect:not(:disabled):hover { background:rgba(34,197,94,0.22); transform:scale(1.02); }
+.btn-chara-connect:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-chara-disconnect { padding:8px 18px; border-radius:8px; border:1px solid rgba(239,68,68,0.4); background:rgba(239,68,68,0.12); color:#f87171; font-size:0.82rem; font-weight:600; cursor:pointer; transition:background 0.2s; }
+.btn-chara-disconnect:hover { background:rgba(239,68,68,0.22); }
+.chara-pid { font-size:0.72rem; color:rgba(255,255,255,0.35); font-family:'Courier New',monospace; }
+.chara-batch-row { display:flex; gap:8px; align-items:center; }
+.chara-batch-input { width:80px; padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.07); color:#fff; font-size:0.82rem; outline:none; }
+.chara-batch-input:focus { border-color:rgba(103,232,249,0.5); }
+.chara-batch-input::-webkit-outer-spin-button, .chara-batch-input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.btn-chara-batch { padding:6px 14px; border-radius:6px; border:1px solid rgba(165,180,252,0.3); background:rgba(165,180,252,0.1); color:#a5b4fc; font-size:0.78rem; font-weight:600; cursor:pointer; transition:background 0.2s; white-space:nowrap; }
+.btn-chara-batch:not(:disabled):hover { background:rgba(165,180,252,0.2); }
+.btn-chara-batch:disabled { opacity:0.4; cursor:not-allowed; }
+.btn-chara-refresh { padding:6px 14px; border-radius:6px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5); font-size:0.78rem; font-weight:600; cursor:pointer; transition:background 0.2s; }
+.btn-chara-refresh:hover { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); }
+.btn-chara-sort { padding:6px 14px; border-radius:6px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.5); font-size:0.78rem; font-weight:600; cursor:pointer; transition:background 0.2s; }
+.btn-chara-sort:hover { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); }
+.chara-table { display:flex; flex-direction:column; gap:1px; background:rgba(255,255,255,0.04); border-radius:10px; overflow:hidden; }
+.chara-row { display:flex; align-items:center; padding:6px 10px; gap:6px; background:rgba(27,38,54,0.6); }
+.chara-row-header { background:rgba(255,255,255,0.06); font-size:0.7rem; color:rgba(255,255,255,0.3); font-weight:600; padding:5px 10px; }
+.chara-col-idx { width:24px; text-align:center; font-size:0.72rem; color:rgba(255,255,255,0.3); font-family:'Courier New',monospace; flex-shrink:0; }
+.chara-col-name { flex:1; font-size:0.8rem; color:rgba(255,255,255,0.6); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chara-col-count { width:48px; text-align:right; font-size:0.8rem; color:#67e8f9; font-family:'Courier New',monospace; flex-shrink:0; }
+.chara-col-edit { width:120px; display:flex; gap:4px; align-items:center; flex-shrink:0; }
+.chara-edit-input { width:56px; padding:4px 6px; border-radius:4px; border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:#fff; font-size:0.78rem; outline:none; text-align:center; }
+.chara-edit-input:focus { border-color:rgba(103,232,249,0.4); }
+.chara-edit-input::-webkit-outer-spin-button, .chara-edit-input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.btn-chara-set { padding:4px 10px; border-radius:4px; border:1px solid rgba(165,180,252,0.25); background:rgba(165,180,252,0.08); color:#a5b4fc; font-size:0.72rem; font-weight:600; cursor:pointer; transition:background 0.15s; white-space:nowrap; }
+.btn-chara-set:hover { background:rgba(165,180,252,0.18); }
+.chara-empty { font-size:0.78rem; color:rgba(255,255,255,0.3); text-align:center; padding:12px 0; }
 </style>

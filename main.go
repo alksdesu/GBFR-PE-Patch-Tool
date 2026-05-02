@@ -17,7 +17,7 @@ func main() {
 	err := wails.Run(&options.App{
 		Title:     "GBFR PE 补丁工具",
 		Width:     540,
-		Height:    700,
+		Height:    860,
 		Frameless: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
