@@ -89,7 +89,7 @@ func (sg *SigilGen) GetSigilList() ([]SigilInfo, error) {
 		result[i] = SigilInfo{
 			InternalID:              s.InternalID,
 			Hash:                    s.Hash,
-			DisplayName:             s.DisplayName,
+			DisplayName:             cnName(s.DisplayName),
 			SupportsSecondaryTrait:  s.SupportsSecondaryTrait != nil && *s.SupportsSecondaryTrait,
 			AllowedSigilLevels:      s.AllowedSigilLevels,
 			DefaultSigilLevel:       derefInt(s.DefaultSigilLevel),
@@ -114,7 +114,7 @@ func (sg *SigilGen) GetTraitList() ([]TraitInfo, error) {
 		result[i] = TraitInfo{
 			InternalID:    t.InternalID,
 			Hash:          t.Hash,
-			DisplayName:   t.DisplayName,
+			DisplayName:   cnTrait(t.DisplayName),
 			MaxLevel:      derefInt(t.MaxLevel),
 			AllowedLevels: t.AllowedLevels,
 		}
@@ -144,7 +144,7 @@ func (sg *SigilGen) GetCompatibleSecondaryTraits(sigilID string) ([]TraitInfo, e
 		result[i] = TraitInfo{
 			InternalID:    t.InternalID,
 			Hash:          t.Hash,
-			DisplayName:   t.DisplayName,
+			DisplayName:   cnTrait(t.DisplayName),
 			MaxLevel:      derefInt(t.MaxLevel),
 			AllowedLevels: t.AllowedLevels,
 		}
@@ -216,7 +216,7 @@ func (sg *SigilGen) GetDefaultSecondaryTrait(sigilID string) (*TraitInfo, error)
 	return &TraitInfo{
 		InternalID:    t.InternalID,
 		Hash:          t.Hash,
-		DisplayName:   t.DisplayName,
+		DisplayName:   cnTrait(t.DisplayName),
 		MaxLevel:      derefInt(t.MaxLevel),
 		AllowedLevels: t.AllowedLevels,
 	}, nil
@@ -240,7 +240,7 @@ func (sg *SigilGen) GetPrimaryTrait(sigilID string) (*TraitInfo, error) {
 	return &TraitInfo{
 		InternalID:    trait.InternalID,
 		Hash:          trait.Hash,
-		DisplayName:   trait.DisplayName,
+		DisplayName:   cnTrait(trait.DisplayName),
 		MaxLevel:      derefInt(trait.MaxLevel),
 		AllowedLevels: trait.AllowedLevels,
 	}, nil
@@ -297,7 +297,7 @@ func (sg *SigilGen) AddToQueue(item QueueItem) error {
 	if err != nil {
 		return err
 	}
-	item.SigilName = sigil.DisplayName
+	item.SigilName = cnName(sigil.DisplayName)
 
 	// 验证因子等级
 	levels, err := sg.catalog.RequireSigilLevels(sigil)
@@ -314,7 +314,7 @@ func (sg *SigilGen) AddToQueue(item QueueItem) error {
 		return err
 	}
 	item.PrimaryTraitID = primaryTrait.InternalID
-	item.PrimaryTraitName = primaryTrait.DisplayName
+	item.PrimaryTraitName = cnTrait(primaryTrait.DisplayName)
 
 	primaryLevels, err := sg.catalog.RequirePrimaryTraitLevels(sigil)
 	if err != nil {
@@ -334,7 +334,7 @@ func (sg *SigilGen) AddToQueue(item QueueItem) error {
 		if err != nil {
 			return err
 		}
-		item.SecondaryTraitName = secondaryTrait.DisplayName
+		item.SecondaryTraitName = cnTrait(secondaryTrait.DisplayName)
 
 		// 验证 secondary trait is allowed
 		allowed, _ := sg.catalog.GetAllowedSecondaryTraits(sigil)
