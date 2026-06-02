@@ -110,14 +110,47 @@ func (s *SaveData) findUnit(idType, unitID uint32) (*unitEntry, bool) {
 	return nil, false
 }
 
-// findAllUnitsByType finds all FlatBuffer unit entries matching a specific IDType,
-// optionally filtered by UnitID >= minUnitID.
+// findAllUnitsByType finds all FlatBuffer unit entries matching a specific IDType.
 func (s *SaveData) findAllUnitsByType(idType uint32) []*unitEntry {
 	slot := s.slotSpan()
 	slotBase := int(s.slotOff)
+	seen := make(map[int]bool)
 	var results []*unitEntry
 
+	idBytes := make([]byte, 4)
+	binary.LittleEndian.PutUint32(idBytes, idType)
+
+	// Strategy 1: raw byte scan for IDType value, then locate table start nearby
+	for i := 0; i < len(slot)-16; i++ {
+		if slot[i] != idBytes[0] || slot[i+1] != idBytes[1] ||
+			slot[i+2] != idBytes[2] || slot[i+3] != idBytes[3] {
+			continue
+		}
+		// Found IDType at slot[i], search backward up to 20 bytes for table start
+		searchStart := i - 20
+		if searchStart < 0 {
+			searchStart = 0
+		}
+		for tableOff := searchStart; tableOff <= i; tableOff++ {
+			if seen[tableOff] {
+				continue
+			}
+			entry, ok := tryReadUnitEntry(slot, tableOff, idType, 0)
+			if ok && entry.IDType == idType {
+				seen[tableOff] = true
+				entry.ValueOff += slotBase
+				entry.data = s.data
+				results = append(results, entry)
+				break
+			}
+		}
+	}
+
+	// Strategy 2: fallback 4-byte aligned scan (for entries missed by strategy 1)
 	for off := 4; off < len(slot)-16; off += 4 {
+		if seen[off] {
+			continue
+		}
 		entry, ok := tryReadUnitEntry(slot, off, idType, 0)
 		if !ok || entry.IDType != idType {
 			continue
@@ -144,7 +177,7 @@ func tryReadUnitEntry(slot []byte, off int, idType, unitID uint32) (*unitEntry, 
 		}
 		vtableSize := binary.LittleEndian.Uint16(slot[vtOff:])
 		objectSize := binary.LittleEndian.Uint16(slot[vtOff+2:])
-		if vtableSize < 10 || objectSize < 4 || int(vtableSize) > 64 || int(objectSize) > len(slot)-off {
+		if vtableSize < 10 || objectSize < 4 || int(vtableSize) > 256 || int(objectSize) > len(slot)-off {
 			continue
 		}
 

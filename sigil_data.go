@@ -69,8 +69,10 @@ type Catalog struct {
 	Sigils      []SigilDef
 	Traits      []TraitDef
 	Rules       []CompatibilityRule
-	sigilByID   map[string]*SigilDef
-	traitByID   map[string]*TraitDef
+	sigilByID    map[string]*SigilDef
+	traitByID    map[string]*TraitDef
+	sigilByHash  map[uint32]*SigilDef
+	traitByHash  map[uint32]*TraitDef
 }
 
 func LoadCatalog() (*Catalog, error) {
@@ -95,15 +97,31 @@ func LoadCatalog() (*Catalog, error) {
 	c.Rules = rules.Rules
 
 	c.sigilByID = make(map[string]*SigilDef, len(c.Sigils))
+	c.sigilByHash = make(map[uint32]*SigilDef, len(c.Sigils))
 	for i := range c.Sigils {
 		c.sigilByID[c.Sigils[i].InternalID] = &c.Sigils[i]
+		if h, err := ParseHashHex(c.Sigils[i].Hash); err == nil {
+			c.sigilByHash[h] = &c.Sigils[i]
+		}
 	}
 	c.traitByID = make(map[string]*TraitDef, len(c.Traits))
+	c.traitByHash = make(map[uint32]*TraitDef, len(c.Traits))
 	for i := range c.Traits {
 		c.traitByID[c.Traits[i].InternalID] = &c.Traits[i]
+		if h, err := ParseHashHex(c.Traits[i].Hash); err == nil {
+			c.traitByHash[h] = &c.Traits[i]
+		}
 	}
 
 	return c, nil
+}
+
+func (c *Catalog) LookupSigilByHash(hash uint32) *SigilDef {
+	return c.sigilByHash[hash]
+}
+
+func (c *Catalog) LookupTraitByHash(hash uint32) *TraitDef {
+	return c.traitByHash[hash]
 }
 
 func loadJSON[T any](path string) (T, error) {

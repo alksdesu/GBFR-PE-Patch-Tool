@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
 	"path/filepath"
 )
@@ -577,6 +578,187 @@ func (sg *SigilGen) RemoveAllSigils(inputPath, outputPath string) (*ApplyResult,
 	return &ApplyResult{
 		CreatedCount: removed,
 		VerifiedCount: remaining,
+		OutputPath:   absPath,
+	}, nil
+}
+
+// ── 已有因子查看/删除 ──
+
+type ExistingSigil struct {
+	GemUnitID          int    `json:"gemUnitId"`
+	SigilName          string `json:"sigilName"`
+	Level              int    `json:"level"`
+	PrimaryTraitName   string `json:"primaryTraitName"`
+	PrimaryLevel       int    `json:"primaryLevel"`
+	SecondaryTraitName string `json:"secondaryTraitName"`
+	SecondaryLevel     int    `json:"secondaryLevel"`
+}
+
+func (sg *SigilGen) DebugSave() (string, error) {
+	if sg.save == nil {
+		return "no save loaded", nil
+	}
+	s := sg.save
+	slot := s.slotSpan()
+
+	// Count how many times the IDType 2703 (= 0xA8F = little endian 8F 0A 00 00) appears
+	count2703 := 0
+	for i := 0; i < len(slot)-4; i++ {
+		if binary.LittleEndian.Uint32(slot[i:]) == GemIDType {
+			count2703++
+		}
+	}
+
+	info := fmt.Sprintf(
+		"File: %d bytes | Slot off=%d size=%d (%d bytes)\n"+
+			"First 40 slot bytes: %X\n"+
+			"Last 40 slot bytes: %X\n"+
+			"Occurrences of IDType 2703: %d\n"+
+			"findAllUnitsByType(2703) returns: %d entries",
+		len(s.data), s.slotOff, s.slotLen, len(slot),
+		slot[:min(40, len(slot))],
+		slot[max(0, len(slot)-40):],
+		count2703,
+		len(s.findAllUnitsByType(GemIDType)),
+	)
+	return info, nil
+}
+
+func (sg *SigilGen) GetExistingSigils() ([]ExistingSigil, error) {
+	if sg.save == nil {
+		return nil, fmt.Errorf("请先加载存档")
+	}
+	if sg.catalog == nil {
+		if err := sg.LoadCatalog(); err != nil {
+			return nil, err
+		}
+	}
+
+	allGemUnits := sg.save.findAllUnitsByType(GemIDType)
+	totalScanned := len(allGemUnits)
+	totalOccupied := 0
+	var result []ExistingSigil
+	for _, u := range allGemUnits {
+		if int(u.UnitID) < GemSlotBaseID {
+			continue
+		}
+		totalOccupied++
+		if u.Uint32() == EmptyHash {
+			continue
+		}
+
+		// 限制返回数量，避免渲染卡死
+		if len(result) >= 500 {
+			continue
+		}
+
+		gemUnitID := int(u.UnitID)
+		gemIndex := gemUnitID - GemSlotBaseID
+		primaryTraitUnit := uint32(TraitSlotBase + (gemIndex * 100))
+		secondaryTraitUnit := primaryTraitUnit + 1
+
+		es := ExistingSigil{GemUnitID: gemUnitID, SigilName: fmt.Sprintf("0x%08X", u.Uint32())}
+
+		if sigil := sg.catalog.LookupSigilByHash(u.Uint32()); sigil != nil {
+			es.SigilName = cnName(sigil.DisplayName)
+		}
+
+		if lv, ok := sg.save.findUnit(GemLevelIDType, u.UnitID); ok {
+			es.Level = int(lv.Int32())
+		}
+
+		if pt, ok := sg.save.findUnit(TraitHashIDType, primaryTraitUnit); ok {
+			if trait := sg.catalog.LookupTraitByHash(pt.Uint32()); trait != nil {
+				es.PrimaryTraitName = cnTrait(trait.DisplayName)
+			}
+		}
+		if pl, ok := sg.save.findUnit(TraitLevelIDType, primaryTraitUnit); ok {
+			es.PrimaryLevel = int(pl.Int32())
+		}
+
+		if st, ok := sg.save.findUnit(TraitHashIDType, secondaryTraitUnit); ok {
+			sh := st.Uint32()
+			if sh != EmptyHash {
+				if trait := sg.catalog.LookupTraitByHash(sh); trait != nil {
+					es.SecondaryTraitName = cnTrait(trait.DisplayName)
+				} else {
+					es.SecondaryTraitName = fmt.Sprintf("0x%08X", sh)
+				}
+				if sl, ok := sg.save.findUnit(TraitLevelIDType, secondaryTraitUnit); ok {
+					es.SecondaryLevel = int(sl.Int32())
+				}
+			}
+		}
+
+		result = append(result, es)
+	}
+
+	// 如果没有可识别的数据，返回诊断信息
+	if len(result) == 0 && totalScanned == 0 {
+		return nil, fmt.Errorf("存档扫描未发现任何因子数据 (扫描了 %d 条 Entry)", totalScanned)
+	}
+	if len(result) == 0 {
+		return nil, fmt.Errorf("槽位 %d 个，全部为空", totalOccupied)
+	}
+
+	// 如果数量超过限制，在前面插入提示
+	if len(result) >= 500 {
+		result = append([]ExistingSigil{{
+			GemUnitID: -1,
+			SigilName: fmt.Sprintf("[共 %d 个因子，仅显示前 500 个]", len(result)),
+		}}, result...)
+	}
+	return result, nil
+}
+
+// DeleteSelectedSigils 删除选中的因子并写入输出文件
+func (sg *SigilGen) DeleteSelectedSigils(gemUnitIDs []int, outputPath string) (*ApplyResult, error) {
+	if sg.save == nil {
+		return nil, fmt.Errorf("请先加载存档")
+	}
+	if len(gemUnitIDs) == 0 {
+		return nil, fmt.Errorf("未选择要删除的因子")
+	}
+
+	// 重新加载存档（避免影响之前的修改）
+	s, err := LoadSave(sg.savePath)
+	if err != nil {
+		return nil, err
+	}
+
+	removed := 0
+	for _, gemUnitID := range gemUnitIDs {
+		entry, ok := s.findUnit(GemIDType, uint32(gemUnitID))
+		if !ok || entry.Uint32() == EmptyHash {
+			continue
+		}
+
+		gemIndex := gemUnitID - GemSlotBaseID
+		primaryTraitUnit := uint32(TraitSlotBase + (gemIndex * 100))
+		secondaryTraitUnit := primaryTraitUnit + 1
+
+		s.tryPatchUint(GemIDType, uint32(gemUnitID), EmptyHash)
+		s.tryPatchInt(GemLevelIDType, uint32(gemUnitID), 0)
+		s.tryPatchUint(GemWornByIDType, uint32(gemUnitID), EmptyHash)
+		s.tryPatchUint(GemFlagsIDType, uint32(gemUnitID), 0)
+		s.tryPatchUint(TraitHashIDType, primaryTraitUnit, EmptyHash)
+		s.tryPatchInt(TraitLevelIDType, primaryTraitUnit, 0)
+		s.tryPatchUint(TraitHashIDType, secondaryTraitUnit, EmptyHash)
+		s.tryPatchInt(TraitLevelIDType, secondaryTraitUnit, 0)
+		removed++
+	}
+
+	if err := s.FixChecksums(); err != nil {
+		return nil, fmt.Errorf("校验和修复失败: %w", err)
+	}
+	if err := s.Write(outputPath); err != nil {
+		return nil, fmt.Errorf("写入输出文件失败: %w", err)
+	}
+
+	absPath, _ := filepath.Abs(outputPath)
+	return &ApplyResult{
+		CreatedCount: removed,
+		VerifiedCount: 0,
 		OutputPath:   absPath,
 	}, nil
 }

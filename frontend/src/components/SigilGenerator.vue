@@ -4,7 +4,8 @@ import { GetSigilList, GetCompatibleSecondaryTraits, GetAllowedLevels,
          GetPrimaryTraitLevels, GetSecondaryTraitLevels, GetPrimaryTrait,
          GetDefaultSecondaryTrait, LoadSaveFile, GetLoadedSaveInfo,
          GetQueue, AddToQueue, RemoveFromQueue, ClearQueue,
-         ApplyQueue, RemoveAllSigils } from '../../wailsjs/go/main/SigilGen'
+         ApplyQueue, RemoveAllSigils,
+         GetExistingSigils, DeleteSelectedSigils } from '../../wailsjs/go/main/SigilGen'
 
 const emit = defineEmits(['status'])
 
@@ -35,6 +36,13 @@ const supportsSecondary = ref(false)
 
 // 队列
 const queue = ref([])
+
+// 已有因子
+const existingSigils = ref([])
+const selectedForDelete = ref(new Set())
+const showExisting = ref(false)
+const isDeleting = ref(false)
+const loadingExisting = ref(false)
 
 // 搜索
 const sigilSearch = ref('')
@@ -71,9 +79,54 @@ async function loadSave() {
     Object.assign(saveInfo, info)
     saveLoaded.value = true
     outputPath.value = info.path.replace(/(\.dat)$/i, '_modified.dat')
+    showExisting.value = true
+    await refreshExisting()
     showStatus(`已加载存档: ${info.occupiedSigils} 个因子`, 'success')
   } catch (e) {
+    showExisting.value = false
     showStatus(String(e), 'error')
+  }
+}
+
+async function refreshExisting() {
+  loadingExisting.value = true
+  try {
+    existingSigils.value = await GetExistingSigils()
+    selectedForDelete.value = new Set()
+  } catch (e) {
+    existingSigils.value = []
+    showStatus('读取已有因子失败: ' + String(e), 'error')
+  } finally {
+    loadingExisting.value = false
+  }
+}
+
+function toggleSelectAll() {
+  if (selectedForDelete.value.size === existingSigils.value.length) {
+    selectedForDelete.value = new Set()
+  } else {
+    selectedForDelete.value = new Set(existingSigils.value.map(s => s.gemUnitId))
+  }
+}
+
+async function deleteSelected() {
+  if (selectedForDelete.value.size === 0) {
+    showStatus('未选中任何因子', 'error'); return
+  }
+  if (!outputPath.value.trim()) {
+    showStatus('请填写输出路径', 'error'); return
+  }
+  if (!confirm(`确定要删除 ${selectedForDelete.value.size} 个因子吗？此操作不可撤销。`)) return
+  isDeleting.value = true
+  try {
+    const ids = Array.from(selectedForDelete.value)
+    const result = await DeleteSelectedSigils(ids, outputPath.value.trim())
+    await refreshExisting()
+    showStatus(`已删除 ${result.createdCount} 个因子`, 'success')
+  } catch (e) {
+    showStatus(String(e), 'error')
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -209,6 +262,50 @@ function onSigilSelect() {
       </div>
     </div>
 
+    <!-- 已有因子 -->
+    <div v-if="showExisting" class="section">
+      <div class="section-title">
+        已有因子 {{ loadingExisting ? '加载中...' : `(${existingSigils.length})` }}
+        <div class="existing-actions">
+          <button class="btn-link" @click="toggleSelectAll"
+            :disabled="loadingExisting">
+            {{ selectedForDelete.size === existingSigils.length ? '取消全选' : '全选' }}
+          </button>
+          <button class="btn-link" @click="refreshExisting" :disabled="loadingExisting">刷新</button>
+          <button class="btn-action btn-red btn-sm"
+            @click="deleteSelected"
+            :disabled="isDeleting || loadingExisting || selectedForDelete.size === 0">
+            {{ isDeleting ? '删除中...' : `删除选中 (${selectedForDelete.size})` }}
+          </button>
+        </div>
+      </div>
+      <div v-if="loadingExisting" class="loading-hint">正在读取已有因子，数量较多时请耐心等待...</div>
+      <div v-else-if="saveInfo.occupiedSigils > 500" class="warning-hint">
+        注意：当前存档有 {{ saveInfo.occupiedSigils }} 个因子，目前批量编辑处于测试阶段，不建议使用
+      </div>
+      <div v-if="!loadingExisting && existingSigils.length === 0" class="empty-hint">暂无已有因子或读取失败</div>
+      <div v-else class="existing-table">
+        <div class="existing-row existing-header">
+          <span class="ex-col-cb"><input type="checkbox" :checked="selectedForDelete.size === existingSigils.length && existingSigils.length > 0" @change="toggleSelectAll" /></span>
+          <span class="ex-col-name">因子</span>
+          <span class="ex-col-level">等级</span>
+          <span class="ex-col-trait">特性</span>
+        </div>
+        <div v-for="s in existingSigils" :key="s.gemUnitId" class="existing-row">
+          <span class="ex-col-cb">
+            <input type="checkbox" :checked="selectedForDelete.has(s.gemUnitId)"
+              @change="selectedForDelete.has(s.gemUnitId) ? selectedForDelete.delete(s.gemUnitId) : selectedForDelete.add(s.gemUnitId)" />
+          </span>
+          <span class="ex-col-name">{{ s.sigilName }}</span>
+          <span class="ex-col-level">Lv {{ s.level }}</span>
+          <span class="ex-col-trait">
+            {{ s.primaryTraitName }} Lv {{ s.primaryLevel }}
+            <template v-if="s.secondaryTraitName"> / {{ s.secondaryTraitName }} Lv {{ s.secondaryLevel }}</template>
+          </span>
+        </div>
+      </div>
+    </div>
+
     <!-- 因子配置 -->
     <div class="section">
       <div class="section-title">因子配置</div>
@@ -231,9 +328,7 @@ function onSigilSelect() {
       <!-- 因子等级 -->
       <div class="field">
         <label>因子等级</label>
-        <select v-model="selectedLevel" class="select-input" :disabled="!sigilLevels.length">
-          <option v-for="l in sigilLevels" :key="l" :value="l">Lv {{ l }}</option>
-        </select>
+        <div class="readonly-field">Lv {{ selectedLevel || '—' }}</div>
       </div>
 
       <!-- 主特性 -->
@@ -383,6 +478,11 @@ function onSigilSelect() {
   box-sizing: border-box;
 }
 
+.select-input option {
+  background: rgba(27,38,54,1);
+  color: #fff;
+}
+
 .text-input:focus, .select-input:focus {
   border-color: rgba(103,232,249,0.4);
   background: rgba(255,255,255,0.1);
@@ -497,23 +597,110 @@ function onSigilSelect() {
   padding: 8px 0;
 }
 
+.loading-hint {
+  font-size: 0.78rem;
+  color: #67e8f9;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.warning-hint {
+  font-size: 0.72rem;
+  color: rgba(251,191,36,0.8);
+  text-align: center;
+  padding: 8px 12px;
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.15);
+  border-radius: 6px;
+  line-height: 1.5;
+}
+
 /* 因子选择列表 */
 .sigil-select {
   height: auto;
   min-height: 120px;
   overflow-y: auto;
   cursor: pointer;
+  appearance: auto !important;
+  background-image: none !important;
+  padding-right: 6px;
 }
 .sigil-select option {
-  padding: 4px 8px;
+  padding: 5px 8px;
   color: #fff;
   background: rgba(27,38,54,1);
+  font-size: 0.82rem;
 }
+.sigil-select option:checked {
+  background: rgba(103,232,249,0.25);
+  color: #67e8f9;
+}
+
+/* 暗色滚动条 */
+.sigil-select::-webkit-scrollbar {
+  width: 6px;
+}
+.sigil-select::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.2);
+  border-radius: 3px;
+}
+.sigil-select::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 3px;
+}
+.sigil-select::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.25);
+}
+
 .data-error {
   font-size: 0.72rem;
   color: #f87171;
   padding: 4px 0;
 }
+
+/* 已有因子列表 */
+.existing-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.btn-sm {
+  padding: 4px 10px !important;
+  font-size: 0.7rem !important;
+}
+.existing-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 250px;
+  overflow-y: auto;
+}
+.existing-table::-webkit-scrollbar { width: 5px; }
+.existing-table::-webkit-scrollbar-track { background: transparent; }
+.existing-table::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+.existing-row {
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  gap: 6px;
+  background: rgba(27,38,54,0.6);
+  font-size: 0.76rem;
+}
+.existing-header {
+  background: rgba(255,255,255,0.06);
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.3);
+  font-weight: 600;
+  padding: 4px 10px;
+}
+.existing-row input[type="checkbox"] { accent-color: #67e8f9; cursor: pointer; }
+.ex-col-cb { width: 20px; flex-shrink: 0; text-align: center; }
+.ex-col-name { flex: 1; color: rgba(255,255,255,0.6); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ex-col-level { width: 40px; text-align: right; color: rgba(255,255,255,0.35); flex-shrink: 0; }
+.ex-col-trait { width: 160px; color: rgba(255,255,255,0.3); font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
 
 /* 队列列表 */
 .queue-list { display: flex; flex-direction: column; gap: 6px; }

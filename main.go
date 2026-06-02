@@ -17,8 +17,8 @@ func main() {
 
 	err := wails.Run(&options.App{
 		Title:     "GBFR 存档修改工具",
-		Width:     560,
-		Height:    900,
+		Width:     800,
+		Height:    600,
 		Frameless: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
