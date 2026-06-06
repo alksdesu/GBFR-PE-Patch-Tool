@@ -10,20 +10,20 @@ import (
 )
 
 const (
-	HashSeedIDType     uint32 = 1003
-	TraitHashIDType    uint32 = 1701
-	TraitLevelIDType   uint32 = 1702
-	GemMaxSlotIDType   uint32 = 2701
-	GemSlotIDType      uint32 = 2702
-	GemIDType          uint32 = 2703
-	GemLevelIDType     uint32 = 2704
-	GemWornByIDType    uint32 = 2706
-	GemFlagsIDType     uint32 = 2707
-	EmptyHash          uint32 = 0x887AE0B0
-	NormalSigilFlags   uint32 = 2
-	SaveHashSeed       uint64 = 0x2F1A43EBCD
-	GemSlotBaseID             = 30000
-	TraitSlotBase             = 120000000
+	HashSeedIDType   uint32 = 1003
+	TraitHashIDType  uint32 = 1701
+	TraitLevelIDType uint32 = 1702
+	GemMaxSlotIDType uint32 = 2701
+	GemSlotIDType    uint32 = 2702
+	GemIDType        uint32 = 2703
+	GemLevelIDType   uint32 = 2704
+	GemWornByIDType  uint32 = 2706
+	GemFlagsIDType   uint32 = 2707
+	EmptyHash        uint32 = 0x887AE0B0
+	NormalSigilFlags uint32 = 2
+	SaveHashSeed     uint64 = 0x2F1A43EBCD
+	GemSlotBaseID           = 30000
+	TraitSlotBase           = 120000000
 )
 
 var hashSections = []struct{ start, subSize int }{
@@ -33,11 +33,11 @@ var hashSections = []struct{ start, subSize int }{
 
 // unitEntry holds the position and value info for one FlatBuffer unit entry.
 type unitEntry struct {
-	IDType    uint32
-	UnitID    uint32
-	ValueOff  int // absolute offset in data where ValueData[0] lives
-	ValueCnt  int // number of elements in ValueData vector
-	data      []byte
+	IDType   uint32
+	UnitID   uint32
+	ValueOff int // absolute offset in data where ValueData[0] lives
+	ValueCnt int // number of elements in ValueData vector
+	data     []byte
 }
 
 func (e *unitEntry) Uint32() uint32 {
@@ -60,6 +60,21 @@ func (e *unitEntry) SetUint32(v uint32) {
 
 func (e *unitEntry) SetInt32(v int32) {
 	binary.LittleEndian.PutUint32(e.data[e.ValueOff:], uint32(v))
+}
+
+func (e *unitEntry) Bool() bool {
+	if e.ValueOff < 0 || e.ValueOff >= len(e.data) {
+		return false
+	}
+	return e.data[e.ValueOff] != 0
+}
+
+func (e *unitEntry) SetBool(v bool) {
+	if v {
+		e.data[e.ValueOff] = 1
+	} else {
+		e.data[e.ValueOff] = 0
+	}
 }
 
 type SaveData struct {
