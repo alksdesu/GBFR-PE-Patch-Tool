@@ -18,3 +18,8 @@ frontend/wailsjs/
 .vscode/
 *.swp
 *.swo
+
+# Local agent/tooling state
+.claude/
+.codegraph/
+因子生成功能查漏补缺进度.md
