@@ -46,12 +46,19 @@ const loadingExisting = ref(false)
 
 // 搜索
 const sigilSearch = ref('')
+const secondaryTraitSearch = ref('')
 const showSigilDropdown = ref(false)
 
 const filteredSigils = computed(() => {
   if (!sigilSearch.value) return sigils.value
   const q = sigilSearch.value.toLowerCase()
   return sigils.value.filter(s => s.displayName.toLowerCase().includes(q))
+})
+
+const filteredSecondaryTraits = computed(() => {
+  if (!secondaryTraitSearch.value) return secondaryTraits.value
+  const q = secondaryTraitSearch.value.toLowerCase()
+  return secondaryTraits.value.filter(t => t.displayName.toLowerCase().includes(q))
 })
 
 // ── 加载数据 ──
@@ -156,15 +163,18 @@ watch(selectedSigilID, async (id) => {
       secondaryTraits.value = await GetCompatibleSecondaryTraits(id)
       const def = await GetDefaultSecondaryTrait(id)
       selectedSecondaryTraitID.value = def ? def.internalId : ''
+      secondaryTraitSearch.value = def ? def.displayName : ''
     } catch (e) {
       secondaryTraits.value = []
       selectedSecondaryTraitID.value = ''
+      secondaryTraitSearch.value = ''
     }
   } else {
     secondaryTraits.value = []
     selectedSecondaryTraitID.value = ''
     secondaryTraitLevels.value = []
     selectedSecondaryLevel.value = 0
+    secondaryTraitSearch.value = ''
   }
 
   // 默认等级
@@ -176,8 +186,11 @@ watch(selectedSecondaryTraitID, async (id) => {
   if (!id || !selectedSigilID.value) {
     secondaryTraitLevels.value = []
     selectedSecondaryLevel.value = 0
+    if (!id) secondaryTraitSearch.value = ''
     return
   }
+  const trait = secondaryTraits.value.find(t => t.internalId === id)
+  if (trait) secondaryTraitSearch.value = trait.displayName
   try {
     secondaryTraitLevels.value = await GetSecondaryTraitLevels(selectedSigilID.value, id)
     selectedSecondaryLevel.value = secondaryTraitLevels.value[0] || 0
@@ -243,6 +256,13 @@ function onSigilSelect() {
   const sigil = sigils.value.find(s => s.internalId === selectedSigilID.value)
   if (sigil) {
     sigilSearch.value = sigil.displayName
+  }
+}
+
+function onSecondaryTraitSelect() {
+  const trait = secondaryTraits.value.find(t => t.internalId === selectedSecondaryTraitID.value)
+  if (trait) {
+    secondaryTraitSearch.value = trait.displayName
   }
 }
 </script>
@@ -348,10 +368,12 @@ function onSigilSelect() {
       <template v-if="supportsSecondary">
         <div class="field">
           <label>副特性</label>
-          <select v-model="selectedSecondaryTraitID" class="select-input"
-            :disabled="!secondaryTraits.length">
+          <input v-model="secondaryTraitSearch" type="text" class="text-input"
+            placeholder="输入关键词过滤副特性..." />
+          <select v-model="selectedSecondaryTraitID" class="select-input sigil-select"
+            size="6" :disabled="!secondaryTraits.length" @change="onSecondaryTraitSelect">
             <option value="">— 不选择 —</option>
-            <option v-for="t in secondaryTraits" :key="t.internalId" :value="t.internalId">
+            <option v-for="t in filteredSecondaryTraits" :key="t.internalId" :value="t.internalId">
               {{ t.displayName }}
             </option>
           </select>
