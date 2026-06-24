@@ -23,7 +23,7 @@ const (
 	steamAppID  = "881020"
 	gameExeName = "granblue_fantasy_relink.exe"
 	gameFolder  = "Granblue Fantasy Relink"
-	appVersion  = "v1.5.2"
+	appVersion  = "v1.5.3"
 	repoOwner   = "BitterG"
 	repoName    = "GBFR-PE-Patch-Tool"
 )
@@ -95,6 +95,8 @@ type UpdateInfo struct {
 
 type AppConfig struct {
 	LastSavePath string `json:"lastSavePath"`
+	WindowWidth  int    `json:"windowWidth"`
+	WindowHeight int    `json:"windowHeight"`
 }
 
 // ── App ──
@@ -114,7 +116,45 @@ type App struct {
 
 func NewApp() *App { return &App{} }
 
-func (a *App) startup(ctx context.Context) { a.ctx = ctx }
+func (a *App) startup(ctx context.Context) {
+	a.ctx = ctx
+	if err := a.loadConfig(); err != nil {
+		return
+	}
+	width, height := a.config.windowSize()
+	if width > 0 && height > 0 {
+		runtime.WindowSetSize(ctx, width, height)
+	}
+}
+
+func (a *App) beforeClose(ctx context.Context) (prevent bool) {
+	a.saveWindowSize(ctx)
+	return false
+}
+
+func (a *App) shutdown(ctx context.Context) {
+	a.saveWindowSize(ctx)
+}
+
+func (a *App) saveWindowSize(ctx context.Context) {
+	width, height := runtime.WindowGetSize(ctx)
+	if width <= 0 || height <= 0 {
+		return
+	}
+	if err := a.loadConfig(); err != nil {
+		return
+	}
+	a.config.WindowWidth = width
+	a.config.WindowHeight = height
+	_ = a.saveConfig()
+}
+
+func (c AppConfig) windowSize() (int, int) {
+	if c.WindowWidth < 400 || c.WindowHeight < 300 {
+		return 0, 0
+	}
+	return c.WindowWidth, c.WindowHeight
+}
 
 func (a *App) configFilePath() (string, error) {
 	base, err := os.UserConfigDir()

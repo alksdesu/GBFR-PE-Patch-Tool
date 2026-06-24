@@ -42,6 +42,8 @@ func main() {
 			sigilGen.startup(ctx)
 			wrightstoneGen.startup(ctx)
 		},
+		OnBeforeClose: app.beforeClose,
+		OnShutdown:    app.shutdown,
 		Bind: []interface{}{
 			app,
 			sigilGen,
