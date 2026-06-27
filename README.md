@@ -4,140 +4,84 @@
 
 # GBFR 存档修改工具
 
-Granblue Fantasy: Relink (碧蓝幻想：Relink) 存档修改工具，包含 PE 补丁、角色使用次数、因子生成、祝福生成、副本次数查看、杂项内存修改等功能。
+Granblue Fantasy: Relink (碧蓝幻想：Relink) 存档与运行时修改工具，包含 PE 补丁、因子/祝福生成、副本次数查看、角色使用次数统计、杂项内存修改和怪物增强等功能。
 
 ## 功能
 
-### PE 补丁（关闭游戏后使用）
+### 存档相关
 
-- **挑战次数** — 修改任务挑战次数上限（不影响存档）
-- **点赞数值** — 修改被点赞时获得的数值（被点赞后生效，影响存档）
-- **自动识别** — 启动时从 Steam 注册表和库目录自动定位游戏 exe
-- **备份/恢复** — 补丁前创建 `.bak` 备份（仅 exe），一键恢复
-
-### 角色使用次数（游戏运行中使用）
-
-- **查看次数** — 连接游戏进程，读取所有角色的使用次数
-- **排序查看** — 支持按次数倒序排列
-- 修改后需对应角色结算一局生效
-
-### 祝福生成（离线存档修改）
-
-- **生成祝福** — 搜索选择祝福（Wrightstone），配置三个特性和等级，写入输出存档
-- **浏览存档** — 输入/输出路径均可通过文件对话框选择
-- **原地修改** — 可选直接覆盖原始输入存档，启用后输出路径会进入警示状态并在写入后自动重载存档
-- **队列批量** — 支持同时添加多个不同配置的祝福，按数量批量生成
-- **查看已有祝福** — 加载存档后展示所有已有祝福，显示 ID、特性信息
-- **CLI 模式** — 支持命令行模式，无需 GUI 即可批量生成祝福
-- **中文翻译** — 祝福名、特性名均已本地化为简体中文
-
-### 因子生成（离线存档修改）
-
-- **生成因子** — 搜索选择因子，配置等级、主特性、副特性，写入输出存档
-- **副特性搜索** — 支持按关键词过滤副特性，匹配结果直接展开显示
-- **浏览存档** — 输入/输出路径均可通过文件对话框选择
-- **原地修改** — 可选直接覆盖原始输入存档，启用后输出路径会进入警示状态并在写入/删除/清空后自动重载存档
-- **队列批量** — 支持同时添加多个不同配置的因子，按数量批量生成
-- **查看已有因子** — 加载存档后展示所有已有因子，显示中文名、等级、特性
-- **批量删除** — 勾选已有因子批量删除，也可一键清除全部因子
-- **中文翻译** — 因子名、特性名均已本地化为简体中文
-
-### 副本次数（离线存档查看）
-
-- **存档扫描** — 自动扫描存档目录，列出所有存档槽位
-- **任务统计** — 查看每个存档中所有任务/副本的通关次数
-- **排序查看** — 支持按通关次数正序/倒序排列
-- **存档概览** — 显示卢比、MSP、赞数、道具/武器/因子数量等存档摘要
-
-### 杂项（游戏运行中使用）
-
-- **检查更新** — 从 GitHub Releases 获取最新版本并打开发布页
-- **任务结算倒计时/零帧开箱** — AOB 定位后修改结算倒计时 float 值
-- **脸部符文显示** — 切换运行时跳转逻辑，隐藏或恢复紫色皮肤包脸部符文显示
-- **运行时修改** — 仅写入游戏进程内存，重启游戏后需要重新连接并设置
-
-## 使用说明
-
-### 祝福生成
-
-1. 切换到「祝福生成」标签页
-2. **加载存档** — 点击「浏览」选择存档文件（`.dat`），或手动输入后点击加载
-   > 默认存档路径：`C:\Users\<用户名>\AppData\Local\GBFR\Saved\SaveGames\` 下的 `.dat` 文件
-3. **查看已有祝福** — 加载后自动显示，可查看当前存档中的祝福
-4. **配置祝福** — 在搜索框输入关键词过滤，从列表选中祝福
-5. 依次选择三个特性及对应等级（每个特性等级选项由数据定义）
-6. 设置数量，点击「添加到队列」，可重复添加多个不同配置
-7. 在「输出」栏填写输出路径（默认自动生成 `_wrightstones.dat`），也可点击「浏览」选择
-8. 如需直接覆盖原始输入存档，可勾选「启用原地修改（直接覆盖输入存档）」
-9. 点击「应用写入」，祝福将写入输出存档；若开启原地修改则直接覆盖原始存档
-
-### 因子生成
-
-1. 切换到「因子生成」标签页
-2. **加载存档** — 点击「浏览」选择存档文件（`.dat`），或手动输入后点击加载
-   > 默认存档路径：`C:\Users\<用户名>\AppData\Local\GBFR\Saved\SaveGames\` 下的 `.dat` 文件
-3. **查看已有因子** — 加载后自动显示，可勾选删除
-4. **配置因子** — 在搜索框输入关键词过滤，从列表选中因子
-5. 自动显示因子等级、主特性名称和等级（均为只读）
-6. 如有副特性，可通过搜索栏过滤并从展开列表中直接选择；数量默认为 1
-7. 点击「添加到队列」，可重复添加多个不同配置
-8. 在「输出」栏填写输出路径（默认自动生成 `_modified.dat`），也可点击「浏览」选择
-9. 如需直接覆盖原始输入存档，可勾选「启用原地修改（直接覆盖输入存档）」
-10. 点击「应用写入」，因子将写入输出存档；若开启原地修改则直接覆盖原始存档
+- **因子生成** — 搜索选择因子，配置等级、主/副特性，写入输出存档
+- **祝福生成** — 搜索选择祝福，配置三个特性和等级，支持队列批量生成
+- **副本次数查看** — 自动扫描存档槽位，查看任务/副本通关次数与存档摘要
+- **原地修改** — 因子/祝福生成可选直接覆盖输入存档，建议先备份
+- **中文翻译** — 因子、祝福、特性、任务名均有简体中文显示
 
 ### PE 补丁
 
-1. **关闭游戏**
+- **挑战次数** — 修改任务挑战次数上限，不影响存档
+- **点赞数值** — 修改被点赞时获得的数值，被点赞后生效，影响存档
+- **自动识别** — 从 Steam 注册表和库目录自动定位游戏 exe
+- **备份/恢复** — 补丁前创建 `.bak` 备份，仅 exe，一键恢复
+
+### 运行时功能
+
+- **角色使用次数** — 连接游戏进程，查看和修改角色使用次数
+- **任务结算倒计时/零帧开箱** — 修改结算倒计时，设置为 `0` 可零帧开箱
+- **脸部符文显示** — 隐藏或恢复紫色皮肤包脸部符文显示
+- **在其他皮肤显示紫色符文** — 允许紫色符文在其他皮肤上显示
+- **怪物增强** — 怪物多倍血、怪物伤害、昏厥条、Overdrive 状态、奥义接续计时、Link Time、蓝条/紫条控制等
+- **检查更新** — 从 GitHub Releases 获取最新版本并打开发布页
+
+## 使用说明
+
+### 存档类功能
+
+1. 切换到「因子生成」「祝福生成」或「副本次数」标签页
+2. 点击「浏览」选择存档文件，或使用自动扫描的存档槽位
+3. 配置需要生成或查看的内容
+4. 写入前建议先备份存档
+
+默认存档路径：
+
+```text
+C:\Users\<用户名>\AppData\Local\GBFR\Saved\SaveGames\
+```
+
+### PE 补丁
+
+1. 关闭游戏
 2. 切换到「补丁修改」标签页
-3. 程序会自动扫描 Steam 安装路径定位游戏 exe
-4. 如未自动识别，手动粘贴 `granblue_fantasy_relink.exe` 的完整路径
-5. 建议先点击「备份」创建 `.bak` 文件
-6. 输入数值，点击「应用」写入补丁
-7. 启动游戏验证效果
+3. 自动识别或手动选择 `granblue_fantasy_relink.exe`
+4. 点击「备份」创建 `.bak`
+5. 输入数值并点击「应用」
+6. 启动游戏验证效果
 
-### 角色使用次数
+### 运行时功能
 
-1. **启动游戏并进入存档**
-2. 切换到「角色次数统计」标签页
-3. 点击「连接游戏进程」，确认显示 PID
-4. 查看各角色当前使用次数
-5. 支持按次数排序查看
-6. 可直接修改单个角色次数，或批量设置全部角色
-7. 修改后需用对应角色结算一局生效
+1. 启动游戏并进入存档
+2. 切换到「角色次数统计」「杂项」或「怪物增强」标签页
+3. 连接或刷新游戏进程状态
+4. 开启、应用或恢复需要的功能
+5. 重启游戏后需要重新连接并重新设置
 
-### 副本次数
+### 怪物增强说明
 
-1. 切换到「副本次数」标签页
-2. 自动扫描存档目录，点击存档槽位加载
-3. 查看各任务/副本通关次数
-4. 支持按次数正序/倒序排列
-5. 高亮显示高通关次数（>100 次）的任务
+- 「怪物多倍血」和「鳄鱼多倍血」输入 `10` 表示等效 `10 倍血`
+- 「怪物 Overdrive 状态」支持 `1 满红条`、`4 满黄条` 和「自动OD」
+- 「锁定」会持续写入状态，「应用」只写入一次后恢复原始指令
+- 「自动OD」会在非红条时写入一次满黄条，红条中不重复触发
+- 「奥义接续计时」默认 `3 秒`，可输入自定义秒数并恢复默认
+- 部分怪物增强功能依赖内置 `patch_core.dll`
 
-### 杂项
+## 实现简述
 
-1. **启动游戏并进入存档**
-2. 切换到「杂项」标签页
-3. 点击「连接游戏进程」，确认显示 PID
-4. 「检查更新」可查看 GitHub Releases 最新版本并打开发布页
-5. 「任务结算倒计时/零帧开箱」先扫描定位，再输入秒数写入
-   > 设置为 `0` 可实现零帧开箱；超过 `30s` 可能导致进度条消失但计时仍正常。
-6. 「脸部符文显示」可隐藏或恢复紫色皮肤包脸部符文
-7. 重启游戏或更新游戏版本后，需要重新连接并重新设置
+- PE 补丁直接修改 exe 中指定指令的立即数，并保留备份用于恢复
+- 存档功能基于 FlatBuffer 解析与 XXHash64 校验写回
+- 运行时功能通过打开游戏进程并读写内存实现
+- 怪物增强中简单功能由 Go 直接写内存，复杂功能通过 `patch_core.dll` 注入并写入跳板或补丁
+- `patch_core.dll` 仅输出调试信息，不弹出对话框
 
-## 补丁原理
-
-两个 PE 补丁点均为直接替换 `mov eax, imm32` 指令的立即数，并将后续的条件传送指令（`cmovb`）替换为等长 NOP：
-
-| 补丁 | RVA | 原始指令 | 补丁后 |
-|------|-----|---------|--------|
-| 挑战次数 | `0x3583FF` | `mov eax, 999999; cmovb eax, r8d` (9B) | `mov eax, <value>; nop4` |
-| 点赞数值 | `0xA919CF` | `mov eax, 999999; cmovb eax, esi` (8B) | `mov eax, <value>; nop3` |
-
-角色使用次数通过运行时读写游戏进程内存实现，基于 `sys::data::CharaList` 数据结构（IDA 逆向分析）。
-
-杂项功能同样通过运行时内存读写实现：任务结算倒计时使用 AOB 扫描定位并写入两个 float 值；脸部符文显示通过切换 JE/JNE 跳转判断控制渲染。
-
-## 恢复原始文件
+## 恢复方法
 
 任选其一：
 
@@ -146,9 +90,10 @@ Granblue Fantasy: Relink (碧蓝幻想：Relink) 存档修改工具，包含 PE 
 
 ## 环境要求
 
-- Go 1.23+（**必须 amd64 版本**，游戏为 64 位进程）
+- Go 1.23+（必须 amd64 版本，游戏为 64 位进程）
 - Node.js 16+
 - [Wails CLI v2](https://wails.io/docs/gettingstarted/installation)
+- Visual Studio / MSBuild（修改 `src_dll/patch_core` 后需要编译 DLL）
 
 ```bash
 go install github.com/wailsapp/wails/v2/cmd/wails@latest
@@ -160,106 +105,113 @@ go install github.com/wailsapp/wails/v2/cmd/wails@latest
 # 安装前端依赖
 cd frontend && npm install && cd ..
 
-# 开发模式（热重载）
+# 开发模式
 wails dev
 
-# 完整构建（前端 + Go）
+# 完整构建
 wails build
 
-# 仅构建 Go（跳过前端编译，用于前端已预先 build 的情况）
+# 仅构建 Go，跳过前端编译
 wails build -s
+```
+
+如修改 `src_dll/patch_core`，先用 Visual Studio 构建 `Release x64`，确认输出覆盖：
+
+```text
+build/bin/patch_core.dll
 ```
 
 ### Windows 一键编译
 
-项目根目录提供 `build-windows.bat`，会自动执行：
-
-1. `wails generate module`
-2. `cd frontend`
-3. `npm run build`
-4. `cd ..`
-5. `wails build -s`
-
-直接运行：
+项目根目录提供 `build-windows.bat`：
 
 ```powershell
 .\build-windows.bat
 ```
 
-> 如遇 `go: no such tool "compile"` 错误，需要指定正确的 GOROOT：
-> ```powershell
-> $env:GOROOT="D:\GO1.26.1"; wails build -s
-> ```
+如遇 `go: no such tool "compile"`，指定正确的 GOROOT：
 
-构建产物在 `build/bin/GBFR PE Patch Tool.exe`。
+```powershell
+$env:GOROOT="D:\GO1.26.1"; wails build -s
+```
+
+构建产物：
+
+```text
+build/bin/GBFR PE Patch Tool.exe
+```
 
 ## 数据说明
 
-因子和祝福数据文件位于 `data/` 目录（嵌入二进制）：
+因子、祝福和任务翻译数据位于 `data/` 目录，并嵌入最终二进制：
 
 | 文件 | 说明 |
 |------|------|
-| `sigils.json` | 因子定义（ID、哈希、名称、允许等级、主/副特性列表） |
-| `traits.json` | 特性定义（ID、哈希、名称、最大等级） |
+| `sigils.json` | 因子定义 |
+| `traits.json` | 因子特性定义 |
 | `secondary-trait-rules.json` | 副特性兼容性规则 |
-| `wrightstones.json` | 祝福定义（ID、哈希、名称、默认特性） |
-| `wrightstone_traits.json` | 祝福特性定义（ID、哈希、名称、最大等级、允许等级） |
-| `quest_names_i18n.csv` | 任务 ID 到中文名的翻译表 |
+| `wrightstones.json` | 祝福定义 |
+| `wrightstone_traits.json` | 祝福特性定义 |
+| `quest_names_i18n.csv` | 任务 ID 到中文名映射 |
 
-因子/特性中文翻译位于 `sigil_locale.go`（`sigilCN` 和 `traitCN` 两个 map），可直接编辑英文名→中文名的映射。
-祝福/特性中文翻译位于 `wrightstone_locale.go`（`wscn` 和 `wstCN` 两个 map）。
+中文翻译主要位于：
 
-目前部分因子缺失，常用因子基本都有。
+- `sigil_locale.go`
+- `wrightstone_locale.go`
 
 ## 项目结构
 
-```
-├── main.go              # Wails 入口，窗口配置、祝福 CLI 模式
-├── app.go               # PE 补丁、进程内存读写、Steam 路径扫描、角色次数/杂项/更新检测
-├── save_app.go          # 存档文件扫描、任务次数读取、中文任务名映射
-├── save_parse.go        # 存档文件 FlatBuffer 解析、存档摘要提取
-├── sigil_data.go        # 因子/特性数据模型，嵌入式 JSON 加载与解析
-├── sigil_ctdata.go      # 因子合成表（Factor Synthesis）数据
-├── sigil_store.go       # 存档文件因子槽位读写、XXHash64 校验和
-├── sigil_gen.go         # 因子生成业务逻辑（Wails 前端绑定）
-├── sigil_locale.go      # 因子/特性中文翻译映射表
-├── wrightstone_data.go  # 祝福/祝福特性数据模型，嵌入式 JSON 加载与解析
-├── wrightstone_store.go # 存档文件祝福槽位读写
-├── wrightstone_gen.go   # 祝福生成业务逻辑（Wails 前端绑定 + CLI 模式）
-├── wrightstone_locale.go # 祝福/特性中文翻译映射表
-├── data/                # 嵌入式 JSON/CSV 数据文件
-│   ├── sigils.json
-│   ├── traits.json
-│   ├── secondary-trait-rules.json
-│   ├── wrightstones.json
-│   ├── wrightstone_traits.json
-│   └── quest_names_i18n.csv
-├── wails.json           # Wails 项目配置
-├── go.mod               # Go 模块依赖
-├── build/               # 构建资源（图标、manifest）
-└── frontend/
-    ├── index.html
-    ├── package.json
-    ├── vite.config.js
-    └── src/
-        ├── main.js
-        ├── App.vue                     # 根组件
-        ├── style.css                   # 全局样式（深色主题）
-        └── components/
-            ├── PatchTool.vue           # 主窗口：补丁修改 + 标签导航
-            ├── SigilGenerator.vue      # 因子生成器界面
-            ├── WrightstoneGenerator.vue # 祝福生成器界面
-            ├── CharaStats.vue          # 角色次数统计界面
-            ├── SaveEditor.vue          # 副本次数查看界面
-            └── MiscTools.vue           # 杂项内存修改与更新检测界面
+```text
+.
+├── app.go                         # PE 补丁、运行时内存修改、Steam 路径扫描、更新检测
+├── main.go                        # Wails 入口、窗口配置、祝福 CLI 模式
+├── save_app.go                    # 存档扫描、任务次数读取、中文任务名映射
+├── save_parse.go                  # 存档 FlatBuffer 解析、摘要提取
+├── sigil_data.go                  # 因子/特性数据加载
+├── sigil_ctdata.go                # 因子合成表数据
+├── sigil_gen.go                   # 因子生成业务逻辑
+├── sigil_locale.go                # 因子/特性中文翻译
+├── sigil_store.go                 # 因子槽位读写与校验
+├── wrightstone_data.go            # 祝福/祝福特性数据加载
+├── wrightstone_gen.go             # 祝福生成业务逻辑与 CLI 模式
+├── wrightstone_locale.go          # 祝福/特性中文翻译
+├── wrightstone_store.go           # 祝福槽位读写
+├── data/                          # 嵌入式 JSON/CSV 数据
+├── build/                         # 图标、manifest、内置 DLL 与构建产物
+│   └── bin/
+│       └── patch_core.dll         # 怪物增强注入 DLL
+├── src_dll/
+│   ├── patch_core.slnx            # patch_core Visual Studio 解决方案
+│   ├── patch_core/                # patch_core DLL 源码
+│   └── thirdparty/libmem/         # DLL 使用的 libmem 依赖
+├── frontend/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── wailsjs/                   # Wails 生成的前端绑定
+│   └── src/
+│       ├── main.js
+│       ├── App.vue
+│       ├── style.css
+│       └── components/
+│           ├── PatchTool.vue           # 主窗口与标签导航
+│           ├── SigilGenerator.vue      # 因子生成
+│           ├── WrightstoneGenerator.vue # 祝福生成
+│           ├── SaveEditor.vue          # 副本次数
+│           ├── CharaStats.vue          # 角色使用次数
+│           ├── MiscTools.vue           # 杂项运行时修改
+│           └── MonsterEnhance.vue      # 怪物增强
+├── build-windows.bat              # Windows 构建脚本
+├── wails.json                     # Wails 配置
+├── go.mod
+└── README.md
 ```
 
 ## 免责声明
 
-本工具仅供学习研究使用。使用本工具修改游戏文件所产生的一切后果由使用者自行承担。
+本工具仅供学习研究使用。使用本工具修改游戏文件、存档或运行时内存所产生的一切后果由使用者自行承担。
 
-存档因子相关部分解析方法来自 [GBFR-Sigil-Generator](https://github.com/Xzire91x/GBFR-Sigil-Generator)
+存档因子相关部分解析方法来自 [GBFR-Sigil-Generator](https://github.com/Xzire91x/GBFR-Sigil-Generator)。
 
-祝福添加相关部分解析方法来自 [GBFR-Wrightstone-Generator](https://github.com/Xzire91x/GBFR-Wrightstone-Generator)
+祝福添加相关部分解析方法来自 [GBFR-Wrightstone-Generator](https://github.com/Xzire91x/GBFR-Wrightstone-Generator)。
 
-存档解析基于 [GBFRDataTools.SaveFile](https://github.com/Nenkai/GBFRDataTools/tree/master/GBFRDataTools.SaveFile)
+存档解析基于 [GBFRDataTools.SaveFile](https://github.com/Nenkai/GBFRDataTools/tree/master/GBFRDataTools.SaveFile)。
