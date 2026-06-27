@@ -24,7 +24,7 @@ const (
 	steamAppID  = "881020"
 	gameExeName = "granblue_fantasy_relink.exe"
 	gameFolder  = "Granblue Fantasy Relink"
-	appVersion  = "v1.5.3"
+	appVersion  = "v1.6"
 	repoOwner   = "BitterG"
 	repoName    = "GBFR-PE-Patch-Tool"
 )
@@ -1129,6 +1129,60 @@ func (a *App) readFaceAccessoryStatus(addr uintptr) (FaceAccessoryStatus, error)
 		Address:      uint64(addr),
 		RVA:          uint64(addr - a.moduleBase),
 		Hidden:       buf[8] == 0x85,
+		JumpOpcode:   jumpOpcode,
+		CurrentBytes: bytesToHex(buf),
+	}, nil
+}
+
+// ── 其他皮肤紫色符文显示 (运行时 JNE/JE 切换) ──
+
+type OtherSkinPurpleRuneStatus struct {
+	RVA          uint64 `json:"rva"`
+	Enabled      bool   `json:"enabled"`
+	JumpOpcode   string `json:"jumpOpcode"`
+	CurrentBytes string `json:"currentBytes"`
+}
+
+const otherSkinPurpleRuneRVA = uintptr(0x9175B6)
+
+func (a *App) OtherSkinPurpleRuneGetStatus() (OtherSkinPurpleRuneStatus, error) {
+	if err := a.ensureGameProcess(); err != nil {
+		return OtherSkinPurpleRuneStatus{}, err
+	}
+	return a.readOtherSkinPurpleRuneStatus()
+}
+
+func (a *App) OtherSkinPurpleRuneSetEnabled(enabled bool) (OtherSkinPurpleRuneStatus, error) {
+	if err := a.ensureGameProcess(); err != nil {
+		return OtherSkinPurpleRuneStatus{}, err
+	}
+	opcode := byte(0x75)
+	if enabled {
+		opcode = 0x74
+	}
+	addr := a.moduleBase + otherSkinPurpleRuneRVA
+	if err := writeCodeMemory(a.hProcess, addr, []byte{opcode, 0x16}); err != nil {
+		return OtherSkinPurpleRuneStatus{}, fmt.Errorf("写入其他皮肤紫色符文显示失败: %w", err)
+	}
+	return a.readOtherSkinPurpleRuneStatus()
+}
+
+func (a *App) readOtherSkinPurpleRuneStatus() (OtherSkinPurpleRuneStatus, error) {
+	addr := a.moduleBase + otherSkinPurpleRuneRVA
+	buf := make([]byte, 2)
+	if err := readProcessMemory(a.hProcess, addr, unsafe.Pointer(&buf[0]), uintptr(len(buf))); err != nil {
+		return OtherSkinPurpleRuneStatus{}, fmt.Errorf("读取其他皮肤紫色符文显示失败: %w", err)
+	}
+	if buf[1] != 0x16 || (buf[0] != 0x74 && buf[0] != 0x75) {
+		return OtherSkinPurpleRuneStatus{}, fmt.Errorf("其他皮肤紫色符文跳转字节异常: %s", bytesToHex(buf))
+	}
+	jumpOpcode := "JNE"
+	if buf[0] == 0x74 {
+		jumpOpcode = "JE"
+	}
+	return OtherSkinPurpleRuneStatus{
+		RVA:          uint64(otherSkinPurpleRuneRVA),
+		Enabled:      buf[0] == 0x74,
 		JumpOpcode:   jumpOpcode,
 		CurrentBytes: bytesToHex(buf),
 	}, nil

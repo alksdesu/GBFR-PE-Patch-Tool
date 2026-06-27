@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue'
 import { CharaAttach, CharaDetach,
          CountdownGetStatus, CountdownScan, CountdownSet,
          FaceAccessoryGetStatus, FaceAccessoryScan, FaceAccessorySetHidden,
+         OtherSkinPurpleRuneGetStatus, OtherSkinPurpleRuneSetEnabled,
          GetAppVersion, CheckUpdate, OpenReleasePage } from '../../wailsjs/go/main/App'
 
 const emit = defineEmits(['status'])
@@ -16,6 +17,8 @@ const countdownStatus = reactive({ found: false, address: 0, rva: 0, value1: 0, 
 const countdownLoading = ref(false)
 const faceAccessoryStatus = reactive({ found: false, address: 0, rva: 0, hidden: false, jumpOpcode: '', currentBytes: '' })
 const faceAccessoryLoading = ref(false)
+const otherSkinPurpleRuneStatus = reactive({ rva: 0, enabled: false, jumpOpcode: '', currentBytes: '' })
+const otherSkinPurpleRuneLoading = ref(false)
 const updateInfo = reactive({ currentVersion: 'v1.5.0', latestVersion: '', hasUpdate: false, releaseUrl: '', body: '', assets: [] })
 const updateLoading = ref(false)
 
@@ -29,6 +32,7 @@ function connect() {
       Object.assign(info, res)
       loadCountdownStatus()
       loadFaceAccessoryStatus()
+      loadOtherSkinPurpleRuneStatus()
     })
     .catch((err) => emit('status', String(err), 'error'))
     .finally(() => { loading.value = false })
@@ -41,6 +45,7 @@ function disconnect() {
       Object.assign(info, { pid: 0, moduleBase: 0, manager: 0 })
       Object.assign(countdownStatus, { found: false, address: 0, rva: 0, value1: 0, value2: 0, currentBytes: '' })
       Object.assign(faceAccessoryStatus, { found: false, address: 0, rva: 0, hidden: false, jumpOpcode: '', currentBytes: '' })
+      Object.assign(otherSkinPurpleRuneStatus, { rva: 0, enabled: false, jumpOpcode: '', currentBytes: '' })
     })
     .catch((err) => emit('status', String(err), 'error'))
 }
@@ -118,6 +123,28 @@ function setFaceAccessoryHidden(hidden) {
     .then((status) => { applyFaceAccessoryStatus(status); emit('status', hidden ? '已隐藏脸部符文' : '已恢复脸部符文显示', 'success') })
     .catch((err) => emit('status', String(err), 'error'))
     .finally(() => { faceAccessoryLoading.value = false })
+}
+
+function applyOtherSkinPurpleRuneStatus(status) {
+  Object.assign(otherSkinPurpleRuneStatus, status || { rva: 0, enabled: false, jumpOpcode: '', currentBytes: '' })
+}
+
+function loadOtherSkinPurpleRuneStatus() {
+  if (!connected.value) return
+  otherSkinPurpleRuneLoading.value = true
+  OtherSkinPurpleRuneGetStatus()
+    .then(applyOtherSkinPurpleRuneStatus)
+    .catch((err) => emit('status', String(err), 'error'))
+    .finally(() => { otherSkinPurpleRuneLoading.value = false })
+}
+
+function setOtherSkinPurpleRuneEnabled(enabled) {
+  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
+  otherSkinPurpleRuneLoading.value = true
+  OtherSkinPurpleRuneSetEnabled(enabled)
+    .then((status) => { applyOtherSkinPurpleRuneStatus(status); emit('status', enabled ? '已开启其他皮肤紫色符文显示' : '已恢复其他皮肤紫色符文判断', 'success') })
+    .catch((err) => emit('status', String(err), 'error'))
+    .finally(() => { otherSkinPurpleRuneLoading.value = false })
 }
 
 function checkUpdate() {
@@ -209,6 +236,24 @@ function openReleasePage() {
             <button class="btn-sort" @click="scanFaceAccessory" :disabled="faceAccessoryLoading">重新扫描</button>
           </div>
           <div class="memory-bytes">{{ faceAccessoryStatus.currentBytes || '未定位' }}</div>
+        </div>
+
+        <div class="memory-card">
+          <div class="memory-header">
+            <span class="memory-title">在其他皮肤显示紫色符文</span>
+            <span class="memory-hint">固定 RVA 切换 JNE/JE</span>
+          </div>
+          <div class="memory-info">
+            <span>RVA: {{ formatHex(otherSkinPurpleRuneStatus.rva) }}</span>
+            <span>状态: {{ otherSkinPurpleRuneStatus.enabled ? '开启' : '默认' }}</span>
+            <span>跳转: {{ otherSkinPurpleRuneStatus.jumpOpcode || '—' }}</span>
+          </div>
+          <div class="memory-row">
+            <button class="btn-batch" @click="setOtherSkinPurpleRuneEnabled(true)" :disabled="otherSkinPurpleRuneLoading || otherSkinPurpleRuneStatus.enabled">开启显示</button>
+            <button class="btn-refresh" @click="setOtherSkinPurpleRuneEnabled(false)" :disabled="otherSkinPurpleRuneLoading || !otherSkinPurpleRuneStatus.enabled">恢复默认</button>
+            <button class="btn-refresh" @click="loadOtherSkinPurpleRuneStatus" :disabled="otherSkinPurpleRuneLoading">刷新</button>
+          </div>
+          <div class="memory-bytes">{{ otherSkinPurpleRuneStatus.currentBytes || '未读取' }}</div>
         </div>
 
       </template>
