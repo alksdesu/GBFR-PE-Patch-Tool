@@ -6,7 +6,7 @@ const emit = defineEmits(['status'])
 
 const loading = ref(false)
 const result = reactive({ pid: 0, dllPath: '', injected: false, enabled: false, currentBytes: '', items: [] })
-const monsterHpMultiplier = ref('10')
+const multipliers = reactive({ monster_hp: '10', monster_stun: '10' })
 
 function applyResult(res) {
   const previous = new Map((result.items || []).map(item => [item.id, item]))
@@ -38,15 +38,19 @@ function setAll(enabled) {
     .finally(() => { loading.value = false })
 }
 
+function getMultiplier(item) {
+  return parseFloat(multipliers[item.id] || '10')
+}
+
 function setOne(item, enabled) {
-  if (enabled && item.id === 'monster_hp') {
-    const v = parseFloat(monsterHpMultiplier.value)
-    if (isNaN(v) || v <= 0 || v > 9999) { emit('status', '怪物倍血请输入 0 到 9999 之间的数值', 'error'); return }
+  if (enabled && (item.id === 'monster_hp' || item.id === 'monster_stun')) {
+    const v = getMultiplier(item)
+    if (isNaN(v) || v <= 0 || v > 9999) { emit('status', '倍率请输入 0 到 9999 之间的数值', 'error'); return }
   }
   const previous = item.enabled
   item.enabled = enabled
   loading.value = true
-  MonsterEnhanceSetPatchValueEnabled(item.id, enabled, item.id === 'monster_hp' ? parseFloat(monsterHpMultiplier.value) : 0)
+  MonsterEnhanceSetPatchValueEnabled(item.id, enabled, (item.id === 'monster_hp' || item.id === 'monster_stun') ? getMultiplier(item) : 0)
     .then((res) => {
       applyResult(res)
       emit('status', `${item.name}${enabled ? '已开启' : '已关闭'}`, 'success')
@@ -96,9 +100,9 @@ refreshStatus()
           <span class="state" :class="{ on: item.enabled }">{{ item.enabled ? '开启' : '关闭' }}</span>
           <span class="memory-hint">RVA: 0x{{ Number(item.rva).toString(16).toUpperCase() }}</span>
         </div>
-        <div v-if="item.id === 'monster_hp'" class="memory-row">
-          <input v-model="monsterHpMultiplier" type="number" min="0.1" max="9999" step="0.1" class="batch-input" placeholder="倍血" />
-          <span class="memory-hint">输入 10 = 实际伤害 0.1 倍</span>
+        <div v-if="item.id === 'monster_hp' || item.id === 'monster_stun'" class="memory-row">
+          <input v-model="multipliers[item.id]" type="number" min="0.1" max="9999" step="0.1" class="batch-input" placeholder="倍率" />
+          <span class="memory-hint">{{ item.id === 'monster_hp' ? '输入 10 = 伤害 0.1 倍' : '输入 10 = 昏厥量 0.1 倍' }}</span>
         </div>
         <div class="memory-row">
           <button class="btn-batch" @click="setOne(item, true)" :disabled="loading || item.enabled">开启</button>

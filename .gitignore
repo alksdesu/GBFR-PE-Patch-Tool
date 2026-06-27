@@ -1,36 +1,45 @@
 # Go
-go.sum
+/go.sum
 
 # Wails build output
-build/bin/
+/build/bin/*
+!/build/bin/patch_core.dll
+/gbfrPlayerInfoEdit.exe
 
 # Frontend dependencies & build artifacts
-frontend/node_modules/
-frontend/dist/
-frontend/package-lock.json
-frontend/package.json.md5
+/frontend/node_modules/
+/frontend/dist/
+/frontend/package-lock.json
+/frontend/package.json.md5
 
 # Wails auto-generated bindings
-frontend/wailsjs/
+/frontend/wailsjs/
 
 # IDE
-.idea/
-.vscode/
+/.idea/
+/.vscode/
 *.swp
 *.swo
 
 # Local agent/tooling state
-.claude/
-.codegraph/
-因子生成功能查漏补缺进度.md
+/.claude/
+/.codegraph/
+/因子生成功能查漏补缺进度.md
 
-gbfrPlayerInfoEdit.exe
+# Visual Studio / C++ build artifacts
+/src_dll/.vs/
+/src_dll/x64/
+/src_dll/patch_core/x64/
+*.obj
+*.pdb
+*.ipdb
+*.iobj
+*.ilk
+*.exp
+*.lib
+*.log
+*.tlog
+*.recipe
 
-#libmem
-
-patch_core.dll
-patch_core.exp
-patch_core.lib
-patch_core.pdb
-todo.txt
-.vs
+# Local notes
+/src_dll/todo.txt

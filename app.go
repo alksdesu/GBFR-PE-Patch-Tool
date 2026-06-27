@@ -1360,6 +1360,13 @@ var monsterPatchPoints = []monsterPatchPoint{
 		Hook:     true,
 	},
 	{
+		ID:       "monster_stun",
+		Name:     "怪物昏厥条",
+		RVA:      0xA09ADF,
+		Original: []byte{0xC4, 0xC1, 0x4A, 0x58, 0x85, 0x20, 0x07, 0x00, 0x00},
+		Hook:     true,
+	},
+	{
 		ID:       "purple_drain",
 		Name:     "紫条不自然扣减",
 		RVA:      0xA0379A,
@@ -1409,13 +1416,13 @@ func (a *App) MonsterEnhanceSetPatchValueEnabled(id string, enabled bool, hpMult
 	if id != "all" && point == nil {
 		return MonsterEnhanceResult{}, fmt.Errorf("未知怪物增强项目: %s", id)
 	}
-	if enabled && point != nil && point.ID == "monster_hp" && (math.IsNaN(hpMultiplier) || math.IsInf(hpMultiplier, 0) || hpMultiplier <= 0 || hpMultiplier > 9999) {
+	if enabled && point != nil && (point.ID == "monster_hp" || point.ID == "monster_stun") && (math.IsNaN(hpMultiplier) || math.IsInf(hpMultiplier, 0) || hpMultiplier <= 0 || hpMultiplier > 9999) {
 		return MonsterEnhanceResult{}, fmt.Errorf("怪物倍血请输入 0 到 9999 之间的数值")
 	}
 
 	if enabled {
 		command := id
-		if point != nil && point.ID == "monster_hp" {
+		if point != nil && (point.ID == "monster_hp" || point.ID == "monster_stun") {
 			command = fmt.Sprintf("%s %.8g", id, 1/hpMultiplier)
 		}
 		dllPath, err := extractPatchCoreDLL(command)
@@ -1527,7 +1534,16 @@ func (a *App) restoreMonsterEnhance(id string) error {
 		if bytesEqual(current, point.Original) {
 			continue
 		}
-		if !bytesEqual(current, point.Patch) {
+		currentIsPatch := false
+		if point.Hook {
+			currentIsPatch = len(current) > 0 && current[0] == 0xE9
+		} else {
+			currentIsPatch = bytesEqual(current, point.Patch)
+		}
+		if !currentIsPatch {
+			if id == "all" && isMonsterPatchBytesAtRVA(point.RVA, current) {
+				continue
+			}
 			return fmt.Errorf("%s指令字节未知: %s", point.Name, bytesToHex(current))
 		}
 		if err := writeCodeMemory(a.hProcess, addr, point.Original); err != nil {
@@ -1539,7 +1555,13 @@ func (a *App) restoreMonsterEnhance(id string) error {
 
 func isMonsterPatchBytesAtRVA(rva uintptr, data []byte) bool {
 	for _, point := range monsterPatchPoints {
-		if point.RVA == rva && bytesEqual(data, point.Patch) {
+		if point.RVA != rva {
+			continue
+		}
+		if point.Hook && len(data) > 0 && data[0] == 0xE9 {
+			return true
+		}
+		if !point.Hook && bytesEqual(data, point.Patch) {
 			return true
 		}
 	}

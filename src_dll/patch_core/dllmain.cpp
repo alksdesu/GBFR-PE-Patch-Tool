@@ -23,6 +23,7 @@ static const lm_byte_t kLinkTimeDisablePatch[] = { 0xC4, 0xC1, 0x7A, 0x11, 0x84,
 static const lm_byte_t kNop10[] = { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 };
 
 static const lm_byte_t kDamageExpected[] = { 0x01, 0x91, 0xB8, 0x15, 0x00, 0x00 };
+static const lm_byte_t kStunExpected[] = { 0xC4, 0xC1, 0x4A, 0x58, 0x85, 0x20, 0x07, 0x00, 0x00 };
 
 static const lm_byte_t kPurpleExpected[] = { 0xC4, 0xC1, 0x7A, 0x11, 0x85, 0x10, 0x0A, 0x00, 0x00 };
 static const lm_byte_t kBlueGrowExpected[] = { 0xC4, 0xC1, 0x7A, 0x11, 0x85, 0x20, 0x07, 0x00, 0x00 };
@@ -33,6 +34,7 @@ static const PatchPoint kMonsterPatches[] = {
     { "link_time_no_drain", L"link time no drain", 0x187228, kLinkTimeExpected, sizeof(kLinkTimeExpected), kNop10, false },
     { "link_time_disable", L"disable link time", 0x187228, kLinkTimeExpected, sizeof(kLinkTimeExpected), kLinkTimeDisablePatch, false },
     { "monster_hp", L"monster hp", 0x1B3F798, kDamageExpected, sizeof(kDamageExpected), nullptr, true },
+    { "monster_stun", L"monster stun", 0xA09ADF, kStunExpected, sizeof(kStunExpected), nullptr, true },
     { "purple_drain", L"purple bar drain", 0xA0379A, kPurpleExpected, sizeof(kPurpleExpected), kNop9, false },
     { "blue_grow", L"blue bar grow", 0xA09AF1, kBlueGrowExpected, sizeof(kBlueGrowExpected), kNop9, false },
     { "blue_drain", L"blue bar drain", 0xA03F38, kBlueDrainExpected, sizeof(kBlueDrainExpected), kNop9, false },
@@ -92,7 +94,7 @@ static bool PatchIdEquals(const char* requestedId, const char* pointId)
     return strncmp(requestedId, pointId, n) == 0 && (requestedId[n] == '\0' || requestedId[n] == ' ' || requestedId[n] == '\t');
 }
 
-static float ReadMonsterHpScale()
+static float ReadScale()
 {
     char patchId[64]{};
     if (!ReadPatchId(patchId, sizeof(patchId))) return 1.0f;
@@ -104,13 +106,43 @@ static float ReadMonsterHpScale()
     return scale;
 }
 
+static lm_address_t AllocNear(lm_address_t target, size_t size)
+{
+    const uintptr_t granularity = 0x10000;
+    const uintptr_t maxDistance = 0x7FFF0000;
+    uintptr_t base = target & ~(granularity - 1);
+
+    for (uintptr_t step = 0; step <= maxDistance; step += granularity)
+    {
+        uintptr_t candidates[2]{};
+        int count = 0;
+        if (base >= step) candidates[count++] = base - step;
+        if (base <= UINTPTR_MAX - step) candidates[count++] = base + step;
+
+        for (int i = 0; i < count; ++i)
+        {
+            void* ptr = VirtualAlloc(reinterpret_cast<void*>(candidates[i]), size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+            if (!ptr) continue;
+
+            int64_t delta = static_cast<int64_t>(reinterpret_cast<uintptr_t>(ptr)) - static_cast<int64_t>(target + 5);
+            if (delta >= INT32_MIN && delta <= INT32_MAX)
+            {
+                return reinterpret_cast<lm_address_t>(ptr);
+            }
+            VirtualFree(ptr, 0, MEM_RELEASE);
+        }
+    }
+
+    return LM_ADDRESS_BAD;
+}
+
 static bool PatchDamageHook(lm_address_t target, wchar_t* message, size_t messageSize)
 {
-    float scale = ReadMonsterHpScale();
-    lm_address_t cave = LM_AllocMemory(128, LM_PROT_XRW);
+    float scale = ReadScale();
+    lm_address_t cave = AllocNear(target, 128);
     if (cave == LM_ADDRESS_BAD)
     {
-        swprintf_s(message, messageSize, L"alloc failed: monster hp");
+        swprintf_s(message, messageSize, L"alloc near failed: monster hp");
         return false;
     }
 
@@ -162,6 +194,74 @@ static bool PatchDamageHook(lm_address_t target, wchar_t* message, size_t messag
     if (!PatchBytes(target, jmp, sizeof(jmp)))
     {
         swprintf_s(message, messageSize, L"hook write failed: monster hp");
+        return false;
+    }
+    return true;
+}
+
+static bool PatchStunHook(lm_address_t target, wchar_t* message, size_t messageSize)
+{
+    float scale = ReadScale();
+    lm_address_t cave = AllocNear(target, 128);
+    if (cave == LM_ADDRESS_BAD)
+    {
+        swprintf_s(message, messageSize, L"alloc near failed: monster stun");
+        return false;
+    }
+
+    lm_byte_t code[64]{};
+    size_t i = 0;
+    code[i++] = 0x50;                                                                               // push rax
+    code[i++] = 0x48; code[i++] = 0x83; code[i++] = 0xEC; code[i++] = 0x20;                         // sub rsp,20
+    code[i++] = 0x0F; code[i++] = 0x11; code[i++] = 0x34; code[i++] = 0x24;                         // movups [rsp],xmm6
+    code[i++] = 0xF3; code[i++] = 0x0F; code[i++] = 0x59; code[i++] = 0x35;                         // mulss xmm6,[rip+disp32]
+    size_t scaleDisp = i; i += 4;
+    code[i++] = 0x49; code[i++] = 0x8D; code[i++] = 0x85; code[i++] = 0x20; code[i++] = 0x07; code[i++] = 0x00; code[i++] = 0x00; // lea rax,[r13+720]
+    code[i++] = 0xC5; code[i++] = 0xCA; code[i++] = 0x58; code[i++] = 0x00;                         // vaddss xmm0,xmm6,[rax]
+    code[i++] = 0x0F; code[i++] = 0x10; code[i++] = 0x34; code[i++] = 0x24;                         // movups xmm6,[rsp]
+    code[i++] = 0x48; code[i++] = 0x83; code[i++] = 0xC4; code[i++] = 0x20;                         // add rsp,20
+    code[i++] = 0x58;                                                                               // pop rax
+    code[i++] = 0xE9;                                                                               // jmp return
+    size_t jmpBackDisp = i; i += 4;
+    size_t scaleOffset = i;
+    memcpy(code + i, &scale, sizeof(scale)); i += sizeof(scale);
+
+    int64_t scaleDelta = static_cast<int64_t>(cave + scaleOffset) - static_cast<int64_t>(cave + scaleDisp + 4);
+    if (scaleDelta < INT32_MIN || scaleDelta > INT32_MAX)
+    {
+        swprintf_s(message, messageSize, L"scale jump out of range: monster stun");
+        return false;
+    }
+    int32_t relScale = static_cast<int32_t>(scaleDelta);
+    memcpy(code + scaleDisp, &relScale, sizeof(relScale));
+
+    int64_t backDelta = static_cast<int64_t>(target + 9) - static_cast<int64_t>(cave + jmpBackDisp + 4);
+    if (backDelta < INT32_MIN || backDelta > INT32_MAX)
+    {
+        swprintf_s(message, messageSize, L"return jump out of range: monster stun");
+        return false;
+    }
+    int32_t relBack = static_cast<int32_t>(backDelta);
+    memcpy(code + jmpBackDisp, &relBack, sizeof(relBack));
+
+    if (LM_WriteMemory(cave, code, i) != i)
+    {
+        swprintf_s(message, messageSize, L"cave write failed: monster stun");
+        return false;
+    }
+
+    lm_byte_t jmp[9]{ 0xE9, 0, 0, 0, 0, 0x90, 0x90, 0x90, 0x90 };
+    int64_t hookDelta = static_cast<int64_t>(cave) - static_cast<int64_t>(target + 5);
+    if (hookDelta < INT32_MIN || hookDelta > INT32_MAX)
+    {
+        swprintf_s(message, messageSize, L"hook jump out of range: monster stun");
+        return false;
+    }
+    int32_t rel = static_cast<int32_t>(hookDelta);
+    memcpy(jmp + 1, &rel, sizeof(rel));
+    if (!PatchBytes(target, jmp, sizeof(jmp)))
+    {
+        swprintf_s(message, messageSize, L"hook write failed: monster stun");
         return false;
     }
     return true;
@@ -223,7 +323,11 @@ static bool ApplyMonsterPatches(wchar_t* message, size_t messageSize)
 
         if (point.hook)
         {
-            if (!PatchDamageHook(target, message, messageSize)) return false;
+            if (strcmp(point.id, "monster_stun") == 0)
+            {
+                if (!PatchStunHook(target, message, messageSize)) return false;
+            }
+            else if (!PatchDamageHook(target, message, messageSize)) return false;
         }
         else if (!PatchBytes(target, point.patch, point.size))
         {
