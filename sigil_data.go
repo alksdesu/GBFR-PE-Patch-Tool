@@ -308,12 +308,15 @@ func (c *Catalog) GetAllowedSecondaryTraits(sigil *SigilDef) ([]*TraitDef, error
 	}
 
 	if len(sigil.AllowedSecondaryTraitIDs) > 0 {
-		result := make([]*TraitDef, 0, len(sigil.AllowedSecondaryTraitIDs))
+		result := make([]*TraitDef, 0, len(sigil.AllowedSecondaryTraitIDs)+1)
 		for _, id := range sigil.AllowedSecondaryTraitIDs {
 			trait, err := c.RequireTrait(id)
 			if err != nil {
 				continue
 			}
+			result = appendIfAllowed(result, trait)
+		}
+		if trait, err := c.RequireTrait("SKILL_109_00"); err == nil {
 			result = appendIfAllowed(result, trait)
 		}
 		return result, nil
