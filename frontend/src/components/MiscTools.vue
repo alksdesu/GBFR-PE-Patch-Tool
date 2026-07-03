@@ -76,6 +76,10 @@ function formatFloat(value) {
   return Number(value).toFixed(2)
 }
 
+function isCountdownActive() {
+  return countdownStatus.found && Math.abs(Number(countdownStatus.value1) - 30) > 0.001
+}
+
 function applyCountdownStatus(status) {
   Object.assign(countdownStatus, status || { found: false, address: 0, rva: 0, value1: 0, value2: 0, currentBytes: '' })
   if (status && status.found) countdownValue.value = String(Number(status.value1.toFixed(2)))
@@ -310,7 +314,7 @@ function openReleasePage() {
       </div>
 
       <template v-if="connected">
-        <div class="memory-card">
+        <div class="memory-card" :class="{ active: isCountdownActive() }">
           <div class="memory-header">
             <span class="memory-title">任务结算倒计时/零帧开箱</span>
             <span class="info-dot" title="任务结算倒计时超过30s会导致进度条消失，但计时正常；零帧开箱需设置为0s。">!</span>
@@ -318,6 +322,7 @@ function openReleasePage() {
           </div>
           <div class="memory-info">
             <span>RVA: {{ formatHex(countdownStatus.rva) }}</span>
+            <span>状态: {{ isCountdownActive() ? '开启' : '默认' }}</span>
             <span>当前: {{ formatFloat(countdownStatus.value1) }} / {{ formatFloat(countdownStatus.value2) }}</span>
           </div>
           <div class="memory-row">
@@ -329,7 +334,7 @@ function openReleasePage() {
           <div class="memory-bytes">{{ countdownStatus.currentBytes || '未定位' }}</div>
         </div>
 
-        <div class="memory-card">
+        <div class="memory-card" :class="{ active: faceAccessoryStatus.hidden }">
           <div class="memory-header">
             <span class="memory-title">脸部符文显示(紫色皮肤包)</span>
             <span class="memory-hint">切换 JE/JNE 控制渲染判断</span>
@@ -348,7 +353,7 @@ function openReleasePage() {
           <div class="memory-bytes">{{ faceAccessoryStatus.currentBytes || '未定位' }}</div>
         </div>
 
-        <div class="memory-card">
+        <div class="memory-card" :class="{ active: infiniteChallengeStatus.enabled }">
           <div class="memory-header">
             <span class="memory-title">无限挑战</span>
             <span class="memory-hint">NOP 挑战次数递增</span>
@@ -365,7 +370,7 @@ function openReleasePage() {
           <div class="memory-bytes">{{ infiniteChallengeStatus.currentBytes || '未读取' }}</div>
         </div>
 
-        <div class="memory-card">
+        <div class="memory-card" :class="{ active: terminusDropStatus.enabled }">
           <div class="memory-header">
             <span class="memory-title">巴武掉落 100%</span>
             <span class="info-dot" title="仅让原型巴哈姆特任务的巴武 lot 不再被 80% 排除；仍保留未拥有、角色已解锁等游戏原始检查。">!</span>
@@ -384,7 +389,7 @@ function openReleasePage() {
           <div class="memory-bytes">{{ terminusDropStatus.currentBytes || '未定位' }}</div>
         </div>
 
-        <div class="memory-card">
+        <div class="memory-card" :class="{ active: unlockAllTrophyStatus.enabled }">
           <div class="memory-header">
             <span class="memory-title">游戏内全称号解锁</span>
             <span class="memory-hint">AOB 定位后切换 SETNE/SETNO</span>
@@ -402,7 +407,7 @@ function openReleasePage() {
           <div class="memory-bytes">{{ unlockAllTrophyStatus.currentBytes || '未定位' }}</div>
         </div>
 
-        <div class="memory-card">
+        <div class="memory-card" :class="{ active: otherSkinPurpleRuneStatus.enabled }">
           <div class="memory-header">
             <span class="memory-title">在其他皮肤显示紫色符文</span>
             <span class="memory-hint">固定 RVA 切换 JNE/JE</span>
@@ -464,10 +469,29 @@ function openReleasePage() {
 .btn-disconnect:hover { background:rgba(239,68,68,0.22); }
 .pid { font-size:0.72rem; color:rgba(255,255,255,0.35); font-family:'Courier New',monospace; }
 .memory-card {
+  position:relative; overflow:hidden; z-index:0;
   border-radius:12px; padding:12px;
   background:rgba(255,255,255,0.045); border:1px solid rgba(165,180,252,0.16);
+  box-shadow:0 10px 26px rgba(0,0,0,0.18);
   display:flex; flex-direction:column; gap:8px;
+  transition:border-color 0.3s, box-shadow 0.3s, transform 0.3s;
 }
+.memory-card::after {
+  content:""; position:absolute; inset:0; z-index:-1; border-radius:12px;
+  background:#abd373; transform:translateY(calc(-100% - 2px));
+  transition:transform 0.5s ease;
+}
+.memory-card.active { border-color:rgba(171,211,115,0.55); box-shadow:0 14px 34px rgba(171,211,115,0.18); }
+.memory-card.active::after { transform:translateY(0); }
+.memory-card.active .memory-title { color:#1f2937; }
+.memory-card.active .memory-hint,
+.memory-card.active .memory-info,
+.memory-card.active .memory-bytes { color:rgba(31,41,55,0.72); }
+.memory-card.active .info-dot { border-color:rgba(31,41,55,0.28); color:#1f2937; background:rgba(31,41,55,0.08); }
+.memory-card.active .btn-batch { border-color:rgba(31,41,55,0.22); background:rgba(31,41,55,0.12); color:#1f2937; }
+.memory-card.active .btn-refresh,
+.memory-card.active .btn-sort { border-color:rgba(31,41,55,0.16); background:rgba(255,255,255,0.18); color:rgba(31,41,55,0.72); }
+.memory-card.active .batch-input { border-color:rgba(31,41,55,0.22); background:rgba(255,255,255,0.22); color:#1f2937; }
 .memory-header, .memory-info, .memory-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .memory-header { justify-content:flex-start; }
 .memory-header .memory-hint { margin-left:auto; }

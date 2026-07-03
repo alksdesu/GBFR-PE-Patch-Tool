@@ -19,6 +19,8 @@ const saveLoaded = ref(false)
 const saveInfo = reactive({ path: '', occupiedSigils: 0, maxSlotId: 0 })
 const isApplying = ref(false)
 const inPlaceEdit = ref(false)
+const applyFlash = ref(false)
+let applyFlashTimer = 0
 
 // 表单
 const selectedSigilID = ref('')
@@ -274,6 +276,15 @@ async function clearQueueAll() {
   queue.value = []
 }
 
+function flashApplySuccess() {
+  applyFlash.value = false
+  clearTimeout(applyFlashTimer)
+  requestAnimationFrame(() => {
+    applyFlash.value = true
+    applyFlashTimer = window.setTimeout(() => { applyFlash.value = false }, 900)
+  })
+}
+
 async function applyQueueToSave() {
   if (!outputPath.value.trim()) { showStatus('请输入输出路径', 'error'); return }
   isApplying.value = true
@@ -281,6 +292,7 @@ async function applyQueueToSave() {
     const result = await ApplyQueue(outputPath.value.trim())
     queue.value = []
     if (inPlaceEdit.value) await loadSave()
+    flashApplySuccess()
     showStatus(`已写入 ${result.createdCount} 个因子 (验证 ${result.verifiedCount})`, 'success')
   } catch (e) { showStatus(String(e), 'error') }
   finally { isApplying.value = false }
@@ -474,7 +486,7 @@ function onSecondaryTraitSelect() {
     </div>
 
     <!-- 输出 + 应用 -->
-    <div class="section">
+    <div class="section apply-section" :class="{ 'apply-flash': applyFlash }">
       <div class="section-title">输出</div>
       <div class="input-row">
         <input v-model="outputPath" type="text" class="text-input flex-1"
@@ -522,6 +534,31 @@ function onSecondaryTraitSelect() {
   gap: 10px;
 }
 
+.apply-section {
+  position: relative;
+  overflow: hidden;
+  z-index: 0;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.apply-section > * { position: relative; z-index: 1; }
+.apply-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 12px;
+  background: #abd373;
+  transform: translateY(calc(-100% - 2px));
+  transition: transform 0.5s ease;
+}
+.apply-section.apply-flash { border-color: rgba(171,211,115,0.55); box-shadow: 0 14px 34px rgba(171,211,115,0.18); }
+.apply-section.apply-flash::after { transform: translateY(0); }
+.apply-section.apply-flash .section-title,
+.apply-section.apply-flash .toggle-row { color: #1f2937; }
+.apply-section.apply-flash .text-input { border-color: rgba(31,41,55,0.22); background: rgba(255,255,255,0.22); color: #1f2937; }
+.apply-section.apply-flash .btn-cyan { border-color: rgba(31,41,55,0.22); background: rgba(31,41,55,0.12); color: #1f2937; }
+.apply-section.apply-flash .danger-hint { border-color: rgba(31,41,55,0.18); background: rgba(255,255,255,0.18); color: rgba(31,41,55,0.78); }
+
 .section-danger {
   border-color: rgba(239,68,68,0.15);
   background: rgba(239,68,68,0.04);
@@ -557,18 +594,19 @@ function onSecondaryTraitSelect() {
 }
 
 .select-input option {
-  background: rgba(27,38,54,1);
+  background: transparent;
   color: #fff;
 }
 
 .text-input:focus, .select-input:focus {
   border-color: rgba(103,232,249,0.4);
-  background: rgba(255,255,255,0.1);
+  background: transparent;
 }
 
 .select-input {
   cursor: pointer;
   appearance: none;
+  background-color: transparent;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
@@ -731,7 +769,7 @@ function onSecondaryTraitSelect() {
 .sigil-select option {
   padding: 5px 8px;
   color: #fff;
-  background: rgba(27,38,54,1);
+  background: transparent;
   font-size: 0.82rem;
 }
 .sigil-select option:checked {

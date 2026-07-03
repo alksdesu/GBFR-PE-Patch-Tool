@@ -122,6 +122,11 @@ function showStatus(msg, type) {
 
 <template>
   <div class="app-window">
+    <div class="starfield" aria-hidden="true">
+      <span class="stars stars-1"></span>
+      <span class="stars stars-2"></span>
+      <span class="stars stars-3"></span>
+    </div>
     <div class="titlebar" style="--wails-draggable:drag">
       <div class="titlebar-left">
         <span class="titlebar-title">GBFR 存档修改工具</span>
@@ -259,7 +264,18 @@ function showStatus(msg, type) {
 </template>
 
 <style scoped>
-.app-window { display:flex; flex-direction:column; height:100vh; overflow:hidden; background-color:rgba(27,38,54,1); border-radius:10px; box-shadow:0 8px 40px rgba(0,0,0,0.6); }
+.app-window { position:relative; display:flex; flex-direction:column; height:100vh; overflow:hidden; background:radial-gradient(ellipse at bottom, #12365c 0%, #06111f 52%, #020711 100%); border-radius:10px; box-shadow:0 8px 40px rgba(0,0,0,0.6); }
+.starfield { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
+.stars { position:absolute; top:0; left:0; border-radius:50%; background:transparent; color:#fff; opacity:0.8; }
+.stars::after { content:""; position:absolute; top:100vh; left:0; border-radius:50%; background:transparent; color:#fff; }
+.stars-1,
+.stars-1::after { width:1px; height:1px; box-shadow: 6vw 9vh currentColor, 18vw 32vh currentColor, 28vw 14vh currentColor, 41vw 47vh currentColor, 54vw 7vh currentColor, 69vw 28vh currentColor, 82vw 19vh currentColor, 94vw 43vh currentColor, 12vw 71vh currentColor, 36vw 88vh currentColor, 61vw 64vh currentColor, 76vw 83vh currentColor, 90vw 72vh currentColor, 24vw 58vh currentColor, 49vw 79vh currentColor; animation: starDrift 46s linear infinite; }
+.stars-2,
+.stars-2::after { width:2px; height:2px; box-shadow: 9vw 22vh currentColor, 31vw 53vh currentColor, 45vw 31vh currentColor, 63vw 12vh currentColor, 79vw 55vh currentColor, 96vw 26vh currentColor, 15vw 86vh currentColor, 58vw 91vh currentColor, 87vw 78vh currentColor; opacity:0.55; animation: starDrift 82s linear infinite; }
+.stars-3,
+.stars-3::after { width:3px; height:3px; box-shadow: 21vw 18vh currentColor, 72vw 36vh currentColor, 39vw 73vh currentColor, 92vw 89vh currentColor, 8vw 61vh currentColor; opacity:0.38; animation: starDrift 130s linear infinite; }
+.titlebar, .tab-bar, .container { position:relative; z-index:1; }
+@keyframes starDrift { from { transform:translateY(0); } to { transform:translateY(-100vh); } }
 
 .tab-bar {
   display: flex;

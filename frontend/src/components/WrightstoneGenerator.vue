@@ -15,6 +15,8 @@ const saveLoaded = ref(false)
 const saveInfo = reactive({ path: '', occupiedWrightstones: 0, maxSlotId: 0 })
 const isApplying = ref(false)
 const inPlaceEdit = ref(false)
+const applyFlash = ref(false)
+let applyFlashTimer = 0
 
 const inputPath = ref('')
 const outputPath = ref('')
@@ -200,6 +202,15 @@ async function clearQueueAll() {
   queue.value = []
 }
 
+function flashApplySuccess() {
+  applyFlash.value = false
+  clearTimeout(applyFlashTimer)
+  requestAnimationFrame(() => {
+    applyFlash.value = true
+    applyFlashTimer = window.setTimeout(() => { applyFlash.value = false }, 900)
+  })
+}
+
 async function applyQueueToSave() {
   if (!saveLoaded.value) { showStatus('请先加载存档', 'error'); return }
   if (!outputPath.value.trim()) { showStatus('请输入输出路径', 'error'); return }
@@ -216,6 +227,7 @@ async function applyQueueToSave() {
       : await ApplyItems([buildCurrentItem()], output)
     queue.value = []
     if (inPlaceEdit.value) await loadSave()
+    flashApplySuccess()
     showStatus(`已写入 ${result.createdCount} 个祝福 (验证 ${result.verifiedCount})`, 'success')
   } catch (e) { showStatus(String(e), 'error') }
   finally { isApplying.value = false }
@@ -304,7 +316,7 @@ async function applyQueueToSave() {
       </div>
     </div>
 
-    <div class="section">
+    <div class="section apply-section" :class="{ 'apply-flash': applyFlash }">
       <div class="section-title">输出</div>
       <div class="input-row">
         <input v-model="outputPath" type="text" class="text-input flex-1" :class="{ 'danger-path': inPlaceEdit }"
@@ -327,18 +339,30 @@ async function applyQueueToSave() {
 <style scoped>
 .wrightstone-container { display: flex; flex-direction: column; gap: 14px; width: 100%; }
 .section { border-radius: 12px; padding: 14px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px; }
+.apply-section { position: relative; overflow: hidden; z-index: 0; transition: border-color 0.3s, box-shadow 0.3s; }
+.apply-section > * { position: relative; z-index: 1; }
+.apply-section::after { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: 12px; background: #abd373; transform: translateY(calc(-100% - 2px)); transition: transform 0.5s ease; }
+.apply-section.apply-flash { border-color: rgba(171,211,115,0.55); box-shadow: 0 14px 34px rgba(171,211,115,0.18); }
+.apply-section.apply-flash::after { transform: translateY(0); }
+.apply-section.apply-flash .section-title,
+.apply-section.apply-flash .toggle-row { color: #1f2937; }
+.apply-section.apply-flash .text-input { border-color: rgba(31,41,55,0.22); background: rgba(255,255,255,0.22); color: #1f2937; }
+.apply-section.apply-flash .btn-cyan { border-color: rgba(31,41,55,0.22); background: rgba(31,41,55,0.12); color: #1f2937; }
+.apply-section.apply-flash .warning-hint,
+.apply-section.apply-flash .danger-hint { border-color: rgba(31,41,55,0.18); background: rgba(255,255,255,0.18); color: rgba(31,41,55,0.78); }
 .section-title { font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.35); letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
 .info-dot { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; border: 1px solid rgba(103,232,249,0.35); color: #67e8f9; background: rgba(103,232,249,0.08); font-size: 0.68rem; font-weight: 700; cursor: help; letter-spacing: 0; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 0.7rem; color: rgba(255,255,255,0.3); }
 .text-input, .select-input { padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: #fff; font-size: 0.82rem; font-family: inherit; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
-.select-input { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) rgba(0,0,0,0.2); }
+.select-input { background-color: transparent; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) rgba(0,0,0,0.2); }
 .select-input::-webkit-scrollbar { width: 6px; }
 .select-input::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
 .select-input::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 .select-input::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
-.select-input option { background: rgba(27,38,54,1); color: #fff; }
-.text-input:focus, .select-input:focus { border-color: rgba(103,232,249,0.4); background: rgba(255,255,255,0.1); }
+.select-input option { background: transparent; color: #fff; }
+.text-input:focus { border-color: rgba(103,232,249,0.4); background: rgba(255,255,255,0.1); }
+.select-input:focus { border-color: rgba(103,232,249,0.4); background: transparent; }
 .select-input:disabled { opacity: 0.4; cursor: not-allowed; }
 .input-row { display: flex; gap: 8px; align-items: flex-end; }
 .flex-1 { flex: 1; }

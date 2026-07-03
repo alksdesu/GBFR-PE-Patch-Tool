@@ -103,7 +103,7 @@ refreshStatus()
       </div>
 
       <div class="card-grid">
-        <div v-for="item in result.items" :key="item.id" class="memory-card">
+        <div v-for="item in result.items" :key="item.id" class="memory-card" :class="{ active: item.enabled }">
         <div class="memory-header">
           <span class="memory-title">{{ item.name }}</span>
           <span class="state" :class="{ on: item.enabled }">{{ item.enabled ? '开启' : '关闭' }}</span>
@@ -172,10 +172,29 @@ refreshStatus()
 }
 .card-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
 .memory-card {
+  position:relative; overflow:hidden; z-index:0;
   border-radius:12px; padding:12px;
   background:rgba(255,255,255,0.045); border:1px solid rgba(165,180,252,0.16);
+  box-shadow:0 10px 26px rgba(0,0,0,0.18);
   display:flex; flex-direction:column; gap:8px;
+  transition:border-color 0.3s, box-shadow 0.3s, transform 0.3s;
 }
+.memory-card::after {
+  content:""; position:absolute; inset:0; z-index:-1; border-radius:12px;
+  background:#abd373; transform:translateY(calc(-100% - 2px));
+  transition:transform 0.5s ease;
+}
+.memory-card.active { border-color:rgba(171,211,115,0.55); box-shadow:0 14px 34px rgba(171,211,115,0.18); }
+.memory-card.active::after { transform:translateY(0); }
+.memory-card.active .memory-title { color:#1f2937; }
+.memory-card.active .memory-hint,
+.memory-card.active .memory-info,
+.memory-card.active .memory-bytes,
+.memory-card.active .custom-note-text { color:rgba(31,41,55,0.72); }
+.memory-card.active .state { color:#1f2937; background:rgba(255,255,255,0.2); border-color:rgba(31,41,55,0.18); }
+.memory-card.active .btn-batch { border-color:rgba(31,41,55,0.22); background:rgba(31,41,55,0.12); color:#1f2937; }
+.memory-card.active .btn-refresh { border-color:rgba(31,41,55,0.16); background:rgba(255,255,255,0.18); color:rgba(31,41,55,0.72); }
+.memory-card.active .batch-input { border-color:rgba(31,41,55,0.22); background:rgba(255,255,255,0.22); color:#1f2937; color-scheme:light; }
 .custom-note-card { min-height:96px; }
 .custom-note-text { font-size:0.76rem; line-height:1.55; color:rgba(255,255,255,0.46); }
 .memory-header, .memory-info, .memory-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
