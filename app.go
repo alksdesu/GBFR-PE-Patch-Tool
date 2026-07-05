@@ -118,6 +118,7 @@ type App struct {
 	terminusDropAddr    uintptr
 	damageMeterMapping  windows.Handle
 	damageMeterView     uintptr
+	damageOverlay       *damageOverlayWindow
 	config              AppConfig
 	configLoaded        bool
 }
@@ -142,6 +143,9 @@ func (a *App) beforeClose(ctx context.Context) (prevent bool) {
 
 func (a *App) shutdown(ctx context.Context) {
 	a.saveWindowSize(ctx)
+	if a.damageOverlay != nil {
+		a.damageOverlay.stop()
+	}
 	a.closeDamageMeter()
 }
 
