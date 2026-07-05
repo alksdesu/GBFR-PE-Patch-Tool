@@ -1,5 +1,6 @@
 <script setup>
 import { onBeforeUnmount, reactive, ref } from 'vue'
+import { WindowGetSize, WindowSetAlwaysOnTop, WindowSetBackgroundColour, WindowSetMinSize, WindowSetSize } from '../../wailsjs/runtime/runtime'
 import { CharaAttach, CharaDetach,
          CountdownGetStatus, CountdownScan, CountdownSet,
          FaceAccessoryGetStatus, FaceAccessoryScan, FaceAccessorySetHidden,
@@ -35,7 +36,12 @@ const updateInfo = reactive({ currentVersion: 'v1.5.0', latestVersion: '', hasUp
 const updateLoading = ref(false)
 const damageMeterStatus = reactive({ connected: false, totalDamage: 0, monsterDamage: 0, crocodileDamage: 0 })
 const damageMeterLoading = ref(false)
+const damageOverlayEnabled = ref(false)
+const damageOverlayLocked = ref(false)
+const damageOverlayFontSize = ref(Number(localStorage.getItem('gbfrDamageOverlayFontSize') || 34))
 let damageMeterTimer = 0
+let normalWindowSize = null
+let damageOverlayResize = null
 
 function getMonsterEnhanceMultiplier(id) {
   const saved = window.gbfrMonsterEnhanceMultipliers || {}
@@ -336,6 +342,77 @@ function resetDamageMeter() {
     .finally(() => { damageMeterLoading.value = false })
 }
 
+function clampOverlayFontSize(value) {
+  return Math.min(96, Math.max(18, Number(value) || 34))
+}
+
+function setDamageOverlayFontSize(value) {
+  damageOverlayFontSize.value = clampOverlayFontSize(value)
+  localStorage.setItem('gbfrDamageOverlayFontSize', String(damageOverlayFontSize.value))
+}
+
+function enableDamageOverlay() {
+  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
+  WindowGetSize().then((size) => { normalWindowSize = size }).catch(() => {})
+  damageOverlayEnabled.value = true
+  WindowSetAlwaysOnTop(true)
+  WindowSetBackgroundColour(0, 0, 0, 0)
+  WindowSetMinSize(220, 120)
+  WindowSetSize(360, 180)
+  startDamageMeterTimer()
+  emit('status', '伤害悬浮窗已开启', 'success')
+}
+
+function stopDamageOverlayResize() {
+  if (!damageOverlayResize) return
+  window.removeEventListener('mousemove', damageOverlayResize.move)
+  window.removeEventListener('mouseup', damageOverlayResize.up)
+  damageOverlayResize = null
+}
+
+function startDamageOverlayResize(event) {
+  if (damageOverlayLocked.value) return
+  event.preventDefault()
+  const startX = event.screenX
+  const startY = event.screenY
+  WindowGetSize().then((size) => {
+    damageOverlayResize = {
+      move: (e) => {
+        const width = Math.max(220, size.w + e.screenX - startX)
+        const height = Math.max(120, size.h + e.screenY - startY)
+        WindowSetSize(width, height)
+      },
+      up: () => stopDamageOverlayResize(),
+    }
+    window.addEventListener('mousemove', damageOverlayResize.move)
+    window.addEventListener('mouseup', damageOverlayResize.up)
+  }).catch(() => {})
+}
+
+function disableDamageOverlay() {
+  stopDamageOverlayResize()
+  damageOverlayEnabled.value = false
+  damageOverlayLocked.value = false
+  WindowSetAlwaysOnTop(false)
+  WindowSetBackgroundColour(27, 38, 54, 255)
+  WindowSetMinSize(400, 300)
+  if (normalWindowSize && normalWindowSize.w >= 400 && normalWindowSize.h >= 300) {
+    WindowSetSize(normalWindowSize.w, normalWindowSize.h)
+  } else {
+    WindowSetSize(800, 600)
+  }
+  emit('status', '伤害悬浮窗已关闭', 'success')
+}
+
+function toggleDamageOverlay() {
+  if (damageOverlayEnabled.value) disableDamageOverlay()
+  else enableDamageOverlay()
+}
+
+function toggleDamageOverlayLocked() {
+  damageOverlayLocked.value = !damageOverlayLocked.value
+}
+
 function checkUpdate() {
   updateLoading.value = true
   CheckUpdate()
@@ -352,12 +429,30 @@ function openReleasePage() {
     .catch((err) => emit('status', String(err), 'error'))
 }
 
-onBeforeUnmount(stopDamageMeterTimer)
+onBeforeUnmount(() => {
+  stopDamageMeterTimer()
+  if (damageOverlayEnabled.value) disableDamageOverlay()
+})
 
 </script>
 
 <template>
-  <div class="root">
+  <div v-if="damageOverlayEnabled" class="damage-overlay-root" :class="{ locked: damageOverlayLocked }">
+    <div class="damage-overlay-panel" :style="{ fontSize: damageOverlayFontSize + 'px' }" :title="damageOverlayLocked ? '悬浮窗已锁定' : '拖动窗口调整位置，拖动右下角调整大小'">
+      <div class="damage-overlay-label">团队伤害</div>
+      <div class="damage-overlay-value">{{ formatDamage(displayDamage()) }}</div>
+      <div v-if="!damageOverlayLocked" class="damage-overlay-toolbar" style="--wails-draggable:no-drag">
+        <button @click="setDamageOverlayFontSize(damageOverlayFontSize - 4)">-</button>
+        <span>{{ damageOverlayFontSize }}</span>
+        <button @click="setDamageOverlayFontSize(damageOverlayFontSize + 4)">+</button>
+        <button @click="toggleDamageOverlayLocked">锁定</button>
+        <button @click="disableDamageOverlay">关闭</button>
+      </div>
+      <button v-else class="damage-overlay-unlock" style="--wails-draggable:no-drag" @click="toggleDamageOverlayLocked">解锁</button>
+      <span v-if="!damageOverlayLocked" class="damage-overlay-resize" style="--wails-draggable:no-drag" @mousedown="startDamageOverlayResize" title="拖动调整大小"></span>
+    </div>
+  </div>
+  <div v-else class="root">
     <div class="section">
       <div class="header">
         <span class="title">杂项</span>
@@ -403,6 +498,7 @@ onBeforeUnmount(stopDamageMeterTimer)
           <div class="damage-meter-raw">原始: {{ formatDamage(damageMeterStatus.totalDamage) }}</div>
           <div class="memory-row">
             <button class="btn-batch" @click="enableDamageMeter" :disabled="damageMeterLoading">开启记录</button>
+            <button class="btn-refresh" @click="toggleDamageOverlay" :disabled="damageMeterLoading || !damageMeterStatus.connected">{{ damageOverlayEnabled ? '关闭悬浮窗' : '开启悬浮窗' }}</button>
             <button class="btn-refresh" @click="loadDamageMeterStatus" :disabled="damageMeterLoading">刷新</button>
             <button class="btn-refresh" @click="resetDamageMeter" :disabled="damageMeterLoading">清零</button>
           </div>
@@ -595,6 +691,19 @@ onBeforeUnmount(stopDamageMeterTimer)
 .damage-meter-info { justify-content:space-between; }
 .damage-meter-value { font-size:1.8rem; font-weight:700; color:#67e8f9; line-height:1; }
 .damage-meter-raw { margin-top:-4px; font-size:0.72rem; color:rgba(255,255,255,0.28); }
+.damage-overlay-root { position:fixed; inset:0; box-sizing:border-box; display:flex; align-items:center; justify-content:center; padding:12px; background:transparent; overflow:hidden; min-width:220px; min-height:120px; --wails-draggable:drag; }
+.damage-overlay-panel { position:relative; min-width:100%; min-height:100%; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; border-radius:10px; background:rgba(2,7,17,0.62); border:1px solid rgba(103,232,249,0.45); box-shadow:0 12px 34px rgba(0,0,0,0.42); color:#67e8f9; text-shadow:0 2px 8px rgba(0,0,0,0.85); user-select:none; }
+.damage-overlay-label { font-size:0.38em; font-weight:600; color:rgba(255,255,255,0.62); }
+.damage-overlay-value { font-size:1em; line-height:1; font-weight:800; font-family:'Courier New',monospace; }
+.damage-overlay-toolbar { display:flex; align-items:center; gap:6px; margin-top:4px; }
+.damage-overlay-toolbar span { min-width:28px; font-size:12px; color:rgba(255,255,255,0.55); font-family:'Courier New',monospace; }
+.damage-overlay-toolbar button, .damage-overlay-unlock { padding:4px 8px; border-radius:6px; border:1px solid rgba(103,232,249,0.28); background:rgba(103,232,249,0.12); color:#67e8f9; font-size:12px; font-weight:600; cursor:pointer; }
+.damage-overlay-toolbar button:hover, .damage-overlay-unlock:hover { background:rgba(103,232,249,0.22); }
+.damage-overlay-unlock { margin-top:4px; }
+.damage-overlay-resize { position:absolute; right:5px; bottom:5px; width:16px; height:16px; cursor:nwse-resize; opacity:0.7; }
+.damage-overlay-resize::before, .damage-overlay-resize::after { content:""; position:absolute; right:0; bottom:0; border-right:2px solid rgba(103,232,249,0.7); border-bottom:2px solid rgba(103,232,249,0.7); }
+.damage-overlay-resize::before { width:14px; height:14px; }
+.damage-overlay-resize::after { width:8px; height:8px; }
 .memory-card.active .damage-meter-value { color:#1f2937; }
 .memory-card.active .damage-meter-raw { color:rgba(31,41,55,0.56); }
 .update-new { color:#4ade80; }
