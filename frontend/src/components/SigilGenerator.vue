@@ -594,7 +594,7 @@ function onSecondaryTraitSelect() {
 }
 
 .select-input option {
-  background: transparent;
+  background: #1b2636;
   color: #fff;
 }
 

@@ -360,7 +360,7 @@ async function applyQueueToSave() {
 .select-input::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 3px; }
 .select-input::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
 .select-input::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
-.select-input option { background: transparent; color: #fff; }
+.select-input option { background: #1b2636; color: #fff; }
 .text-input:focus { border-color: rgba(103,232,249,0.4); background: rgba(255,255,255,0.1); }
 .select-input:focus { border-color: rgba(103,232,249,0.4); background: transparent; }
 .select-input:disabled { opacity: 0.4; cursor: not-allowed; }
