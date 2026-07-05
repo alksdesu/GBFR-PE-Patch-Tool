@@ -563,6 +563,23 @@
                        "confidence":  "high"
                    },
                    {
+                       "internalId":  "SKILL_077_00",
+                       "hash":  "0xDC607D75",
+                       "displayName":  "Low Profile",
+                       "category":  "support_trait",
+                       "maxLevel":  15,
+                       "allowedLevels":  null,
+                       "observedLevels":  [
+                                              15
+                                          ],
+                       "canAppearAsPrimary":  true,
+                       "canAppearAsSecondary":  true,
+                       "bannedAsSecondaryOnPlusSigils":  false,
+                       "notes":  "Copied from factor trait catalog so wrightstone generation can select Low Profile in any trait slot.",
+                       "source":  "data/traits.json SKILL_077_00",
+                       "confidence":  "medium"
+                   },
+                   {
                        "internalId":  "SKILL_083_00",
                        "hash":  "0xEAE321EB",
                        "displayName":  "Skilled Assault",
