@@ -100,6 +100,12 @@ func (a *App) SigilMemoryGetOptions() (SigilMemoryOptions, error) {
 		}
 		result.Traits = append(result.Traits, SigilMemoryOption{Hash: hash, DisplayName: cnTrait(trait.DisplayName)})
 	}
+	for _, entry := range sigilMemorySigils {
+		result.Sigils = append(result.Sigils, SigilMemoryOption{Hash: entry.Hash, DisplayName: entry.Name})
+	}
+	for _, entry := range sigilMemoryTraits {
+		result.Traits = append(result.Traits, SigilMemoryOption{Hash: entry.Hash, DisplayName: entry.Name})
+	}
 	return result, nil
 }
 
@@ -320,10 +326,28 @@ func (a *App) readSigilMemoryStatus() (SigilMemoryStatus, error) {
 		}
 	}
 	if status.SigilName == "" {
+		status.SigilName = sigilMemoryNameByHash(sigilMemorySigils, status.SigilHash)
+	}
+	if status.SigilName == "" {
+		status.SigilName = ctName(status.SigilHash)
+	}
+	if status.SigilName == "" {
 		status.SigilName = fmt.Sprintf("0x%08X", status.SigilHash)
 	}
 	if status.PrimaryTraitName == "" {
+		status.PrimaryTraitName = sigilMemoryNameByHash(sigilMemoryTraits, status.PrimaryTraitHash)
+	}
+	if status.PrimaryTraitName == "" {
+		status.PrimaryTraitName = ctName(status.PrimaryTraitHash)
+	}
+	if status.PrimaryTraitName == "" {
 		status.PrimaryTraitName = fmt.Sprintf("0x%08X", status.PrimaryTraitHash)
+	}
+	if status.SecondaryTraitName == "" {
+		status.SecondaryTraitName = sigilMemoryNameByHash(sigilMemoryTraits, status.SecondaryTraitHash)
+	}
+	if status.SecondaryTraitName == "" {
+		status.SecondaryTraitName = ctName(status.SecondaryTraitHash)
 	}
 	if status.SecondaryTraitName == "" {
 		status.SecondaryTraitName = fmt.Sprintf("0x%08X", status.SecondaryTraitHash)
