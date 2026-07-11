@@ -253,6 +253,14 @@ var caveMetaTable = []CaveMetaEntry{
 			{Sym: "NBGFR32_flg", Byte: 1, Label: "强制随机精通"},
 		},
 	},
+	{
+		ID:   "lock_blade_gauge",
+		Kind: "modifier",
+	},
+	{
+		ID:   "instant_fill_blade_gauge",
+		Kind: "modifier",
+	},
 }
 
 func (a *App) CaveMeta() []CaveMetaEntry { return caveMetaTable }
