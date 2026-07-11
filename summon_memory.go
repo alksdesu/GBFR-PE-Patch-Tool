@@ -259,7 +259,7 @@ func (a *App) SummonMemoryUpdate(update SummonUpdate) (SummonEntry, error) {
 
 func (a *App) saveSummonEntry(base uintptr) error {
 	fn := a.moduleBase + summonSaveRVA
-	for _, offset := range []uintptr{summonOffPrimary, summonOffSecondary, summonOffPrimaryLv, summonOffSubParam, summonOffRank} {
+	for _, offset := range []uintptr{summonOffType, summonOffPrimary, summonOffSecondary, summonOffPrimaryLv, summonOffSubParam, summonOffRank} {
 		if err := a.callRemoteOneArg(fn, base+offset); err != nil {
 			return fmt.Errorf("保存召唤石字段 +0x%02X 失败: %w", offset, err)
 		}
