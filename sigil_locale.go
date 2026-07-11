@@ -57,7 +57,7 @@ var sigilCN = map[string]string{
 	"Alpha+":                        "alpha 阿尔法+",
 	"Beta+":                         "beta 贝塔+",
 	"Gamma+":                        "gamma 伽马+",
-	"Greater Aegis V+":              "生命上限 V+",
+	"Greater Aegis V+":              "金刚 V+",
 	"Auto Potion":                   "自动药水",
 	"Seven-Star Boundary+":          "涯之七星+",
 	"Two-Crown Boundary+":           "涯之二王+",
