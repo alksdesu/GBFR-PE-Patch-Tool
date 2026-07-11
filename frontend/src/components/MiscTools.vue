@@ -13,6 +13,7 @@ import { CharaAttach, CharaDetach,
          MonsterEnhanceSetPatchValueEnabled,
          CombatPatchList, CombatPatchSetEnabled,
          CaveList, CaveSetEnabled, CaveSetFloat, CaveSetInt, CaveSetFlag, CaveMeta,
+         HighlightedItemRead, HighlightedItemUpdate, HighlightedWeaponRead, HighlightedWeaponUpdate,
          DamageMeterGetStatus, DamageMeterReset,
          DamageOverlaySetEnabled, DamageOverlaySetValue, DamageOverlaySetFontSize,
          GetAppVersion, CheckUpdate, OpenReleasePage } from '../../wailsjs/go/main/App'
@@ -198,6 +199,10 @@ function disconnect() {
       Object.keys(combatBusy).forEach((key) => delete combatBusy[key])
       caveList.value = []
       Object.keys(caveBusy).forEach((key) => delete caveBusy[key])
+      expandedCapture.value = ''
+      Object.keys(captureBusy).forEach((key) => delete captureBusy[key])
+      itemEditor.captured = false
+      weaponEditor.captured = false
       selectedCharacter.value = ''
       Object.assign(terminusDropStatus, { found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
       Object.assign(unlockAllTrophyStatus, { found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
@@ -413,6 +418,101 @@ function toggleCaveFlag(id, sym, byte, key) {
   CaveSetFlag(id, sym, byte, next)
     .then(() => emit('status', next ? '子功能已开启' : '子功能已关闭', 'success'))
     .catch((err) => { caveParams[key] = !next; emit('status', String(err), 'error') })
+}
+
+const captureEditors = { highlighted_item: HighlightedItemRead, highlighted_weapon: HighlightedWeaponRead }
+const expandedCapture = ref('')
+const captureBusy = reactive({})
+const itemEditor = reactive({ captured: false, id: 0, amount: '', state: '' })
+const weaponEditor = reactive({
+  captured: false, hasImbued: false,
+  id: 0, skin: '', level: '', hp: '', attack: '', stunPower: '', critChance: '',
+  exp: '', uncapLevel: '', mirage: '', awakenedLevel: '',
+  traits: [], imbuedStone: '', imbuedTraits: [],
+})
+
+function hasCaptureEditor(id) { return Object.prototype.hasOwnProperty.call(captureEditors, id) }
+
+function toggleCaptureExpand(id) {
+  const next = expandedCapture.value === id ? '' : id
+  expandedCapture.value = next
+  if (next) readCapture(id)
+}
+
+function readCapture(id) {
+  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
+  captureBusy[id] = true
+  captureEditors[id]()
+    .then((data) => {
+      if (id === 'highlighted_item') fillItemEditor(data)
+      else fillWeaponEditor(data)
+      emit('status', '已读取选中对象', 'success')
+    })
+    .catch((err) => {
+      if (id === 'highlighted_item') itemEditor.captured = false
+      else weaponEditor.captured = false
+      emit('status', String(err), 'error')
+    })
+    .finally(() => { delete captureBusy[id] })
+}
+
+function fillItemEditor(d) {
+  itemEditor.captured = true
+  itemEditor.id = d.id >>> 0
+  itemEditor.amount = String(d.amount >>> 0)
+  itemEditor.state = String(d.state >>> 0)
+}
+
+function fillWeaponEditor(d) {
+  weaponEditor.captured = true
+  weaponEditor.hasImbued = !!d.hasImbued
+  weaponEditor.id = (d.id >>> 0).toString(16).toUpperCase()
+  weaponEditor.skin = (d.skin >>> 0).toString(16).toUpperCase()
+  weaponEditor.level = String(d.level >>> 0)
+  weaponEditor.hp = String(d.hp >>> 0)
+  weaponEditor.attack = String(d.attack >>> 0)
+  weaponEditor.stunPower = String(d.stunPower >>> 0)
+  weaponEditor.critChance = String(d.critChance >>> 0)
+  weaponEditor.exp = String(d.exp >>> 0)
+  weaponEditor.uncapLevel = String(d.uncapLevel >>> 0)
+  weaponEditor.mirage = String(d.mirage >>> 0)
+  weaponEditor.awakenedLevel = String(d.awakenedLevel >>> 0)
+  weaponEditor.traits = (d.traits || []).map((t) => ({ id: (t.id >>> 0).toString(16).toUpperCase(), level: String(t.level >>> 0) }))
+  weaponEditor.imbuedStone = (d.imbuedStone >>> 0).toString(16).toUpperCase()
+  weaponEditor.imbuedTraits = (d.imbuedTraits || []).map((t) => ({ id: (t.id >>> 0).toString(16).toUpperCase(), level: String(t.level >>> 0) }))
+}
+
+function u32(v) { const n = parseInt(v, 10); return isNaN(n) || n < 0 ? 0 : n >>> 0 }
+function hex32(v) { const n = parseInt(String(v).trim(), 16); return isNaN(n) || n < 0 ? 0 : n >>> 0 }
+
+function writeItem() {
+  captureBusy.highlighted_item = true
+  HighlightedItemUpdate(u32(itemEditor.amount), u32(itemEditor.state))
+    .then((data) => { fillItemEditor(data); emit('status', '物品已写入', 'success') })
+    .catch((err) => emit('status', String(err), 'error'))
+    .finally(() => { delete captureBusy.highlighted_item })
+}
+
+function writeWeapon() {
+  captureBusy.highlighted_weapon = true
+  HighlightedWeaponUpdate({
+    skin: hex32(weaponEditor.skin),
+    level: u32(weaponEditor.level),
+    hp: u32(weaponEditor.hp),
+    attack: u32(weaponEditor.attack),
+    stunPower: u32(weaponEditor.stunPower),
+    critChance: u32(weaponEditor.critChance),
+    exp: u32(weaponEditor.exp),
+    uncapLevel: u32(weaponEditor.uncapLevel),
+    mirage: u32(weaponEditor.mirage),
+    awakenedLevel: u32(weaponEditor.awakenedLevel),
+    traits: weaponEditor.traits.map((t) => ({ id: hex32(t.id), level: u32(t.level) })),
+    imbuedStone: hex32(weaponEditor.imbuedStone),
+    imbuedTraits: weaponEditor.imbuedTraits.map((t) => ({ id: hex32(t.id), level: u32(t.level) })),
+  })
+    .then((data) => { fillWeaponEditor(data); emit('status', '武器已写入', 'success') })
+    .catch((err) => emit('status', String(err), 'error'))
+    .finally(() => { delete captureBusy.highlighted_weapon })
 }
 
 function applyMaterialConsumeStatus(status) {
@@ -871,7 +971,7 @@ onBeforeUnmount(() => {
 
         <div class="memory-card" :class="{ active: materialConsumeStatus.enabled }">
           <div class="memory-header">
-            <span class="memory-title">升级/强化/练成不材料消耗（及开及用，开启后进入副本会导致无药水/无法获得奖励材料等问题）</span>
+            <span class="memory-title">升级/强化/练成不材料消耗</span>
             <span class="info-dot" title="开启后材料数量不会减少；同一指令也会阻止材料增加。">!</span>
             <span class="memory-hint">NOP add [r14+04],esi</span>
           </div>
@@ -937,6 +1037,66 @@ onBeforeUnmount(() => {
                 <span class="combat-dot"></span>
                 <span class="combat-label">{{ item.name }}</span>
               </button>
+            </div>
+            <div v-for="item in grp.items.filter((c) => hasCaptureEditor(c.id) && c.enabled)" :key="item.id + '-edit'" class="capture-edit" :class="{ open: expandedCapture === item.id }">
+              <div class="capture-edit-head" @click="toggleCaptureExpand(item.id)">
+                <span class="capture-edit-title">{{ item.name }} · 编辑</span>
+                <button class="btn-batch" :disabled="captureBusy[item.id]" @click.stop="readCapture(item.id)">读取</button>
+                <span class="mod-caret" :class="{ open: expandedCapture === item.id }">▸</span>
+              </div>
+
+              <div v-if="expandedCapture === item.id" class="capture-edit-body">
+                <template v-if="item.id === 'highlighted_item'">
+                  <div v-if="!itemEditor.captured" class="mod-hint">在游戏内选中物品后点「读取」</div>
+                  <template v-else>
+                    <div class="capture-field-grid">
+                      <label class="capture-field"><span>ID</span><input :value="itemEditor.id.toString(16).toUpperCase()" class="batch-input" readonly /></label>
+                      <label class="capture-field"><span>数量</span><input v-model="itemEditor.amount" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>状态</span><input v-model="itemEditor.state" type="number" min="0" class="batch-input" /></label>
+                    </div>
+                    <button class="btn-batch capture-save" :disabled="captureBusy.highlighted_item" @click="writeItem">写入物品</button>
+                  </template>
+                </template>
+
+                <template v-else>
+                  <div v-if="!weaponEditor.captured" class="mod-hint">在游戏内选中武器后点「读取」</div>
+                  <template v-else>
+                    <div class="capture-note">写入后会调用游戏保存函数持久化全部字段；HP/攻击/暴击等派生属性以角色实际装备时重算为准。</div>
+                    <div class="capture-field-grid">
+                      <label class="capture-field"><span>ID(hex)</span><input :value="weaponEditor.id" class="batch-input" readonly /></label>
+                      <label class="capture-field"><span>皮肤(hex)</span><input v-model="weaponEditor.skin" class="batch-input" /></label>
+                      <label class="capture-field"><span>等级</span><input v-model="weaponEditor.level" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>突破等级</span><input v-model="weaponEditor.uncapLevel" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>觉醒等级</span><input v-model="weaponEditor.awakenedLevel" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>经验</span><input v-model="weaponEditor.exp" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>HP</span><input v-model="weaponEditor.hp" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>攻击</span><input v-model="weaponEditor.attack" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>眩晕值</span><input v-model="weaponEditor.stunPower" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>暴击率</span><input v-model="weaponEditor.critChance" type="number" min="0" class="batch-input" /></label>
+                      <label class="capture-field"><span>幻影弹</span><input v-model="weaponEditor.mirage" type="number" min="0" class="batch-input" /></label>
+                    </div>
+
+                    <div class="capture-subtitle">词条</div>
+                    <div v-for="(t, i) in weaponEditor.traits" :key="'wt'+i" class="capture-trait-row">
+                      <span class="capture-trait-idx">[{{ i+1 }}]</span>
+                      <input v-model="t.id" placeholder="Trait ID (hex)" class="batch-input capture-trait-id" />
+                      <input v-model="t.level" type="number" min="0" placeholder="Lv" class="batch-input capture-trait-lv" />
+                    </div>
+
+                    <template v-if="weaponEditor.hasImbued">
+                      <div class="capture-subtitle">附魔（附魔祝福石）</div>
+                      <label class="capture-field capture-field-wide"><span>祝福石(hex)</span><input v-model="weaponEditor.imbuedStone" class="batch-input" /></label>
+                      <div v-for="(t, i) in weaponEditor.imbuedTraits" :key="'it'+i" class="capture-trait-row">
+                        <span class="capture-trait-idx">[{{ i+1 }}]</span>
+                        <input v-model="t.id" placeholder="Trait ID (hex)" class="batch-input capture-trait-id" />
+                        <input v-model="t.level" type="number" min="0" placeholder="Lv" class="batch-input capture-trait-lv" />
+                      </div>
+                    </template>
+
+                    <button class="btn-batch capture-save" :disabled="captureBusy.highlighted_weapon" @click="writeWeapon">写入武器</button>
+                  </template>
+                </template>
+              </div>
             </div>
           </div>
           <div class="memory-row">
@@ -1353,4 +1513,25 @@ onBeforeUnmount(() => {
 .memory-card.active .mod-name { color:rgba(31,41,55,0.78); }
 .memory-card.active .mod-group { color:rgba(31,41,55,0.5); }
 .memory-card.active .mod-item { border-color:rgba(31,41,55,0.14); background:rgba(255,255,255,0.22); }
+.capture-edit { margin-top:8px; border:1px solid rgba(103,232,249,0.2); border-radius:6px; background:rgba(103,232,249,0.05); overflow:hidden; }
+.capture-edit-head { display:flex; align-items:center; gap:8px; padding:8px 11px; cursor:pointer; }
+.capture-edit-title { font-size:0.76rem; font-weight:600; color:rgba(255,255,255,0.7); }
+.capture-edit-head .btn-batch { margin-left:auto; }
+.capture-edit-body { padding:4px 11px 11px; display:flex; flex-direction:column; gap:8px; }
+.capture-note { font-size:0.7rem; line-height:1.5; color:rgba(103,232,249,0.72); }
+.capture-field-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+.capture-field { display:flex; flex-direction:column; gap:3px; }
+.capture-field.capture-field-wide { grid-column:1 / -1; max-width:260px; }
+.capture-field span { font-size:0.68rem; color:rgba(255,255,255,0.4); }
+.capture-subtitle { font-size:0.7rem; font-weight:600; color:rgba(255,255,255,0.5); margin-top:4px; }
+.capture-trait-row { display:flex; align-items:center; gap:8px; }
+.capture-trait-idx { font-size:0.7rem; color:rgba(255,255,255,0.32); font-family:'Courier New',monospace; min-width:28px; }
+.capture-trait-id { flex:1; }
+.capture-trait-lv { width:72px; }
+.capture-save { align-self:flex-start; margin-top:4px; }
+.memory-card.active .capture-edit { border-color:rgba(31,41,55,0.18); background:rgba(255,255,255,0.18); }
+.memory-card.active .capture-edit-title { color:rgba(31,41,55,0.78); }
+.memory-card.active .capture-note { color:rgba(31,41,55,0.6); }
+.memory-card.active .capture-field span,
+.memory-card.active .capture-subtitle { color:rgba(31,41,55,0.6); }
 </style>

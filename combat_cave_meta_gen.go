@@ -50,12 +50,6 @@ var caveMetaTable = []CaveMetaEntry{
 		PtrSym: "NBGFR21_ptr",
 	},
 	{
-		ID:   "highlighted_sigil",
-		Kind: "capture",
-		Desc: "捕获选中因子的对象指针",
-		PtrSym: "NBGFR22_ptr",
-	},
-	{
 		ID:   "damage_modifier",
 		Kind: "modifier",
 		Floats: []caveMetaFloat{
