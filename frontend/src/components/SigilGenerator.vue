@@ -527,8 +527,8 @@ function onSecondaryTraitSelect() {
 .section {
   border-radius: 12px;
   padding: 14px 16px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(13,27,44,0.9);
+  border: 1px solid rgba(148,190,220,0.13);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -567,7 +567,7 @@ function onSecondaryTraitSelect() {
 .section-title {
   font-size: 0.78rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.35);
+  color: rgba(226,241,255,0.68);
   letter-spacing: 1px;
   display: flex;
   align-items: center;
@@ -577,7 +577,7 @@ function onSecondaryTraitSelect() {
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label {
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.3);
+  color: rgba(226,241,255,0.6);
 }
 
 .text-input, .select-input {
@@ -623,7 +623,7 @@ function onSecondaryTraitSelect() {
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.45);
+  color: rgba(255,255,255,0.68);
   font-size: 0.82rem;
 }
 
@@ -708,7 +708,7 @@ function onSecondaryTraitSelect() {
 
 .empty-hint {
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.48);
   text-align: center;
   padding: 8px 0;
 }
@@ -833,15 +833,15 @@ function onSecondaryTraitSelect() {
 .existing-header {
   background: rgba(255,255,255,0.06);
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.56);
   font-weight: 600;
   padding: 4px 10px;
 }
 .existing-row input[type="checkbox"] { accent-color: #67e8f9; cursor: pointer; }
 .ex-col-cb { width: 20px; flex-shrink: 0; text-align: center; }
 .ex-col-name { flex: 1; color: rgba(255,255,255,0.6); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ex-col-level { width: 40px; text-align: right; color: rgba(255,255,255,0.35); flex-shrink: 0; }
-.ex-col-trait { width: 160px; color: rgba(255,255,255,0.3); font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+.ex-col-level { width: 40px; text-align: right; color: rgba(255,255,255,0.58); flex-shrink: 0; }
+.ex-col-trait { width: 160px; color: rgba(255,255,255,0.54); font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
 
 /* 队列列表 */
 .queue-list { display: flex; flex-direction: column; gap: 6px; }

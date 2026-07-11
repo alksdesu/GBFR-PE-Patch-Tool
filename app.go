@@ -122,6 +122,7 @@ type App struct {
 	terminusDropOrig    []byte
 	sigilMemoryHookAddr uintptr
 	sigilMemoryCaveAddr uintptr
+	sigilMemoryOriginal []byte
 	damageMeterMapping  windows.Handle
 	damageMeterView     uintptr
 	damageOverlay       *damageOverlayWindow
@@ -153,6 +154,7 @@ func (a *App) shutdown(ctx context.Context) {
 		a.damageOverlay.stop()
 	}
 	a.closeDamageMeter()
+	a.CharaDetach()
 }
 
 func (a *App) saveWindowSize(ctx context.Context) {
@@ -948,8 +950,7 @@ var potionDefs = []potionDef{
 func (a *App) CharaAttach() (CharaProcessInfo, error) {
 	// Close existing handle if any
 	if a.hProcess != 0 {
-		windows.CloseHandle(a.hProcess)
-		a.hProcess = 0
+		a.CharaDetach()
 	}
 
 	pid, err := findProcessByName(charaProcessName)
@@ -992,6 +993,10 @@ func (a *App) CharaAttach() (CharaProcessInfo, error) {
 
 // CharaDetach closes the process handle.
 func (a *App) CharaDetach() {
+	// Restore hooks while the target process is still available. Leaving the
+	// jump installed makes a later tool instance mistake it for an unsupported
+	// game build and can also leave the game executing tool-owned code.
+	_ = a.releaseSigilMemoryHook()
 	if a.hProcess != 0 {
 		windows.CloseHandle(a.hProcess)
 		a.hProcess = 0
@@ -1009,6 +1014,7 @@ func (a *App) CharaDetach() {
 	a.terminusDropOrig = nil
 	a.sigilMemoryHookAddr = 0
 	a.sigilMemoryCaveAddr = 0
+	a.sigilMemoryOriginal = nil
 }
 
 // CharaGetAll reads all character counts, returns valid characters (skipping empty slots).
@@ -1776,12 +1782,17 @@ func (a *App) CountdownSet(value float64) (CountdownStatus, error) {
 }
 
 func (a *App) ensureGameProcess() error {
-	if a.hProcess != 0 && a.moduleBase != 0 {
-		return nil
-	}
 	pid, err := findProcessByName(charaProcessName)
 	if err != nil {
 		return fmt.Errorf("未找到游戏进程，请先启动游戏")
+	}
+	if a.hProcess != 0 && a.moduleBase != 0 && a.charaPID == pid {
+		return nil
+	}
+	// The game was restarted while the tool stayed open. Drop every address
+	// derived from the old process before attaching to the new PID.
+	if a.hProcess != 0 || a.moduleBase != 0 || a.charaPID != 0 {
+		a.CharaDetach()
 	}
 	h, err := windows.OpenProcess(windows.PROCESS_ALL_ACCESS, false, pid)
 	if err != nil {
