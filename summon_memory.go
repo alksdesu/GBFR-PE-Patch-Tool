@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	summonArrayRVA   = uintptr(0x7C23F48)
-	summonEntryStride = uintptr(0x60)
-	summonEntryCount  = 196
-	summonSaveRVA     = uintptr(0x79D820)
+	summonInventoryPtrRVA = uintptr(0x7C23F48)
+	summonRecordsOffset   = uintptr(0xC40)
+	summonEntryStride     = uintptr(0x1C)
+	summonEntryCount      = 1000
+	summonSaveRVA         = uintptr(0x79D820)
 
 	summonOffType      = uintptr(0x00)
 	summonOffPrimary   = uintptr(0x08)
@@ -105,29 +106,36 @@ func (a *App) SummonMemoryGetOptions() (SummonMemoryOptions, error) {
 	return result, nil
 }
 
-func (a *App) summonEntryAddr(index int) uintptr {
-	return a.moduleBase + summonArrayRVA + uintptr(index)*summonEntryStride
+func (a *App) summonInventoryBase() (uintptr, error) {
+	var inventory uintptr
+	root := a.moduleBase + summonInventoryPtrRVA
+	if err := readProcessMemory(a.hProcess, root, unsafe.Pointer(&inventory), unsafe.Sizeof(inventory)); err != nil {
+		return 0, fmt.Errorf("读取召唤石背包指针失败: %w", err)
+	}
+	if inventory == 0 {
+		return 0, fmt.Errorf("召唤石背包未加载，请进入游戏存档并打开召唤石界面")
+	}
+	return inventory + summonRecordsOffset, nil
 }
 
-func (a *App) readSummonEntry(catalog *SummonCatalog, index int) (SummonEntry, bool, error) {
-	base := a.summonEntryAddr(index)
-	buf := make([]byte, summonEntryStride)
-	if err := readProcessMemory(a.hProcess, base, unsafe.Pointer(&buf[0]), uintptr(len(buf))); err != nil {
-		return SummonEntry{}, false, err
-	}
-	typeHash := binary.LittleEndian.Uint32(buf[summonOffType : summonOffType+4])
+func (a *App) summonEntryAddr(records uintptr, index int) uintptr {
+	return records + uintptr(index)*summonEntryStride
+}
+
+func (a *App) decodeSummonEntry(catalog *SummonCatalog, records uintptr, index int, rec []byte) (SummonEntry, bool) {
+	typeHash := binary.LittleEndian.Uint32(rec[summonOffType : summonOffType+4])
 	if typeHash == EmptyHash || typeHash == 0 {
-		return SummonEntry{}, false, nil
+		return SummonEntry{}, false
 	}
 	entry := SummonEntry{
 		Index:          index,
-		Address:        uint64(base),
+		Address:        uint64(a.summonEntryAddr(records, index)),
 		TypeHash:       typeHash,
-		PrimaryHash:    binary.LittleEndian.Uint32(buf[summonOffPrimary : summonOffPrimary+4]),
-		SecondaryHash:  binary.LittleEndian.Uint32(buf[summonOffSecondary : summonOffSecondary+4]),
-		PrimaryLevel:   binary.LittleEndian.Uint32(buf[summonOffPrimaryLv : summonOffPrimaryLv+4]),
-		SecondaryParam: binary.LittleEndian.Uint32(buf[summonOffSubParam : summonOffSubParam+4]),
-		Rank:           binary.LittleEndian.Uint32(buf[summonOffRank : summonOffRank+4]),
+		PrimaryHash:    binary.LittleEndian.Uint32(rec[summonOffPrimary : summonOffPrimary+4]),
+		SecondaryHash:  binary.LittleEndian.Uint32(rec[summonOffSecondary : summonOffSecondary+4]),
+		PrimaryLevel:   binary.LittleEndian.Uint32(rec[summonOffPrimaryLv : summonOffPrimaryLv+4]),
+		SecondaryParam: binary.LittleEndian.Uint32(rec[summonOffSubParam : summonOffSubParam+4]),
+		Rank:           binary.LittleEndian.Uint32(rec[summonOffRank : summonOffRank+4]),
 	}
 	if summon := catalog.LookupSummonByHash(entry.TypeHash); summon != nil {
 		entry.TypeName = summon.DisplayName
@@ -140,7 +148,16 @@ func (a *App) readSummonEntry(catalog *SummonCatalog, index int) (SummonEntry, b
 	if sub := catalog.LookupSubTraitByHash(entry.SecondaryHash); sub != nil {
 		entry.SecondaryName = sub.DisplayName
 	}
-	return entry, true, nil
+	return entry, true
+}
+
+func (a *App) readSummonEntry(catalog *SummonCatalog, records uintptr, index int) (SummonEntry, bool, error) {
+	rec := make([]byte, summonEntryStride)
+	if err := readProcessMemory(a.hProcess, a.summonEntryAddr(records, index), unsafe.Pointer(&rec[0]), summonEntryStride); err != nil {
+		return SummonEntry{}, false, err
+	}
+	entry, ok := a.decodeSummonEntry(catalog, records, index, rec)
+	return entry, ok, nil
 }
 
 func (a *App) SummonMemoryList() ([]SummonEntry, error) {
@@ -151,16 +168,18 @@ func (a *App) SummonMemoryList() ([]SummonEntry, error) {
 	if err != nil {
 		return nil, err
 	}
+	records, err := a.summonInventoryBase()
+	if err != nil {
+		return nil, err
+	}
+	buf := make([]byte, summonEntryCount*int(summonEntryStride))
+	if err := readProcessMemory(a.hProcess, records, unsafe.Pointer(&buf[0]), uintptr(len(buf))); err != nil {
+		return nil, fmt.Errorf("读取召唤石列表失败: %w", err)
+	}
 	entries := make([]SummonEntry, 0, 32)
 	for i := 0; i < summonEntryCount; i++ {
-		entry, ok, err := a.readSummonEntry(catalog, i)
-		if err != nil {
-			if i == 0 {
-				return nil, fmt.Errorf("读取召唤石列表失败: %w", err)
-			}
-			break
-		}
-		if ok {
+		off := i * int(summonEntryStride)
+		if entry, ok := a.decodeSummonEntry(catalog, records, i, buf[off:off+int(summonEntryStride)]); ok {
 			entries = append(entries, entry)
 		}
 	}
@@ -181,7 +200,11 @@ func (a *App) SummonMemoryUpdate(update SummonUpdate) (SummonEntry, error) {
 	if update.Index < 0 || update.Index >= summonEntryCount {
 		return SummonEntry{}, fmt.Errorf("召唤石序号超出范围")
 	}
-	_, ok, err := a.readSummonEntry(catalog, update.Index)
+	records, err := a.summonInventoryBase()
+	if err != nil {
+		return SummonEntry{}, err
+	}
+	_, ok, err := a.readSummonEntry(catalog, records, update.Index)
 	if err != nil {
 		return SummonEntry{}, err
 	}
@@ -207,7 +230,7 @@ func (a *App) SummonMemoryUpdate(update SummonUpdate) (SummonEntry, error) {
 		}
 	}
 
-	base := a.summonEntryAddr(update.Index)
+	base := a.summonEntryAddr(records, update.Index)
 	writes := []struct {
 		offset uintptr
 		value  uint32
@@ -227,7 +250,7 @@ func (a *App) SummonMemoryUpdate(update SummonUpdate) (SummonEntry, error) {
 	if err := a.saveSummonEntry(base); err != nil {
 		return SummonEntry{}, err
 	}
-	entry, _, err := a.readSummonEntry(catalog, update.Index)
+	entry, _, err := a.readSummonEntry(catalog, records, update.Index)
 	if err != nil {
 		return SummonEntry{}, err
 	}
