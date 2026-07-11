@@ -106,27 +106,29 @@ type AppConfig struct {
 // ── App ──
 
 type App struct {
-	ctx                 context.Context
-	exePath             string
-	hProcess            windows.Handle
-	moduleBase          uintptr
-	managerPtr          uintptr
-	charaPID            uint32
-	countdownAddr       uintptr
-	faceAccessoryAddr   uintptr
-	overLimitHookAddr   uintptr
-	overLimitCaveAddr   uintptr
-	overLimitCommitAddr uintptr
-	unlockAllTrophyAddr uintptr
-	terminusDropAddr    uintptr
-	terminusDropOrig    []byte
-	sigilMemoryHookAddr uintptr
-	sigilMemoryCaveAddr uintptr
-	damageMeterMapping  windows.Handle
-	damageMeterView     uintptr
-	damageOverlay       *damageOverlayWindow
-	config              AppConfig
-	configLoaded        bool
+	ctx                     context.Context
+	exePath                 string
+	hProcess                windows.Handle
+	moduleBase              uintptr
+	managerPtr              uintptr
+	charaPID                uint32
+	countdownAddr           uintptr
+	faceAccessoryAddr       uintptr
+	overLimitHookAddr       uintptr
+	overLimitCaveAddr       uintptr
+	overLimitCommitAddr     uintptr
+	unlockAllTrophyAddr     uintptr
+	terminusDropAddr        uintptr
+	terminusDropOrig        []byte
+	sigilMemoryHookAddr     uintptr
+	sigilMemoryCaveAddr     uintptr
+	materialConsumeCaveAddr uintptr
+	caveRuntimes            map[string]*caveRuntime
+	damageMeterMapping      windows.Handle
+	damageMeterView         uintptr
+	damageOverlay           *damageOverlayWindow
+	config                  AppConfig
+	configLoaded            bool
 }
 
 func NewApp() *App { return &App{} }
@@ -992,6 +994,8 @@ func (a *App) CharaAttach() (CharaProcessInfo, error) {
 
 // CharaDetach closes the process handle.
 func (a *App) CharaDetach() {
+	a.combatPatchRestoreAll()
+	a.caveRestoreAll()
 	if a.hProcess != 0 {
 		windows.CloseHandle(a.hProcess)
 		a.hProcess = 0
@@ -1403,7 +1407,9 @@ func (a *App) readInfiniteChallengeStatus() (InfiniteChallengeStatus, error) {
 	}, nil
 }
 
-// ── 升级/强化材料消耗 (运行时 NOP add [r14+04],esi) ──
+// ── 升级/强化材料消耗 ──
+// 补丁点是通用背包增减函数 add [r14+4],esi (56处调用, esi正=获得/负=消耗)。
+// 直接 NOP 会连副本奖励/药水补充一起吞掉, 故改为 code cave: 仅在 esi<0 时清零。
 
 type MaterialConsumeStatus struct {
 	RVA          uint64 `json:"rva"`
@@ -1411,12 +1417,14 @@ type MaterialConsumeStatus struct {
 	CurrentBytes string `json:"currentBytes"`
 }
 
-const materialConsumeRVA = uintptr(0x356621)
-
-var (
-	materialConsumeOrig  = []byte{0x41, 0x01, 0x76, 0x04}
-	materialConsumePatch = []byte{0x90, 0x90, 0x90, 0x90}
+const (
+	materialConsumeRVA       = uintptr(0x356621)
+	materialConsumeHookSize  = 7
+	materialConsumeReturnRVA = materialConsumeRVA + materialConsumeHookSize
 )
+
+// 被 hook 覆盖的原始 7 字节: add [r14+4],esi (41 01 76 04) + mov rcx,r12 (4c 89 e1)
+var materialConsumeOrig = []byte{0x41, 0x01, 0x76, 0x04, 0x4C, 0x89, 0xE1}
 
 func (a *App) MaterialConsumeGetStatus() (MaterialConsumeStatus, error) {
 	if err := a.ensureGameProcess(); err != nil {
@@ -1429,29 +1437,73 @@ func (a *App) MaterialConsumeSetEnabled(enabled bool) (MaterialConsumeStatus, er
 	if err := a.ensureGameProcess(); err != nil {
 		return MaterialConsumeStatus{}, err
 	}
-	patch := materialConsumeOrig
-	if enabled {
-		patch = materialConsumePatch
-	}
 	addr := a.moduleBase + materialConsumeRVA
-	if err := writeCodeMemory(a.hProcess, addr, patch); err != nil {
-		return MaterialConsumeStatus{}, fmt.Errorf("写入升级/强化材料消耗失败: %w", err)
+	if enabled {
+		if err := a.installMaterialConsumeHook(addr); err != nil {
+			return MaterialConsumeStatus{}, err
+		}
+	} else {
+		if err := writeCodeMemory(a.hProcess, addr, materialConsumeOrig); err != nil {
+			return MaterialConsumeStatus{}, fmt.Errorf("恢复升级/强化材料消耗失败: %w", err)
+		}
+		a.materialConsumeCaveAddr = 0
 	}
 	return a.readMaterialConsumeStatus()
 }
 
+func (a *App) installMaterialConsumeHook(addr uintptr) error {
+	cave, err := virtualAllocRemoteNear(a.hProcess, addr, 0x1000)
+	if err != nil {
+		return fmt.Errorf("分配升级/强化材料消耗代码洞失败: %w", err)
+	}
+	code, err := buildMaterialConsumeCave(cave, a.moduleBase+materialConsumeReturnRVA)
+	if err != nil {
+		return err
+	}
+	if err := writeCodeMemory(a.hProcess, cave, code); err != nil {
+		return fmt.Errorf("写入升级/强化材料消耗代码洞失败: %w", err)
+	}
+	patch, err := makeRelJump(addr, cave, materialConsumeHookSize)
+	if err != nil {
+		return err
+	}
+	if err := writeCodeMemory(a.hProcess, addr, patch); err != nil {
+		return fmt.Errorf("写入升级/强化材料消耗跳转失败: %w", err)
+	}
+	a.materialConsumeCaveAddr = cave
+	return nil
+}
+
+func buildMaterialConsumeCave(cave uintptr, returnAddr uintptr) ([]byte, error) {
+	code := []byte{
+		0x85, 0xF6, // test esi,esi
+		0x79, 0x02, // jns +2 (esi>=0 跳过清零)
+		0x31, 0xF6, // xor esi,esi
+	}
+	code = append(code, materialConsumeOrig...) // 补回原始 7 字节
+	jmp, err := makeRelJump(cave+uintptr(len(code)), returnAddr, 5)
+	if err != nil {
+		return nil, err
+	}
+	return append(code, jmp...), nil
+}
+
 func (a *App) readMaterialConsumeStatus() (MaterialConsumeStatus, error) {
 	addr := a.moduleBase + materialConsumeRVA
-	buf := make([]byte, len(materialConsumeOrig))
+	buf := make([]byte, materialConsumeHookSize)
 	if err := readProcessMemory(a.hProcess, addr, unsafe.Pointer(&buf[0]), uintptr(len(buf))); err != nil {
 		return MaterialConsumeStatus{}, fmt.Errorf("读取升级/强化材料消耗指令失败: %w", err)
 	}
-	if !bytesEqual(buf, materialConsumeOrig) && !bytesEqual(buf, materialConsumePatch) {
+	hooked := buf[0] == 0xE9
+	if !hooked && !bytesEqual(buf, materialConsumeOrig) {
 		return MaterialConsumeStatus{}, fmt.Errorf("升级/强化材料消耗指令字节异常: %s", bytesToHex(buf))
+	}
+	if hooked && a.materialConsumeCaveAddr == 0 {
+		a.materialConsumeCaveAddr = relJumpTarget(addr, buf)
 	}
 	return MaterialConsumeStatus{
 		RVA:          uint64(materialConsumeRVA),
-		Enabled:      bytesEqual(buf, materialConsumePatch),
+		Enabled:      hooked,
 		CurrentBytes: bytesToHex(buf),
 	}, nil
 }

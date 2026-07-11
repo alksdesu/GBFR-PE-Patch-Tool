@@ -1,0 +1,2902 @@
+{
+ "schemaVersion": 1,
+ "description": "GBFR 召唤石运行时编辑数据: 召唤石本体/主因子词条/副特性档位",
+ "summonMaxTraitLevel": 15,
+ "summons": [
+  {
+   "hash": "0x3FD89C3A",
+   "displayName": "世须良加 · 消耗4 · 伤害",
+   "baseName": "世须良加",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xBDD84E9A",
+   "displayName": "世须良加 · 消耗4 · 伤害",
+   "baseName": "世须良加",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xA34BDECB",
+   "displayName": "世须良加 · 消耗5 · 伤害",
+   "baseName": "世须良加",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xE492E6BF",
+   "displayName": "世须良加 · 消耗5 · 伤害",
+   "baseName": "世须良加",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x0B366AD9",
+   "displayName": "巨爪焰鳄 · 消耗4 · 伤害",
+   "baseName": "巨爪焰鳄",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xF98F8B97",
+   "displayName": "巨爪焰鳄 · 消耗4 · 伤害",
+   "baseName": "巨爪焰鳄",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x1B6A4024",
+   "displayName": "巨爪焰鳄 · 消耗5 · 伤害",
+   "baseName": "巨爪焰鳄",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x6E5968FC",
+   "displayName": "路西法 · 消耗5 · 特殊",
+   "baseName": "路西法",
+   "typeName": "特殊",
+   "cost": 5
+  },
+  {
+   "hash": "0x90BD4AC0",
+   "displayName": "路西法 · 消耗5 · 特殊",
+   "baseName": "路西法",
+   "typeName": "特殊",
+   "cost": 5
+  },
+  {
+   "hash": "0x7996A856",
+   "displayName": "胡拉坎 · 消耗3 · 伤害",
+   "baseName": "胡拉坎",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xCA95CD8C",
+   "displayName": "胡拉坎 · 消耗3 · 伤害",
+   "baseName": "胡拉坎",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xE51CE5B0",
+   "displayName": "胡拉坎 · 消耗4 · 伤害",
+   "baseName": "胡拉坎",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x52B14B66",
+   "displayName": "胡拉坎 · 消耗5 · 伤害",
+   "baseName": "胡拉坎",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x0BE2A43A",
+   "displayName": "巨爪岩鳄 · 消耗4 · 伤害",
+   "baseName": "巨爪岩鳄",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x7A46E50E",
+   "displayName": "巨爪岩鳄 · 消耗4 · 伤害",
+   "baseName": "巨爪岩鳄",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xA6BB6299",
+   "displayName": "巨爪岩鳄 · 消耗5 · 伤害",
+   "baseName": "巨爪岩鳄",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x855D018C",
+   "displayName": "莉莉丝 · 消耗5 · 特殊",
+   "baseName": "莉莉丝",
+   "typeName": "特殊",
+   "cost": 5
+  },
+  {
+   "hash": "0xDFAB70B7",
+   "displayName": "莉莉丝 · 消耗5 · 特殊",
+   "baseName": "莉莉丝",
+   "typeName": "特殊",
+   "cost": 5
+  },
+  {
+   "hash": "0x0F986ED9",
+   "displayName": "罗兰 · 消耗5 · 特殊",
+   "baseName": "罗兰",
+   "typeName": "特殊",
+   "cost": 5
+  },
+  {
+   "hash": "0x81ECEC7F",
+   "displayName": "罗兰 · 消耗5 · 特殊",
+   "baseName": "罗兰",
+   "typeName": "特殊",
+   "cost": 5
+  },
+  {
+   "hash": "0x5F3337B6",
+   "displayName": "哥布林军士 · 消耗3 · 支援",
+   "baseName": "哥布林军士",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x61C79814",
+   "displayName": "哥布林军士 · 消耗4 · 支援",
+   "baseName": "哥布林军士",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x3C381DCD",
+   "displayName": "哥布林角斗士 · 消耗3 · 支援",
+   "baseName": "哥布林角斗士",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xD6387CAA",
+   "displayName": "哥布林角斗士 · 消耗4 · 支援",
+   "baseName": "哥布林角斗士",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xF501285C",
+   "displayName": "哥布林角斗士 · 消耗4 · 支援",
+   "baseName": "哥布林角斗士",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x99A68616",
+   "displayName": "苍百长 · 消耗3 · 支援",
+   "baseName": "苍百长",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x31EE9BA5",
+   "displayName": "苍百长 · 消耗4 · 支援",
+   "baseName": "苍百长",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x4D84581F",
+   "displayName": "赤蛮尉 · 消耗3 · 支援",
+   "baseName": "赤蛮尉",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x897FFAF0",
+   "displayName": "赤蛮尉 · 消耗4 · 支援",
+   "baseName": "赤蛮尉",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xFD5FB92B",
+   "displayName": "哥布林勇士 · 消耗4 · 支援",
+   "baseName": "哥布林勇士",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xC2F91A7F",
+   "displayName": "哥布林勇士 · 消耗5 · 支援",
+   "baseName": "哥布林勇士",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x55815E99",
+   "displayName": "玄夜叉 · 消耗4 · 支援",
+   "baseName": "玄夜叉",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x524D1660",
+   "displayName": "玄夜叉 · 消耗5 · 支援",
+   "baseName": "玄夜叉",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0xA062EC06",
+   "displayName": "朱罗刹 · 消耗5 · 支援",
+   "baseName": "朱罗刹",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x8E02E207",
+   "displayName": "死骸格拉森 · 消耗4 · 伤害",
+   "baseName": "死骸格拉森",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xFC8444A1",
+   "displayName": "死骸格拉森 · 消耗4 · 伤害",
+   "baseName": "死骸格拉森",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x0EE2670A",
+   "displayName": "死骸格拉森 · 消耗5 · 伤害",
+   "baseName": "死骸格拉森",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x326DC2DE",
+   "displayName": "冰骸斯卡米勒 · 消耗4 · 伤害",
+   "baseName": "冰骸斯卡米勒",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x16BA3B8A",
+   "displayName": "冰骸斯卡米勒 · 消耗5 · 伤害",
+   "baseName": "冰骸斯卡米勒",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xEBEB3DC0",
+   "displayName": "群居狼 · 消耗3 · 支援",
+   "baseName": "群居狼",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xEEEA2080",
+   "displayName": "群居狼 · 消耗4 · 支援",
+   "baseName": "群居狼",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x2EACD79C",
+   "displayName": "角禽 · 消耗3 · 支援",
+   "baseName": "角禽",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x735DD55B",
+   "displayName": "角禽 · 消耗4 · 支援",
+   "baseName": "角禽",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x1B5DAEBD",
+   "displayName": "双足飞龙 · 消耗3 · 伤害",
+   "baseName": "双足飞龙",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x9BC09751",
+   "displayName": "双足飞龙 · 消耗4 · 伤害",
+   "baseName": "双足飞龙",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x4B3D1768",
+   "displayName": "老双足飞龙 · 消耗3 · 伤害",
+   "baseName": "老双足飞龙",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xAA2BBDBF",
+   "displayName": "老双足飞龙 · 消耗4 · 伤害",
+   "baseName": "老双足飞龙",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x03C95420",
+   "displayName": "巨爪霜鳄 · 消耗4 · 伤害",
+   "baseName": "巨爪霜鳄",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xC52147D4",
+   "displayName": "巨爪霜鳄 · 消耗4 · 伤害",
+   "baseName": "巨爪霜鳄",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x99CF3E05",
+   "displayName": "巨爪霜鳄 · 消耗5 · 伤害",
+   "baseName": "巨爪霜鳄",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x0D94B89F",
+   "displayName": "银史莱姆 · 消耗4 · 支援",
+   "baseName": "银史莱姆",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x4EA296FC",
+   "displayName": "银史莱姆 · 消耗5 · 支援",
+   "baseName": "银史莱姆",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0xE528E76F",
+   "displayName": "银史莱姆 · 消耗5 · 支援",
+   "baseName": "银史莱姆",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x316641A4",
+   "displayName": "金史莱姆 · 消耗4 · 支援",
+   "baseName": "金史莱姆",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x439CDB88",
+   "displayName": "金史莱姆 · 消耗5 · 支援",
+   "baseName": "金史莱姆",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x1ABADE1D",
+   "displayName": "赛伊格亚 · 消耗3 · 伤害",
+   "baseName": "赛伊格亚",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x1BE16847",
+   "displayName": "赛伊格亚 · 消耗3 · 伤害",
+   "baseName": "赛伊格亚",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xEF554891",
+   "displayName": "赛伊格亚 · 消耗4 · 伤害",
+   "baseName": "赛伊格亚",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xB96CB87D",
+   "displayName": "目目连 · 消耗3 · 伤害",
+   "baseName": "目目连",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x7E8A659A",
+   "displayName": "目目连 · 消耗4 · 伤害",
+   "baseName": "目目连",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x634A379D",
+   "displayName": "阿里曼 · 消耗3 · 伤害",
+   "baseName": "阿里曼",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x6B514309",
+   "displayName": "阿里曼 · 消耗4 · 伤害",
+   "baseName": "阿里曼",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x2EA15D18",
+   "displayName": "魔眼守卫 · 消耗4 · 伤害",
+   "baseName": "魔眼守卫",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x6262979B",
+   "displayName": "魔眼守卫 · 消耗5 · 伤害",
+   "baseName": "魔眼守卫",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x3DD9ECEE",
+   "displayName": "火之种 · 消耗3 · 支援",
+   "baseName": "火之种",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x4A65C97D",
+   "displayName": "火之种 · 消耗4 · 支援",
+   "baseName": "火之种",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x852287BA",
+   "displayName": "水之种 · 消耗3 · 支援",
+   "baseName": "水之种",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xA40E64F4",
+   "displayName": "水之种 · 消耗4 · 支援",
+   "baseName": "水之种",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x30F63214",
+   "displayName": "光之种 · 消耗3 · 支援",
+   "baseName": "光之种",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x4F484BBB",
+   "displayName": "光之种 · 消耗4 · 支援",
+   "baseName": "光之种",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x59F8666F",
+   "displayName": "暗之种 · 消耗3 · 支援",
+   "baseName": "暗之种",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x2E3CE3D9",
+   "displayName": "暗之种 · 消耗4 · 支援",
+   "baseName": "暗之种",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xC3E918F9",
+   "displayName": "火精灵 · 消耗3 · 伤害",
+   "baseName": "火精灵",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xD751D8D2",
+   "displayName": "火精灵 · 消耗4 · 伤害",
+   "baseName": "火精灵",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x1CC0E0EF",
+   "displayName": "水精灵 · 消耗3 · 伤害",
+   "baseName": "水精灵",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x9360B2B5",
+   "displayName": "水精灵 · 消耗4 · 伤害",
+   "baseName": "水精灵",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x2E657B01",
+   "displayName": "机械武装·主机 · 消耗3 · 伤害",
+   "baseName": "机械武装·主机",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x5365294F",
+   "displayName": "机械武装·主机 · 消耗4 · 伤害",
+   "baseName": "机械武装·主机",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xB3C2F3A4",
+   "displayName": "强袭型机械武装·主机 · 消耗3 · 伤害",
+   "baseName": "强袭型机械武装·主机",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xAE52556D",
+   "displayName": "强袭型机械武装·主机 · 消耗4 · 伤害",
+   "baseName": "强袭型机械武装·主机",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x87C6C345",
+   "displayName": "巨石魔像 · 消耗3 · 伤害",
+   "baseName": "巨石魔像",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xCC3C45F3",
+   "displayName": "巨石魔像 · 消耗3 · 伤害",
+   "baseName": "巨石魔像",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xB79312A7",
+   "displayName": "巨石魔像 · 消耗4 · 伤害",
+   "baseName": "巨石魔像",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x8CF23B58",
+   "displayName": "巨石魔像 · 消耗5 · 伤害",
+   "baseName": "巨石魔像",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x315695AE",
+   "displayName": "红宝石魔像 · 消耗5 · 伤害",
+   "baseName": "红宝石魔像",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x52E21E37",
+   "displayName": "红宝石魔像 · 消耗5 · 伤害",
+   "baseName": "红宝石魔像",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xF7F2D161",
+   "displayName": "狮鹫 · 消耗4 · 伤害",
+   "baseName": "狮鹫",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xBFAC23DC",
+   "displayName": "狮鹫 · 消耗5 · 伤害",
+   "baseName": "狮鹫",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xC1CCBC3C",
+   "displayName": "漆黑猛禽 · 消耗4 · 伤害",
+   "baseName": "漆黑猛禽",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xD4AC8684",
+   "displayName": "漆黑猛禽 · 消耗5 · 伤害",
+   "baseName": "漆黑猛禽",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x9D5C27DE",
+   "displayName": "贝希摩斯 · 消耗4 · 伤害",
+   "baseName": "贝希摩斯",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x239F769F",
+   "displayName": "贝希摩斯 · 消耗5 · 伤害",
+   "baseName": "贝希摩斯",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xE4B7DCF9",
+   "displayName": "贝希摩斯 · 消耗5 · 伤害",
+   "baseName": "贝希摩斯",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xAC20C821",
+   "displayName": "恩奴基 · 消耗4 · 伤害",
+   "baseName": "恩奴基",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x67C7E1FF",
+   "displayName": "恩奴基 · 消耗5 · 伤害",
+   "baseName": "恩奴基",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x38348E1E",
+   "displayName": "远古巨龙 · 消耗4 · 伤害",
+   "baseName": "远古巨龙",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x556DA7B4",
+   "displayName": "远古巨龙 · 消耗4 · 伤害",
+   "baseName": "远古巨龙",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xCE0039D4",
+   "displayName": "远古巨龙 · 消耗5 · 伤害",
+   "baseName": "远古巨龙",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x1E6543A3",
+   "displayName": "火龙布雷扎莱克 · 消耗4 · 伤害",
+   "baseName": "火龙布雷扎莱克",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xF1C229F7",
+   "displayName": "火龙布雷扎莱克 · 消耗4 · 伤害",
+   "baseName": "火龙布雷扎莱克",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x9F0ECF8B",
+   "displayName": "火龙布雷扎莱克 · 消耗5 · 伤害",
+   "baseName": "火龙布雷扎莱克",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xF2BE819E",
+   "displayName": "火龙布雷扎莱克 · 消耗5 · 伤害",
+   "baseName": "火龙布雷扎莱克",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x26E7CCB1",
+   "displayName": "冰龙威利努斯 · 消耗4 · 伤害",
+   "baseName": "冰龙威利努斯",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x60A6D3A5",
+   "displayName": "冰龙威利努斯 · 消耗4 · 伤害",
+   "baseName": "冰龙威利努斯",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xB960D2BB",
+   "displayName": "冰龙威利努斯 · 消耗5 · 伤害",
+   "baseName": "冰龙威利努斯",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x4FD78AF8",
+   "displayName": "地龙杜雷贝尔 · 消耗4 · 伤害",
+   "baseName": "地龙杜雷贝尔",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x97E451A4",
+   "displayName": "地龙杜雷贝尔 · 消耗4 · 伤害",
+   "baseName": "地龙杜雷贝尔",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x3BAD1134",
+   "displayName": "地龙杜雷贝尔 · 消耗5 · 伤害",
+   "baseName": "地龙杜雷贝尔",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xFF513849",
+   "displayName": "风龙伊尔西亚斯 · 消耗4 · 伤害",
+   "baseName": "风龙伊尔西亚斯",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xFC8A2ECB",
+   "displayName": "风龙伊尔西亚斯 · 消耗5 · 伤害",
+   "baseName": "风龙伊尔西亚斯",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x666947C2",
+   "displayName": "白龙拉迪斯 · 消耗4 · 伤害",
+   "baseName": "白龙拉迪斯",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x9384A5D3",
+   "displayName": "白龙拉迪斯 · 消耗5 · 伤害",
+   "baseName": "白龙拉迪斯",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x7F8364E5",
+   "displayName": "永暗藏匿者 · 消耗3 · 伤害",
+   "baseName": "永暗藏匿者",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x01B80951",
+   "displayName": "永暗藏匿者 · 消耗4 · 伤害",
+   "baseName": "永暗藏匿者",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x2517C481",
+   "displayName": "永暗藏匿者 · 消耗4 · 伤害",
+   "baseName": "永暗藏匿者",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x6D6CB496",
+   "displayName": "永暗藏匿者 · 消耗4 · 伤害",
+   "baseName": "永暗藏匿者",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x0033943A",
+   "displayName": "永暗藏匿者 · 消耗5 · 伤害",
+   "baseName": "永暗藏匿者",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x8DB272E5",
+   "displayName": "永暗藏匿者 · 消耗5 · 伤害",
+   "baseName": "永暗藏匿者",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x8D7FDE58",
+   "displayName": "断罪铁骑 · 消耗4 · 伤害",
+   "baseName": "断罪铁骑",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x045EFB5B",
+   "displayName": "断罪铁骑 · 消耗5 · 伤害",
+   "baseName": "断罪铁骑",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x15EC425E",
+   "displayName": "叛乱重炮 · 消耗4 · 伤害",
+   "baseName": "叛乱重炮",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x6EE91E7D",
+   "displayName": "叛乱重炮 · 消耗4 · 伤害",
+   "baseName": "叛乱重炮",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x847CF372",
+   "displayName": "叛乱重炮 · 消耗5 · 伤害",
+   "baseName": "叛乱重炮",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x8B489804",
+   "displayName": "眼镜蛇 · 消耗3 · 伤害",
+   "baseName": "眼镜蛇",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x7A7615D3",
+   "displayName": "眼镜蛇 · 消耗4 · 伤害",
+   "baseName": "眼镜蛇",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x9235FB9F",
+   "displayName": "眼镜蛇 · 消耗4 · 伤害",
+   "baseName": "眼镜蛇",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xB360DD8D",
+   "displayName": "沙漠死神 · 消耗3 · 伤害",
+   "baseName": "沙漠死神",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xE7F607DC",
+   "displayName": "沙漠死神 · 消耗4 · 伤害",
+   "baseName": "沙漠死神",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x65E658D9",
+   "displayName": "伏尔甘博拉 · 消耗4 · 伤害",
+   "baseName": "伏尔甘博拉",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x6F6BBBE0",
+   "displayName": "伏尔甘博拉 · 消耗5 · 伤害",
+   "baseName": "伏尔甘博拉",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0xAD15D880",
+   "displayName": "伏尔甘博拉·虚无 · 消耗5 · 伤害",
+   "baseName": "伏尔甘博拉·虚无",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x5C42D57C",
+   "displayName": "胡拉坎·虚无 · 消耗5 · 伤害",
+   "baseName": "胡拉坎·虚无",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x23D839A3",
+   "displayName": "玛纳加尔姆 · 消耗3 · 伤害",
+   "baseName": "玛纳加尔姆",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x5E29E993",
+   "displayName": "玛纳加尔姆 · 消耗3 · 伤害",
+   "baseName": "玛纳加尔姆",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0xD5536AE8",
+   "displayName": "玛纳加尔姆 · 消耗4 · 伤害",
+   "baseName": "玛纳加尔姆",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0xDBD2F84E",
+   "displayName": "玛纳加尔姆 · 消耗5 · 伤害",
+   "baseName": "玛纳加尔姆",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x099E1DD3",
+   "displayName": "玛纳加尔姆·虚无 · 消耗5 · 伤害",
+   "baseName": "玛纳加尔姆·虚无",
+   "typeName": "伤害",
+   "cost": 5
+  },
+  {
+   "hash": "0x391C7857",
+   "displayName": "灾祸之影 · 消耗3 · 伤害",
+   "baseName": "灾祸之影",
+   "typeName": "伤害",
+   "cost": 3
+  },
+  {
+   "hash": "0x551DC320",
+   "displayName": "灾祸之影 · 消耗4 · 伤害",
+   "baseName": "灾祸之影",
+   "typeName": "伤害",
+   "cost": 4
+  },
+  {
+   "hash": "0x547E7DFC",
+   "displayName": "金枪鱼 · 消耗3 · 支援",
+   "baseName": "金枪鱼",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xF7EB57DD",
+   "displayName": "金枪鱼 · 消耗4 · 支援",
+   "baseName": "金枪鱼",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xB44A8A02",
+   "displayName": "金枪鱼 · 消耗5 · 支援",
+   "baseName": "金枪鱼",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x3C4F2B7D",
+   "displayName": "怀揣希望的空之民 · 消耗3 · 支援",
+   "baseName": "怀揣希望的空之民",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x4BA8CEBA",
+   "displayName": "怀揣希望的空之民 · 消耗3 · 支援",
+   "baseName": "怀揣希望的空之民",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x67A73702",
+   "displayName": "怀揣希望的空之民 · 消耗4 · 支援",
+   "baseName": "怀揣希望的空之民",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x15ED6D77",
+   "displayName": "怀揣希望的空之民 · 消耗5 · 支援",
+   "baseName": "怀揣希望的空之民",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x299C1A08",
+   "displayName": "托付愿望的空之民 · 消耗3 · 支援",
+   "baseName": "托付愿望的空之民",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xB5449253",
+   "displayName": "托付愿望的空之民 · 消耗3 · 支援",
+   "baseName": "托付愿望的空之民",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xCE8E0B79",
+   "displayName": "托付愿望的空之民 · 消耗4 · 支援",
+   "baseName": "托付愿望的空之民",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x576310DF",
+   "displayName": "托付愿望的空之民 · 消耗5 · 支援",
+   "baseName": "托付愿望的空之民",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0xDDB21C31",
+   "displayName": "弗尔卡自卫团 · 消耗3 · 支援",
+   "baseName": "弗尔卡自卫团",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xF1FC31C4",
+   "displayName": "弗尔卡自卫团 · 消耗4 · 支援",
+   "baseName": "弗尔卡自卫团",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x7E154422",
+   "displayName": "弗尔卡自卫团 · 消耗5 · 支援",
+   "baseName": "弗尔卡自卫团",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x9A6D89DC",
+   "displayName": "弗尔卡自卫团 · 消耗5 · 支援",
+   "baseName": "弗尔卡自卫团",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x8C607D26",
+   "displayName": "白狼兵团 · 消耗3 · 支援",
+   "baseName": "白狼兵团",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xEF973D88",
+   "displayName": "白狼兵团 · 消耗3 · 支援",
+   "baseName": "白狼兵团",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x514CF53B",
+   "displayName": "白狼兵团 · 消耗4 · 支援",
+   "baseName": "白狼兵团",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x5CA9330A",
+   "displayName": "白狼兵团 · 消耗5 · 支援",
+   "baseName": "白狼兵团",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x44A5CAB1",
+   "displayName": "扎斯巴家 · 消耗3 · 支援",
+   "baseName": "扎斯巴家",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xF862E7DA",
+   "displayName": "扎斯巴家 · 消耗3 · 支援",
+   "baseName": "扎斯巴家",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0xF32AA7A7",
+   "displayName": "扎斯巴家 · 消耗4 · 支援",
+   "baseName": "扎斯巴家",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x4C966E4F",
+   "displayName": "扎斯巴家 · 消耗5 · 支援",
+   "baseName": "扎斯巴家",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0xB4CF26C6",
+   "displayName": "希德霍姆兵 · 消耗3 · 支援",
+   "baseName": "希德霍姆兵",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x1B9DE0FA",
+   "displayName": "希德霍姆兵 · 消耗4 · 支援",
+   "baseName": "希德霍姆兵",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xA4F63A8F",
+   "displayName": "希德霍姆兵 · 消耗5 · 支援",
+   "baseName": "希德霍姆兵",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x58AA9CAD",
+   "displayName": "刃重众 · 消耗3 · 支援",
+   "baseName": "刃重众",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x42465367",
+   "displayName": "刃重众 · 消耗4 · 支援",
+   "baseName": "刃重众",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x730395DC",
+   "displayName": "刃重众 · 消耗5 · 支援",
+   "baseName": "刃重众",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0xDA0B6092",
+   "displayName": "玛洛斯僧兵 · 消耗3 · 支援",
+   "baseName": "玛洛斯僧兵",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x36CB5052",
+   "displayName": "玛洛斯僧兵 · 消耗4 · 支援",
+   "baseName": "玛洛斯僧兵",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x16B702DC",
+   "displayName": "玛洛斯僧兵 · 消耗5 · 支援",
+   "baseName": "玛洛斯僧兵",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x6368A53D",
+   "displayName": "玛洛斯僧兵 · 消耗5 · 支援",
+   "baseName": "玛洛斯僧兵",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0xA0C96959",
+   "displayName": "骑空团联盟拉法尔 · 消耗3 · 支援",
+   "baseName": "骑空团联盟拉法尔",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x513D05CC",
+   "displayName": "骑空团联盟拉法尔 · 消耗4 · 支援",
+   "baseName": "骑空团联盟拉法尔",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x109E2271",
+   "displayName": "骑空团联盟拉法尔 · 消耗5 · 支援",
+   "baseName": "骑空团联盟拉法尔",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0xA608AECD",
+   "displayName": "裁判 · 消耗5 · 支援",
+   "baseName": "裁判",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0xE6EBB6FA",
+   "displayName": "裁判 · 消耗5 · 支援",
+   "baseName": "裁判",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x1AB77FDF",
+   "displayName": "猫 · 消耗5 · 支援",
+   "baseName": "猫",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x9118453A",
+   "displayName": "小钳蟹 · 消耗3 · 支援",
+   "baseName": "小钳蟹",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x0525E77D",
+   "displayName": "小钳蟹 · 消耗4 · 支援",
+   "baseName": "小钳蟹",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xF28D0E35",
+   "displayName": "小钳蟹 · 消耗5 · 支援",
+   "baseName": "小钳蟹",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x7E853E16",
+   "displayName": "神谕转轮 · 消耗3 · 支援",
+   "baseName": "神谕转轮",
+   "typeName": "支援",
+   "cost": 3
+  },
+  {
+   "hash": "0x03C8BF90",
+   "displayName": "神谕转轮 · 消耗4 · 支援",
+   "baseName": "神谕转轮",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xD7555B1F",
+   "displayName": "神谕转轮 · 消耗4 · 支援",
+   "baseName": "神谕转轮",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0xE24B4807",
+   "displayName": "神谕转轮 · 消耗4 · 支援",
+   "baseName": "神谕转轮",
+   "typeName": "支援",
+   "cost": 4
+  },
+  {
+   "hash": "0x47E2AE71",
+   "displayName": "神谕转轮 · 消耗5 · 支援",
+   "baseName": "神谕转轮",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x48732D1F",
+   "displayName": "神谕转轮 · 消耗5 · 支援",
+   "baseName": "神谕转轮",
+   "typeName": "支援",
+   "cost": 5
+  },
+  {
+   "hash": "0x2F15455C",
+   "displayName": "别西卜 · 消耗5 · 特殊",
+   "baseName": "别西卜",
+   "typeName": "特殊",
+   "cost": 5
+  },
+  {
+   "hash": "0xA7EFF558",
+   "displayName": "别西卜 · 消耗5 · 特殊",
+   "baseName": "别西卜",
+   "typeName": "特殊",
+   "cost": 5
+  }
+ ],
+ "traits": [
+  {
+   "hash": "0x50079A1C",
+   "displayName": "攻击力",
+   "gameMaxLevel": 50
+  },
+  {
+   "hash": "0xF372F096",
+   "displayName": "体力",
+   "gameMaxLevel": 50
+  },
+  {
+   "hash": "0x8D78A19B",
+   "displayName": "暴击率",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0xCEB700EE",
+   "displayName": "昏厥",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0x3F488339",
+   "displayName": "背水",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x2FC8FBFF",
+   "displayName": "热血",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x1C360C63",
+   "displayName": "蓄力攻击",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x3FEC5F80",
+   "displayName": "协同攻击",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x8D078597",
+   "displayName": "投掷",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xC0979A17",
+   "displayName": "暴击伤害",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x6B694D6D",
+   "displayName": "弱点攻击",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0xA7A45F28",
+   "displayName": "连击收招",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xB360801D",
+   "displayName": "集中炮火",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xDC584F60",
+   "displayName": "伤害上限",
+   "gameMaxLevel": 65
+  },
+  {
+   "hash": "0xF17850B9",
+   "displayName": "连击加成",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x71F11A9B",
+   "displayName": "暴君",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xC35B111B",
+   "displayName": "蓄力会心",
+   "gameMaxLevel": 20
+  },
+  {
+   "hash": "0x4F1A3683",
+   "displayName": "弱化状态特效",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xA9D17F55",
+   "displayName": "Overdrive特效",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xAC9674C1",
+   "displayName": "破防特效",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xE6CDBA9C",
+   "displayName": "坚守",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0xA1A8E39D",
+   "displayName": "霸体",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xE69A4694",
+   "displayName": "豪胆",
+   "gameMaxLevel": 20
+  },
+  {
+   "hash": "0x973B49AF",
+   "displayName": "中毒抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7C84A6B3",
+   "displayName": "灼热抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD54F8CA7",
+   "displayName": "泥沙抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xFB572681",
+   "displayName": "冰冻抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x3759A5B9",
+   "displayName": "昏迷抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x2242921F",
+   "displayName": "麻痹抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x50B453DD",
+   "displayName": "能力封印抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xCFB48782",
+   "displayName": "奥义封印抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0AA20846",
+   "displayName": "格挡性能",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x3C2B57B0",
+   "displayName": "格挡仇火",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x8B3BF60C",
+   "displayName": "闪避性能",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7C2E4D64",
+   "displayName": "闪避仇火",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x9389CC06",
+   "displayName": "提升治疗",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x6085DA25",
+   "displayName": "自愈",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0x7CCFF74F",
+   "displayName": "HP吸收",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0x95F3FA86",
+   "displayName": "自动复活",
+   "gameMaxLevel": 20
+  },
+  {
+   "hash": "0x318D12E9",
+   "displayName": "迅捷能力",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0x05F2ECDC",
+   "displayName": "怒涛",
+   "gameMaxLevel": 20
+  },
+  {
+   "hash": "0xB5FF9FD3",
+   "displayName": "激昂",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0x24883AF3",
+   "displayName": "药水携带数",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xDC607D75",
+   "displayName": "匿踪",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x6018372B",
+   "displayName": "挑衅",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xF687C5EF",
+   "displayName": "获得经验值",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xC86F3082",
+   "displayName": "获得金币",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xEAE321EB",
+   "displayName": "能力伤害",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xE0ABFDFE",
+   "displayName": "守护",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0xA2FA9685",
+   "displayName": "缓速抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xB6E31F76",
+   "displayName": "不动",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9702860F",
+   "displayName": "灾祸抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0053599E",
+   "displayName": "蓄力强化",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x1470F860",
+   "displayName": "坚持",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x3F2C482E",
+   "displayName": "弱化效果延长",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0EAD65E0",
+   "displayName": "全弱化效果抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x09AA7DB5",
+   "displayName": "凝神",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xD2C8E10A",
+   "displayName": "明镜止水",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x29B292A8",
+   "displayName": "抗争",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x7EDD69D0",
+   "displayName": "怒发冲冠",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x8F502F0D",
+   "displayName": "奋不顾身",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x84078CB0",
+   "displayName": "快速蓄力",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xD0A1C6E5",
+   "displayName": "攻击机会",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x57E8A93F",
+   "displayName": "因子强化",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xCD030268",
+   "displayName": "英勇神速",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA38510E2",
+   "displayName": "英勇灵气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xDADE14DC",
+   "displayName": "英勇之心",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x3BFED918",
+   "displayName": "守护者的决心",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xF8496336",
+   "displayName": "守护者的骄傲",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9AFDFA9E",
+   "displayName": "守护者的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x151E4674",
+   "displayName": "舵手的指引",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA374FDF0",
+   "displayName": "舵手的坚持",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD76F4D24",
+   "displayName": "舵手的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xB48EEF48",
+   "displayName": "魔法师的心愿",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x11AAE5F5",
+   "displayName": "魔法师的伶俐",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xC00163B3",
+   "displayName": "法师的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xAA83F548",
+   "displayName": "老兵的智慧",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x921B6B0C",
+   "displayName": "老兵的天眼",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0E42BE1B",
+   "displayName": "老兵的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x23D0F67F",
+   "displayName": "玫瑰早绽",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xC2A4C7A9",
+   "displayName": "玫瑰缤纷",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x8519AD4A",
+   "displayName": "玫瑰的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD908223D",
+   "displayName": "幽幻之应",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7351D602",
+   "displayName": "幽幻之谊",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA339D642",
+   "displayName": "幽幻的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x8CDF9382",
+   "displayName": "白龙的誓约",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD1012D8C",
+   "displayName": "白龙的荣耀",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x6316CBEB",
+   "displayName": "白龙的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x2E65A774",
+   "displayName": "勇士的信念",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x16EFF868",
+   "displayName": "勇士的意志",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD8F66C1C",
+   "displayName": "勇士的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xE60A735C",
+   "displayName": "王者行进",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x6FF05223",
+   "displayName": "王者一心",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xBA504607",
+   "displayName": "王者的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x86CBCDC4",
+   "displayName": "屠龙者的威猛",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x05FA4599",
+   "displayName": "屠龙者的才智",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xC7D379F1",
+   "displayName": "屠龙者的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9A9DC170",
+   "displayName": "圣骑士的剑辉",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x522E2388",
+   "displayName": "圣骑士的威光",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xB85202BC",
+   "displayName": "圣骑士的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0CD6C625",
+   "displayName": "变换自如的迅刃",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA3B49220",
+   "displayName": "变换自如的妖剑士",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xDAEFBB27",
+   "displayName": "变换自如的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x29B07BEB",
+   "displayName": "斩姬梦幻",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA63B89CD",
+   "displayName": "斩姬武艺",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xFDD1AD24",
+   "displayName": "斩姬的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x5463232F",
+   "displayName": "古今无双的气概",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x451D814C",
+   "displayName": "古今无双的强者",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0F026CF0",
+   "displayName": "古今无双的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xEC3CF174",
+   "displayName": "极致的谋略",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xAF513A9D",
+   "displayName": "极致真理",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xE6B92E34",
+   "displayName": "极致的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x93A2093C",
+   "displayName": "异能增长",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7AD0C010",
+   "displayName": "异能战意",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xB064A634",
+   "displayName": "异能之心",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x6EBFA176",
+   "displayName": "真红烈焰",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xF1D5DBD0",
+   "displayName": "真红翔舞",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x4F135217",
+   "displayName": "真红的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7440E869",
+   "displayName": "冥暗钢刃",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xCD124165",
+   "displayName": "冥暗自若",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD7F9BB88",
+   "displayName": "冥暗的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0FBA47E8",
+   "displayName": "幸运甘露",
+   "gameMaxLevel": 50
+  },
+  {
+   "hash": "0xA4D6B880",
+   "displayName": "强健甘露",
+   "gameMaxLevel": 50
+  },
+  {
+   "hash": "0xCDEB73F6",
+   "displayName": "修炼甘露",
+   "gameMaxLevel": 50
+  },
+  {
+   "hash": "0x1DC9D7E7",
+   "displayName": "水牢抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xDD4A701E",
+   "displayName": "异能耐受",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x4BF2E191",
+   "displayName": "攻击DOWN抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x66DE60B1",
+   "displayName": "防御DOWN抗性",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x082033CB",
+   "displayName": "螃蟹共鸣",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0x1B0D9897",
+   "displayName": "蟹钳的报恩",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9AD8B5E6",
+   "displayName": "Seven Net",
+   "gameMaxLevel": 6
+  },
+  {
+   "hash": "0x74AA75D6",
+   "displayName": "刚健",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xDC225C96",
+   "displayName": "修罗",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x4C588C27",
+   "displayName": "属性转换克制",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x5E422AE5",
+   "displayName": "获得MSP",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xAF794A87",
+   "displayName": "闪避距离",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x57AB5B10",
+   "displayName": "追击",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0x82CE278D",
+   "displayName": "身无长技",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x1568E0E4",
+   "displayName": "先发制人",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x70395731",
+   "displayName": "穷寇心",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xCD18A77D",
+   "displayName": "万能药",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x333E5862",
+   "displayName": "骰子剑",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA8A3163B",
+   "displayName": "刀上舞",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xEC1C6779",
+   "displayName": "摇曳步",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xDBE1D775",
+   "displayName": "a α 阿尔法",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x8D2ADB6E",
+   "displayName": "b β 贝塔",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x5C862E13",
+   "displayName": "y γ 伽马",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xD3B8C21F",
+   "displayName": "终极蟹钳因子",
+   "gameMaxLevel": 45
+  },
+  {
+   "hash": "0x48A95B8D",
+   "displayName": "金刚",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0x40223C28",
+   "displayName": "浩劫",
+   "gameMaxLevel": 30
+  },
+  {
+   "hash": "0xF71F8997",
+   "displayName": "自动药水",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x77C809F5",
+   "displayName": "剑圣的练气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9230E3F5",
+   "displayName": "剑圣的闪刃",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7B4FC47A",
+   "displayName": "剑圣的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xEF05EC4D",
+   "displayName": "涯之七星",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xE85FF8E0",
+   "displayName": "魔眼的万箭",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x8572B8AF",
+   "displayName": "魔眼的凛翔",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x81B293D9",
+   "displayName": "魔眼的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x281214AB",
+   "displayName": "王之二涯",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD40D1E9B",
+   "displayName": "天司长的灵威",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x15806DFC",
+   "displayName": "天司长的风雅",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x4E5F6706",
+   "displayName": "天司长的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x1A2EF59E",
+   "displayName": "无态",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xEE85CD1F",
+   "displayName": "狂战士",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x3D8153A1",
+   "displayName": "斯巴达",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x51C115D2",
+   "displayName": "超终极精准闪避",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x73220725",
+   "displayName": "天星之止息",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9232DC17",
+   "displayName": "天星之界",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x3EB345D7",
+   "displayName": "雷狼的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0DE887A0",
+   "displayName": "天星之练",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA898E283",
+   "displayName": "天星之雪",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xF26BAEA5",
+   "displayName": "分歧",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x36E3848D",
+   "displayName": "天星之焰",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD029FE08",
+   "displayName": "浪迹天涯",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA7726190",
+   "displayName": "天星之煌",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x06719232",
+   "displayName": "黑龙的咒印",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x461A8E07",
+   "displayName": "群青的逆境",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9ACE140B",
+   "displayName": "刃姬的圆舞曲",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7D75D904",
+   "displayName": "雷狼的弹匣",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x5559232F",
+   "displayName": "黑龙的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xED8D8AD8",
+   "displayName": "黑龙的折跃",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xB953CC1E",
+   "displayName": "群青的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7B5B081D",
+   "displayName": "刃姬的小夜曲",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xBE3404B9",
+   "displayName": "雷狼的慧眼",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x807B6684",
+   "displayName": "转世的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xDBA19768",
+   "displayName": "狼王的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x79266456",
+   "displayName": "刃姬的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x1DE14C65",
+   "displayName": "狼王之觉醒",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x26956F25",
+   "displayName": "狼王的大轮转",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD176D262",
+   "displayName": "狼王的激昂",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x30773197",
+   "displayName": "转世的跃动",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x47384248",
+   "displayName": "转世的恩宠",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9300FADB",
+   "displayName": "天星之止息",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD29CD8E0",
+   "displayName": "天星之界",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD8C61507",
+   "displayName": "雷狼的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x3BA37635",
+   "displayName": "HP吸收",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x2679A4F0",
+   "displayName": "明镜止水",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x08DA7279",
+   "displayName": "攻击力",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x837B3D64",
+   "displayName": "自愈",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x04AC2281",
+   "displayName": "激昂",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xB5B23F02",
+   "displayName": "体力",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x3ED16FB2",
+   "displayName": "药水携带数",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD340651C",
+   "displayName": "自动复活",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x8B8085C0",
+   "displayName": "天星之练",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xE14E1598",
+   "displayName": "天星之雪",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x7B4AAB30",
+   "displayName": "分歧",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x74061B0C",
+   "displayName": "天星之焰",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x5BF84FD1",
+   "displayName": "浪迹天涯",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x20492635",
+   "displayName": "天星之煌",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0523A202",
+   "displayName": "黑龙的咒印",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD4117FF3",
+   "displayName": "群青的逆境",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x96D6FE5E",
+   "displayName": "刃姬的圆舞曲",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xF964A4CA",
+   "displayName": "雷狼的弹匣",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9ABD2DA5",
+   "displayName": "黑龙的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x0723F7EC",
+   "displayName": "黑龙的折跃",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x51E98A7C",
+   "displayName": "群青的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xEC9FFE77",
+   "displayName": "刃姬的小夜曲",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x1A359B67",
+   "displayName": "雷狼的慧眼",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xA8A0CBFF",
+   "displayName": "黑龙之觉醒",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x2D70C37D",
+   "displayName": "转世的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x41AC1082",
+   "displayName": "狼王的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xEB766D87",
+   "displayName": "刃姬的战气",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x895ABBF6",
+   "displayName": "狼王之觉醒",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xF21404B1",
+   "displayName": "狼王的大轮转",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x9EC6C56D",
+   "displayName": "狼王的激昂",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x23953FD4",
+   "displayName": "雷狼之觉醒",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x95CC3CB8",
+   "displayName": "群青之觉醒",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xD8A464F1",
+   "displayName": "刃姬之觉醒",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0xBA28C81C",
+   "displayName": "转世的跃动",
+   "gameMaxLevel": 15
+  },
+  {
+   "hash": "0x64301E91",
+   "displayName": "转世的恩宠",
+   "gameMaxLevel": 15
+  }
+ ],
+ "subTraits": [
+  {
+   "hash": "0x5A39D81B",
+   "displayName": "奥义连锁伤害（低·最高50%）",
+   "values": [
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "低"
+  },
+  {
+   "hash": "0x54B09A37",
+   "displayName": "奥义连锁伤害（高·最高100%）",
+   "values": [
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0,
+    60.0,
+    80.0,
+    100.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "高"
+  },
+  {
+   "hash": "0xBC4E92CB",
+   "displayName": "体力（低·最高2000）",
+   "values": [
+    200.0,
+    400.0,
+    600.0,
+    800.0,
+    1000.0,
+    1200.0,
+    1400.0,
+    1600.0,
+    1800.0,
+    2000.0
+   ],
+   "maxLevel": 9,
+   "isPercent": false,
+   "tier": "低"
+  },
+  {
+   "hash": "0xF2256E44",
+   "displayName": "体力（高·最高5000）",
+   "values": [
+    800.0,
+    1000.0,
+    1200.0,
+    1400.0,
+    1600.0,
+    1800.0,
+    2000.0,
+    2500.0,
+    3000.0,
+    5000.0
+   ],
+   "maxLevel": 9,
+   "isPercent": false,
+   "tier": "高"
+  },
+  {
+   "hash": "0xA3539FBB",
+   "displayName": "奥义伤害上限（低·最高50%）",
+   "values": [
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "低"
+  },
+  {
+   "hash": "0x5A1D2C89",
+   "displayName": "奥义伤害上限（高·最高100%）",
+   "values": [
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0,
+    60.0,
+    80.0,
+    100.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "高"
+  },
+  {
+   "hash": "0x75138D21",
+   "displayName": "奥义伤害（低·最高20%）",
+   "values": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "低"
+  },
+  {
+   "hash": "0x33C0D50C",
+   "displayName": "奥义伤害（高·最高30%）",
+   "values": [
+    8.0,
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0,
+    22.0,
+    25.0,
+    30.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "高"
+  },
+  {
+   "hash": "0xA8900C80",
+   "displayName": "攻击力（低·最高2000）",
+   "values": [
+    200.0,
+    400.0,
+    600.0,
+    800.0,
+    1000.0,
+    1200.0,
+    1400.0,
+    1600.0,
+    1800.0,
+    2000.0
+   ],
+   "maxLevel": 9,
+   "isPercent": false,
+   "tier": "低"
+  },
+  {
+   "hash": "0xA3E537B1",
+   "displayName": "攻击力（高·最高3000）",
+   "values": [
+    800.0,
+    1000.0,
+    1200.0,
+    1400.0,
+    1600.0,
+    1800.0,
+    2000.0,
+    2200.0,
+    2500.0,
+    3000.0
+   ],
+   "maxLevel": 9,
+   "isPercent": false,
+   "tier": "高"
+  },
+  {
+   "hash": "0xF7B0316F",
+   "displayName": "昏厥（低·最高1.5）",
+   "values": [
+    0.2,
+    0.3,
+    0.4,
+    0.5,
+    0.6,
+    0.7,
+    0.9,
+    1.1,
+    1.3,
+    1.5
+   ],
+   "maxLevel": 9,
+   "isPercent": false,
+   "tier": "低"
+  },
+  {
+   "hash": "0xF0F77BC1",
+   "displayName": "昏厥（高·最高2）",
+   "values": [
+    0.5,
+    0.6,
+    0.7,
+    0.9,
+    1.1,
+    1.3,
+    1.5,
+    1.6,
+    1.8,
+    2.0
+   ],
+   "maxLevel": 9,
+   "isPercent": false,
+   "tier": "高"
+  },
+  {
+   "hash": "0xA66241C9",
+   "displayName": "普通攻击伤害上限（低·最高50%）",
+   "values": [
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "低"
+  },
+  {
+   "hash": "0x9245DFA4",
+   "displayName": "普通攻击伤害上限（高·最高100%）",
+   "values": [
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0,
+    60.0,
+    80.0,
+    100.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "高"
+  },
+  {
+   "hash": "0x00D171E0",
+   "displayName": "暴击率（低·最高20%）",
+   "values": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "低"
+  },
+  {
+   "hash": "0xA074A967",
+   "displayName": "暴击率（高·最高30%）",
+   "values": [
+    8.0,
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0,
+    22.0,
+    25.0,
+    30.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "高"
+  },
+  {
+   "hash": "0x2270BC40",
+   "displayName": "HP回复上限（低·最高50%）",
+   "values": [
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "低"
+  },
+  {
+   "hash": "0x2EA9CA80",
+   "displayName": "HP回复上限（高·最高75%）",
+   "values": [
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0,
+    55.0,
+    60.0,
+    75.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "高"
+  },
+  {
+   "hash": "0x2FFB509F",
+   "displayName": "能力伤害上限（低·最高50%）",
+   "values": [
+    5.0,
+    10.0,
+    15.0,
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "低"
+  },
+  {
+   "hash": "0xCE70C58A",
+   "displayName": "能力伤害上限（高·最高100%）",
+   "values": [
+    20.0,
+    25.0,
+    30.0,
+    35.0,
+    40.0,
+    45.0,
+    50.0,
+    60.0,
+    80.0,
+    100.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "高"
+  },
+  {
+   "hash": "0x664E8E32",
+   "displayName": "能力伤害（低·最高20%）",
+   "values": [
+    2.0,
+    4.0,
+    6.0,
+    8.0,
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "低"
+  },
+  {
+   "hash": "0xAF39A3FB",
+   "displayName": "能力伤害（高·最高30%）",
+   "values": [
+    8.0,
+    10.0,
+    12.0,
+    14.0,
+    16.0,
+    18.0,
+    20.0,
+    22.0,
+    25.0,
+    30.0
+   ],
+   "maxLevel": 9,
+   "isPercent": true,
+   "tier": "高"
+  }
+ ]
+}

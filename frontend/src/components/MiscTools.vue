@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, reactive, ref } from 'vue'
 import { CharaAttach, CharaDetach,
          CurrencyGetAll, CurrencySetOne,
          PotionGetAll, PotionSetOne,
@@ -11,6 +11,8 @@ import { CharaAttach, CharaDetach,
          UnlockAllTrophyGetStatus, UnlockAllTrophyScan, UnlockAllTrophySetEnabled,
          OtherSkinPurpleRuneGetStatus, OtherSkinPurpleRuneSetEnabled,
          MonsterEnhanceSetPatchValueEnabled,
+         CombatPatchList, CombatPatchSetEnabled,
+         CaveList, CaveSetEnabled, CaveSetFloat, CaveSetInt, CaveSetFlag, CaveMeta,
          DamageMeterGetStatus, DamageMeterReset,
          DamageOverlaySetEnabled, DamageOverlaySetValue, DamageOverlaySetFontSize,
          GetAppVersion, CheckUpdate, OpenReleasePage } from '../../wailsjs/go/main/App'
@@ -50,7 +52,102 @@ const potionLoading = ref(false)
 const damageOverlayEnabled = ref(false)
 const damageOverlayFontSize = ref(Number(localStorage.getItem('gbfrDamageOverlayFontSize') || 48))
 const showOutdatedFeatures = false
+const combatPatches = ref([])
+const combatLoading = ref(false)
+const combatBusy = reactive({})
+const combatGroupOrder = ['战斗', '通用角色', '任务', '生活品质']
+const characterOrder = ['古兰', '卡塔莉娜', '拉卡姆', '伊欧', '欧根', '萝赛塔', '娜露梅', '菲莉', '夏洛特', '尤达拉哈', '巴萨拉卡', '塞达', '冈达葛萨', '巴恩', '伊德', '圣德芬', '希耶提', '索恩', '贝阿朵丽丝', '尤斯提斯']
+const characterSet = new Set(characterOrder)
+const selectedCharacter = ref('')
 let damageMeterTimer = 0
+
+const combatGroups = computed(() => {
+  const map = new Map()
+  combatPatches.value.forEach((item) => {
+    if (characterSet.has(item.group)) return
+    if (!map.has(item.group)) map.set(item.group, [])
+    map.get(item.group).push(item)
+  })
+  const entries = Array.from(map.entries())
+  entries.sort((a, b) => {
+    const ia = combatGroupOrder.indexOf(a[0])
+    const ib = combatGroupOrder.indexOf(b[0])
+    if (ia !== ib) return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)
+    return 0
+  })
+  return entries.map(([group, items]) => ({ group, items }))
+})
+
+const combatActiveCount = computed(() => combatPatches.value.filter((item) => item.enabled).length)
+
+const caveList = ref([])
+const caveMeta = ref({})
+const caveBusy = reactive({})
+const caveParams = reactive({})
+const caveLoading = ref(false)
+
+const caveToggles = computed(() => caveList.value.filter((c) => {
+  if (characterSet.has(c.group)) return false
+  const m = caveMeta.value[c.id]
+  return m && (m.kind === 'capture' || (!m.floats?.length && !m.ints?.length && !m.flags?.length))
+}))
+
+const caveModifiers = computed(() => caveList.value.filter((c) => {
+  if (characterSet.has(c.group)) return false
+  const m = caveMeta.value[c.id]
+  return m && m.kind === 'modifier'
+}))
+
+const expandedModifier = ref('')
+function toggleModifierExpand(id) {
+  expandedModifier.value = expandedModifier.value === id ? '' : id
+}
+
+const modifierActiveCount = computed(() => caveModifiers.value.filter((c) => c.enabled).length)
+
+const caveToggleGroups = computed(() => {
+  const map = new Map()
+  caveToggles.value.forEach((item) => {
+    if (!map.has(item.group)) map.set(item.group, [])
+    map.get(item.group).push(item)
+  })
+  return Array.from(map.entries()).map(([group, items]) => ({ group, items }))
+})
+
+const caveActiveCount = computed(() => caveList.value.filter((c) => c.enabled).length)
+
+const characterList = computed(() => {
+  const stat = new Map()
+  const ensure = (name) => {
+    if (!stat.has(name)) stat.set(name, { name, patchCount: 0, caveCount: 0, activeCount: 0 })
+    return stat.get(name)
+  }
+  combatPatches.value.forEach((item) => {
+    if (!characterSet.has(item.group)) return
+    const s = ensure(item.group)
+    s.patchCount++
+    if (item.enabled) s.activeCount++
+  })
+  caveList.value.forEach((c) => {
+    if (!characterSet.has(c.group)) return
+    const s = ensure(c.group)
+    s.caveCount++
+    if (c.enabled) s.activeCount++
+  })
+  return characterOrder.filter((n) => stat.has(n)).map((n) => stat.get(n))
+})
+
+const characterActiveTotal = computed(() => characterList.value.reduce((sum, c) => sum + c.activeCount, 0))
+
+const selectedCharacterPatches = computed(() =>
+  combatPatches.value.filter((item) => item.group === selectedCharacter.value))
+
+const selectedCharacterModifiers = computed(() =>
+  caveList.value.filter((c) => c.group === selectedCharacter.value && caveMeta.value[c.id]?.kind === 'modifier'))
+
+function toggleCharacter(name) {
+  selectedCharacter.value = selectedCharacter.value === name ? '' : name
+}
 
 function getMonsterEnhanceMultiplier(id) {
   const saved = window.gbfrMonsterEnhanceMultipliers || {}
@@ -72,6 +169,8 @@ function connect() {
       }
       if (showOutdatedFeatures) loadInfiniteChallengeStatus()
       loadMaterialConsumeStatus()
+      loadCombatPatches()
+      loadCaves()
       if (showOutdatedFeatures) {
         loadTerminusDropStatus()
         loadUnlockAllTrophyStatus()
@@ -95,6 +194,11 @@ function disconnect() {
       Object.assign(faceAccessoryStatus, { found: false, address: 0, rva: 0, hidden: false, jumpOpcode: '', currentBytes: '' })
       Object.assign(infiniteChallengeStatus, { rva: 0, enabled: false, currentBytes: '' })
       Object.assign(materialConsumeStatus, { rva: 0, enabled: false, currentBytes: '' })
+      combatPatches.value = []
+      Object.keys(combatBusy).forEach((key) => delete combatBusy[key])
+      caveList.value = []
+      Object.keys(caveBusy).forEach((key) => delete caveBusy[key])
+      selectedCharacter.value = ''
       Object.assign(terminusDropStatus, { found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
       Object.assign(unlockAllTrophyStatus, { found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
       Object.assign(otherSkinPurpleRuneStatus, { rva: 0, enabled: false, jumpOpcode: '', currentBytes: '' })
@@ -206,6 +310,109 @@ function setInfiniteChallengeEnabled(enabled) {
     .then((status) => { applyInfiniteChallengeStatus(status); emit('status', enabled ? '已开启无限挑战' : '已恢复挑战次数递增', 'success') })
     .catch((err) => emit('status', String(err), 'error'))
     .finally(() => { infiniteChallengeLoading.value = false })
+}
+
+function loadCombatPatches() {
+  if (!connected.value) return
+  combatLoading.value = true
+  CombatPatchList()
+    .then((items) => { combatPatches.value = Array.isArray(items) ? items : [] })
+    .catch((err) => emit('status', String(err), 'error'))
+    .finally(() => { combatLoading.value = false })
+}
+
+function toggleCombatPatch(item) {
+  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
+  if (combatBusy[item.id]) return
+  const next = !item.enabled
+  combatBusy[item.id] = true
+  CombatPatchSetEnabled(item.id, next)
+    .then((state) => {
+      const index = combatPatches.value.findIndex((entry) => entry.id === state.id)
+      if (index >= 0) combatPatches.value.splice(index, 1, state)
+      emit('status', `${state.name}已${next ? '开启' : '关闭'}`, 'success')
+    })
+    .catch((err) => emit('status', String(err), 'error'))
+    .finally(() => { delete combatBusy[item.id] })
+}
+
+function loadCaves() {
+  if (!connected.value) return
+  caveLoading.value = true
+  Promise.all([CaveMeta(), CaveList()])
+    .then(([meta, list]) => {
+      const map = {}
+      ;(Array.isArray(meta) ? meta : []).forEach((m) => { map[m.id] = m })
+      caveMeta.value = map
+      caveList.value = Array.isArray(list) ? list : []
+      caveList.value.forEach((c) => {
+        const m = map[c.id]
+        if (!m) return
+        ;(m.floats || []).forEach((f, i) => {
+          const key = `${c.id}|flt|${i}`
+          if (caveParams[key] === undefined) caveParams[key] = String(f.default)
+        })
+        ;(m.ints || []).forEach((f, i) => {
+          const key = `${c.id}|int|${i}`
+          if (caveParams[key] === undefined) caveParams[key] = String(f.default)
+        })
+      })
+    })
+    .catch((err) => emit('status', String(err), 'error'))
+    .finally(() => { caveLoading.value = false })
+}
+
+function toggleCave(item) {
+  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
+  if (caveBusy[item.id]) return
+  const next = !item.enabled
+  caveBusy[item.id] = true
+  CaveSetEnabled(item.id, next)
+    .then((state) => {
+      const index = caveList.value.findIndex((entry) => entry.id === state.id)
+      if (index >= 0) caveList.value.splice(index, 1, state)
+      if (next) applyCaveParams(item.id)
+      emit('status', `${state.name}已${next ? '开启' : '关闭'}`, 'success')
+    })
+    .catch((err) => emit('status', String(err), 'error'))
+    .finally(() => { delete caveBusy[item.id] })
+}
+
+function applyCaveParams(id) {
+  const m = caveMeta.value[id]
+  if (!m) return
+  ;(m.floats || []).forEach((f, i) => {
+    const v = parseFloat(caveParams[`${id}|flt|${i}`])
+    if (!isNaN(v)) CaveSetFloat(id, f.sym, f.extra, v).catch(() => {})
+  })
+  ;(m.ints || []).forEach((f, i) => {
+    const v = parseInt(caveParams[`${id}|int|${i}`], 10)
+    if (!isNaN(v)) CaveSetInt(id, f.sym, f.extra, v).catch(() => {})
+  })
+}
+
+function setCaveFloat(id, sym, extra, key) {
+  const v = parseFloat(caveParams[key])
+  if (isNaN(v)) { emit('status', '请输入有效数值', 'error'); return }
+  CaveSetFloat(id, sym, extra, v)
+    .then(() => emit('status', '数值已写入', 'success'))
+    .catch((err) => emit('status', String(err), 'error'))
+}
+
+function setCaveInt(id, sym, extra, key) {
+  const v = parseInt(caveParams[key], 10)
+  if (isNaN(v)) { emit('status', '请输入有效整数', 'error'); return }
+  CaveSetInt(id, sym, extra, v)
+    .then(() => emit('status', '数值已写入', 'success'))
+    .catch((err) => emit('status', String(err), 'error'))
+}
+
+function toggleCaveFlag(id, sym, byte, key) {
+  const next = !caveParams[key]
+  caveParams[key] = next
+  CaveSetFlag(id, sym, byte, next)
+    .then(() => emit('status', next ? '子功能已开启' : '子功能已关闭', 'success'))
+    .catch((err) => { caveParams[key] = !next; emit('status', String(err), 'error') })
 }
 
 function applyMaterialConsumeStatus(status) {
@@ -680,6 +887,186 @@ onBeforeUnmount(() => {
           <div class="memory-bytes">{{ materialConsumeStatus.currentBytes || '未读取' }}</div>
         </div>
 
+        <div class="memory-card" :class="{ active: combatActiveCount > 0 }">
+          <div class="memory-header">
+            <span class="memory-title">战斗辅助（开关类）</span>
+            <span class="info-dot" title="即开即用的运行时字节补丁，含通用战斗、角色专属机制、任务与生活品质。断开连接会自动还原全部补丁。">!</span>
+            <span class="memory-hint">已开启 {{ combatActiveCount }} / {{ combatPatches.length }}</span>
+          </div>
+          <div v-if="!combatPatches.length" class="combat-empty">{{ combatLoading ? '加载中...' : '未定位到战斗功能' }}</div>
+          <div v-for="grp in combatGroups" :key="grp.group" class="combat-group">
+            <div class="combat-group-title">{{ grp.group }}</div>
+            <div class="combat-toggle-grid">
+              <button
+                v-for="item in grp.items"
+                :key="item.id"
+                class="combat-toggle"
+                :class="{ on: item.enabled, warn: item.mismatch }"
+                :disabled="combatBusy[item.id]"
+                :title="item.mismatch ? '指令字节异常，可能游戏版本不匹配' : ''"
+                @click="toggleCombatPatch(item)"
+              >
+                <span class="combat-dot"></span>
+                <span class="combat-label">{{ item.name }}</span>
+              </button>
+            </div>
+          </div>
+          <div class="memory-row">
+            <button class="btn-refresh" @click="loadCombatPatches" :disabled="combatLoading">刷新状态</button>
+          </div>
+        </div>
+
+        <div class="memory-card" :class="{ active: caveActiveCount > 0 }">
+          <div class="memory-header">
+            <span class="memory-title">高级功能（代码注入 · 开关类）</span>
+            <span class="info-dot" title="需分配代码洞并 Hook 游戏函数，含玩家/物品指针捕获、自动连招等。断开连接自动还原。">!</span>
+            <span class="memory-hint">已开启 {{ caveActiveCount }} / {{ caveList.length }}</span>
+          </div>
+          <div v-if="!caveToggles.length" class="combat-empty">{{ caveLoading ? '加载中...' : '无可用功能' }}</div>
+          <div v-for="grp in caveToggleGroups" :key="grp.group" class="combat-group">
+            <div class="combat-group-title">{{ grp.group }}</div>
+            <div class="combat-toggle-grid">
+              <button
+                v-for="item in grp.items"
+                :key="item.id"
+                class="combat-toggle"
+                :class="{ on: item.enabled }"
+                :disabled="caveBusy[item.id]"
+                @click="toggleCave(item)"
+              >
+                <span class="combat-dot"></span>
+                <span class="combat-label">{{ item.name }}</span>
+              </button>
+            </div>
+          </div>
+          <div class="memory-row">
+            <button class="btn-refresh" @click="loadCaves" :disabled="caveLoading">刷新状态</button>
+          </div>
+        </div>
+
+        <div class="memory-card" :class="{ active: modifierActiveCount > 0 }" v-if="caveModifiers.length">
+          <div class="memory-header">
+            <span class="memory-title">参数化修改</span>
+            <span class="info-dot" title="带倍率/等级/子开关的通用修改。点击一行展开其参数；有参数的功能需先开启再展开设置。">!</span>
+            <span class="memory-hint">已开启 {{ modifierActiveCount }} / {{ caveModifiers.length }}</span>
+          </div>
+          <div class="mod-list">
+            <div v-for="item in caveModifiers" :key="item.id" class="mod-item" :class="{ active: item.enabled, open: expandedModifier === item.id }">
+              <div class="mod-row" @click="toggleModifierExpand(item.id)">
+                <span class="mod-dot" :class="{ on: item.enabled }"></span>
+                <span class="mod-name">{{ item.name }}</span>
+                <span class="mod-group">{{ item.group }}</span>
+                <button
+                  class="mod-toggle-btn"
+                  :class="{ on: item.enabled }"
+                  :disabled="caveBusy[item.id]"
+                  @click.stop="toggleCave(item)"
+                >{{ item.enabled ? '关闭' : '开启' }}</button>
+                <span class="mod-caret" :class="{ open: expandedModifier === item.id }">▸</span>
+              </div>
+              <div v-if="expandedModifier === item.id" class="mod-params">
+                <div v-if="!item.enabled" class="mod-hint">先点「开启」再设置参数</div>
+                <template v-else>
+                  <div v-for="(f, i) in (caveMeta[item.id]?.floats || [])" :key="'f'+i" class="cave-param-row">
+                    <span class="cave-param-label">{{ f.label }}</span>
+                    <input v-model="caveParams[item.id + '|flt|' + i]" type="number" step="0.1" class="batch-input cave-input" />
+                    <button class="btn-batch" @click="setCaveFloat(item.id, f.sym, f.extra, item.id + '|flt|' + i)">写入</button>
+                  </div>
+                  <div v-for="(f, i) in (caveMeta[item.id]?.ints || [])" :key="'i'+i" class="cave-param-row">
+                    <span class="cave-param-label">{{ f.label }}</span>
+                    <input v-model="caveParams[item.id + '|int|' + i]" type="number" step="1" class="batch-input cave-input" />
+                    <button class="btn-batch" @click="setCaveInt(item.id, f.sym, f.extra, item.id + '|int|' + i)">写入</button>
+                  </div>
+                  <div v-if="(caveMeta[item.id]?.flags || []).length" class="combat-toggle-grid cave-flag-grid">
+                    <button
+                      v-for="(fl, i) in caveMeta[item.id].flags"
+                      :key="'fl'+i"
+                      class="combat-toggle"
+                      :class="{ on: caveParams[item.id + '|flg|' + i] }"
+                      @click="toggleCaveFlag(item.id, fl.sym, fl.byte, item.id + '|flg|' + i)"
+                    >
+                      <span class="combat-dot"></span>
+                      <span class="combat-label">{{ fl.label }}</span>
+                    </button>
+                  </div>
+                  <div v-if="!(caveMeta[item.id]?.floats || []).length && !(caveMeta[item.id]?.ints || []).length && !(caveMeta[item.id]?.flags || []).length" class="mod-hint">此功能无额外参数</div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="memory-card" :class="{ active: characterActiveTotal > 0 }">
+          <div class="memory-header">
+            <span class="memory-title">角色专属修改</span>
+            <span class="info-dot" title="按角色收纳的专属机制。点击角色展开其全部开关与参数修改。">!</span>
+            <span class="memory-hint">已开启 {{ characterActiveTotal }}</span>
+          </div>
+          <div v-if="!characterList.length" class="combat-empty">{{ combatLoading || caveLoading ? '加载中...' : '无可用角色功能' }}</div>
+          <div class="char-grid">
+            <button
+              v-for="c in characterList"
+              :key="c.name"
+              class="char-chip"
+              :class="{ selected: selectedCharacter === c.name, lit: c.activeCount > 0 }"
+              @click="toggleCharacter(c.name)"
+            >
+              <span class="char-name">{{ c.name }}</span>
+              <span class="char-badge" v-if="c.activeCount > 0">{{ c.activeCount }}</span>
+            </button>
+          </div>
+
+          <div v-if="selectedCharacter" class="char-panel">
+            <div class="char-panel-title">{{ selectedCharacter }} · 专属修改</div>
+            <div v-if="selectedCharacterPatches.length" class="combat-toggle-grid">
+              <button
+                v-for="item in selectedCharacterPatches"
+                :key="item.id"
+                class="combat-toggle"
+                :class="{ on: item.enabled, warn: item.mismatch }"
+                :disabled="combatBusy[item.id]"
+                :title="item.mismatch ? '指令字节异常，可能游戏版本不匹配' : ''"
+                @click="toggleCombatPatch(item)"
+              >
+                <span class="combat-dot"></span>
+                <span class="combat-label">{{ item.name }}</span>
+              </button>
+            </div>
+
+            <div v-for="item in selectedCharacterModifiers" :key="item.id" class="char-modifier" :class="{ active: item.enabled }">
+              <div class="char-modifier-head">
+                <span class="char-modifier-name">{{ item.name }}</span>
+                <button v-if="!item.enabled" class="btn-batch" @click="toggleCave(item)" :disabled="caveBusy[item.id]">开启</button>
+                <button v-else class="btn-refresh" @click="toggleCave(item)" :disabled="caveBusy[item.id]">关闭</button>
+              </div>
+              <template v-if="item.enabled">
+                <div v-for="(f, i) in (caveMeta[item.id]?.floats || [])" :key="'f'+i" class="cave-param-row">
+                  <span class="cave-param-label">{{ f.label }}</span>
+                  <input v-model="caveParams[item.id + '|flt|' + i]" type="number" step="0.1" class="batch-input cave-input" />
+                  <button class="btn-batch" @click="setCaveFloat(item.id, f.sym, f.extra, item.id + '|flt|' + i)">写入</button>
+                </div>
+                <div v-for="(f, i) in (caveMeta[item.id]?.ints || [])" :key="'i'+i" class="cave-param-row">
+                  <span class="cave-param-label">{{ f.label }}</span>
+                  <input v-model="caveParams[item.id + '|int|' + i]" type="number" step="1" class="batch-input cave-input" />
+                  <button class="btn-batch" @click="setCaveInt(item.id, f.sym, f.extra, item.id + '|int|' + i)">写入</button>
+                </div>
+                <div v-if="(caveMeta[item.id]?.flags || []).length" class="combat-toggle-grid cave-flag-grid">
+                  <button
+                    v-for="(fl, i) in caveMeta[item.id].flags"
+                    :key="'fl'+i"
+                    class="combat-toggle"
+                    :class="{ on: caveParams[item.id + '|flg|' + i] }"
+                    @click="toggleCaveFlag(item.id, fl.sym, fl.byte, item.id + '|flg|' + i)"
+                  >
+                    <span class="combat-dot"></span>
+                    <span class="combat-label">{{ fl.label }}</span>
+                  </button>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
         <div class="memory-card" :class="{ active: terminusDropStatus.enabled }">
           <div class="memory-header">
             <span class="memory-title">巴武掉落 100%</span>
@@ -867,4 +1254,103 @@ onBeforeUnmount(() => {
 .btn-warn { padding:6px 14px; border-radius:6px; border:1px solid rgba(251,191,36,0.45); background:rgba(251,191,36,0.16); color:#facc15; font-size:0.78rem; font-weight:600; cursor:pointer; transition:background 0.2s; white-space:nowrap; }
 .btn-warn:not(:disabled):hover { background:rgba(251,191,36,0.26); }
 .btn-warn:disabled { opacity:0.4; cursor:not-allowed; }
+.combat-empty { font-size:0.74rem; color:rgba(255,255,255,0.3); padding:6px 0; }
+.combat-group { display:flex; flex-direction:column; gap:6px; }
+.combat-group-title {
+  font-size:0.7rem; font-weight:700; letter-spacing:0.5px;
+  color:rgba(103,232,249,0.7); padding:2px 0;
+}
+.combat-toggle-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px; }
+.combat-toggle {
+  display:flex; align-items:center; gap:8px; text-align:left;
+  padding:7px 10px; border-radius:8px; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05);
+  transition:background 0.2s, border-color 0.2s;
+}
+.combat-toggle:not(:disabled):hover { background:rgba(255,255,255,0.1); }
+.combat-toggle:disabled { opacity:0.5; cursor:progress; }
+.combat-dot {
+  width:9px; height:9px; border-radius:50%; flex-shrink:0;
+  background:rgba(255,255,255,0.22); border:1px solid rgba(255,255,255,0.28);
+  transition:background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.combat-label { font-size:0.76rem; font-weight:600; color:rgba(255,255,255,0.72); line-height:1.2; }
+.combat-toggle.on { border-color:rgba(74,222,128,0.5); background:rgba(74,222,128,0.14); }
+.combat-toggle.on .combat-dot { background:#4ade80; border-color:#4ade80; box-shadow:0 0 6px rgba(74,222,128,0.6); }
+.combat-toggle.on .combat-label { color:#4ade80; }
+.combat-toggle.warn { border-color:rgba(251,191,36,0.5); }
+.combat-toggle.warn .combat-dot { background:#facc15; border-color:#facc15; }
+.memory-card.active .combat-group-title { color:rgba(31,41,55,0.68); }
+.memory-card.active .combat-toggle { border-color:rgba(31,41,55,0.18); background:rgba(255,255,255,0.28); }
+.memory-card.active .combat-toggle:not(:disabled):hover { background:rgba(255,255,255,0.42); }
+.memory-card.active .combat-label { color:rgba(31,41,55,0.78); }
+.memory-card.active .combat-dot { background:rgba(31,41,55,0.2); border-color:rgba(31,41,55,0.3); }
+.memory-card.active .combat-toggle.on { border-color:rgba(21,128,61,0.55); background:rgba(21,128,61,0.18); }
+.memory-card.active .combat-toggle.on .combat-dot { background:#15803d; border-color:#15803d; box-shadow:0 0 6px rgba(21,128,61,0.5); }
+.memory-card.active .combat-toggle.on .combat-label { color:#14532d; }
+.cave-param-row { display:flex; align-items:center; gap:8px; }
+.cave-param-label { font-size:0.76rem; font-weight:600; color:rgba(255,255,255,0.62); min-width:120px; }
+.cave-input { width:110px; }
+.cave-flag-grid { margin-top:2px; }
+.memory-card.active .cave-param-label { color:rgba(31,41,55,0.78); }
+.char-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(88px, 1fr)); gap:6px; }
+.char-chip {
+  position:relative; display:flex; align-items:center; justify-content:center;
+  padding:8px 6px; border-radius:8px; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.05);
+  transition:background 0.2s, border-color 0.2s;
+}
+.char-chip:hover { background:rgba(255,255,255,0.1); }
+.char-name { font-size:0.78rem; font-weight:600; color:rgba(255,255,255,0.7); }
+.char-chip.lit { border-color:rgba(74,222,128,0.4); }
+.char-chip.lit .char-name { color:#4ade80; }
+.char-chip.selected { border-color:rgba(103,232,249,0.55); background:rgba(103,232,249,0.14); }
+.char-chip.selected .char-name { color:#67e8f9; }
+.char-badge {
+  position:absolute; top:-5px; right:-5px; min-width:15px; height:15px; padding:0 4px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:8px; background:#4ade80; color:#1f2937;
+  font-size:0.6rem; font-weight:700; line-height:1;
+}
+.char-panel {
+  margin-top:2px; padding:12px; border-radius:8px;
+  background:rgba(103,232,249,0.05); border:1px solid rgba(103,232,249,0.14);
+  display:flex; flex-direction:column; gap:10px;
+}
+.char-panel-title { font-size:0.74rem; font-weight:700; letter-spacing:0.5px; color:#67e8f9; }
+.char-modifier {
+  border-radius:8px; padding:9px 10px;
+  border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03);
+  display:flex; flex-direction:column; gap:8px;
+}
+.char-modifier.active { border-color:rgba(74,222,128,0.35); background:rgba(74,222,128,0.06); }
+.char-modifier-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.char-modifier-name { font-size:0.78rem; font-weight:600; color:rgba(255,255,255,0.68); }
+.char-modifier.active .char-modifier-name { color:#4ade80; }
+.memory-card.active .char-name { color:rgba(31,41,55,0.72); }
+.memory-card.active .char-chip { border-color:rgba(31,41,55,0.18); background:rgba(255,255,255,0.28); }
+.memory-card.active .char-chip.selected { border-color:rgba(21,128,61,0.5); background:rgba(21,128,61,0.16); }
+.memory-card.active .char-chip.selected .char-name { color:#14532d; }
+.mod-list { display:flex; flex-direction:column; gap:5px; }
+.mod-item { border-radius:8px; border:1px solid rgba(255,255,255,0.09); background:rgba(255,255,255,0.03); overflow:hidden; transition:border-color 0.2s; }
+.mod-item.active { border-color:rgba(74,222,128,0.32); }
+.mod-item.open { border-color:rgba(103,232,249,0.35); }
+.mod-row { display:flex; align-items:center; gap:9px; padding:8px 11px; cursor:pointer; }
+.mod-row:hover { background:rgba(255,255,255,0.04); }
+.mod-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.28); transition:background 0.2s, box-shadow 0.2s; }
+.mod-dot.on { background:#4ade80; border-color:#4ade80; box-shadow:0 0 6px rgba(74,222,128,0.6); }
+.mod-name { font-size:0.8rem; font-weight:600; color:rgba(255,255,255,0.72); }
+.mod-item.active .mod-name { color:#4ade80; }
+.mod-group { font-size:0.66rem; color:rgba(255,255,255,0.3); margin-left:auto; }
+.mod-toggle-btn { padding:4px 12px; border-radius:6px; border:1px solid rgba(165,180,252,0.3); background:rgba(165,180,252,0.1); color:#a5b4fc; font-size:0.74rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:background 0.2s; }
+.mod-toggle-btn:not(:disabled):hover { background:rgba(165,180,252,0.2); }
+.mod-toggle-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.mod-toggle-btn.on { border-color:rgba(248,113,113,0.35); background:rgba(248,113,113,0.1); color:#f87171; }
+.mod-caret { font-size:0.7rem; color:rgba(255,255,255,0.3); transition:transform 0.2s; }
+.mod-caret.open { transform:rotate(90deg); }
+.mod-params { padding:4px 11px 11px 28px; display:flex; flex-direction:column; gap:8px; }
+.mod-hint { font-size:0.72rem; color:rgba(255,255,255,0.35); }
+.memory-card.active .mod-name { color:rgba(31,41,55,0.78); }
+.memory-card.active .mod-group { color:rgba(31,41,55,0.5); }
+.memory-card.active .mod-item { border-color:rgba(31,41,55,0.14); background:rgba(255,255,255,0.22); }
 </style>
