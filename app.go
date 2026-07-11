@@ -119,6 +119,7 @@ type App struct {
 	overLimitCommitAddr uintptr
 	unlockAllTrophyAddr uintptr
 	terminusDropAddr    uintptr
+	terminusDropOrig    []byte
 	sigilMemoryHookAddr uintptr
 	sigilMemoryCaveAddr uintptr
 	damageMeterMapping  windows.Handle
@@ -1005,6 +1006,7 @@ func (a *App) CharaDetach() {
 	a.overLimitCommitAddr = 0
 	a.unlockAllTrophyAddr = 0
 	a.terminusDropAddr = 0
+	a.terminusDropOrig = nil
 	a.sigilMemoryHookAddr = 0
 	a.sigilMemoryCaveAddr = 0
 }
@@ -1604,24 +1606,25 @@ type TerminusDropStatus struct {
 	CurrentBytes string `json:"currentBytes"`
 }
 
+// GFR Public v0.4.5: 77?? 458B???? 4181?????????? 74?? 4488.
+// Jump displacement changes with each game build, so retain bytes read at runtime.
 var terminusDropPattern = []byte{
-	0x41, 0x39, 0x47, 0x28,
-	0x77, 0x22,
-	0x45, 0x8B, 0x07,
-	0x41, 0x81, 0xF8, 0xB0, 0xE0, 0x7A, 0x88,
+	0x77, 0,
+	0x45, 0x8B, 0, 0,
+	0x41, 0x81, 0, 0, 0, 0, 0,
+	0x74, 0,
+	0x44, 0x88,
 }
 
 var terminusDropMask = []bool{
-	true, true, true, true,
+	true, false,
+	true, true, false, false,
+	true, true, false, false, false, false, false,
+	true, false,
 	true, true,
-	true, true, true,
-	true, true, true, true, true, true, true,
 }
 
-var (
-	terminusDropOrig  = []byte{0x77, 0x22}
-	terminusDropPatch = []byte{0x90, 0x90}
-)
+var terminusDropPatch = []byte{0x90, 0x90}
 
 func (a *App) TerminusDropScan() (TerminusDropStatus, error) {
 	if err := a.ensureGameProcess(); err != nil {
@@ -1659,11 +1662,14 @@ func (a *App) TerminusDropSetEnabled(enabled bool) (TerminusDropStatus, error) {
 	if !status.Found || a.terminusDropAddr == 0 {
 		return TerminusDropStatus{}, fmt.Errorf("未定位巴武掉落指令")
 	}
-	patch := terminusDropOrig
+	patch := a.terminusDropOrig
 	if enabled {
 		patch = terminusDropPatch
 	}
-	if err := writeCodeMemory(a.hProcess, a.terminusDropAddr+4, patch); err != nil {
+	if len(patch) != len(terminusDropPatch) {
+		return TerminusDropStatus{}, fmt.Errorf("未保存巴武掉落原始跳转，请重启游戏后重新扫描")
+	}
+	if err := writeCodeMemory(a.hProcess, a.terminusDropAddr, patch); err != nil {
 		return TerminusDropStatus{}, fmt.Errorf("写入巴武掉落失败: %w", err)
 	}
 	return a.readTerminusDropStatus(a.terminusDropAddr)
@@ -1674,11 +1680,13 @@ func (a *App) readTerminusDropStatus(addr uintptr) (TerminusDropStatus, error) {
 	if err := readProcessMemory(a.hProcess, addr, unsafe.Pointer(&buf[0]), uintptr(len(buf))); err != nil {
 		return TerminusDropStatus{}, fmt.Errorf("读取巴武掉落指令失败: %w", err)
 	}
-	if !bytesEqual(buf[4:6], terminusDropOrig) && !bytesEqual(buf[4:6], terminusDropPatch) {
+	if buf[0] == 0x77 {
+		a.terminusDropOrig = append(a.terminusDropOrig[:0], buf[:2]...)
+	} else if !bytesEqual(buf[:2], terminusDropPatch) {
 		return TerminusDropStatus{}, fmt.Errorf("巴武掉落跳转字节异常: %s", bytesToHex(buf))
 	}
 	check := append([]byte(nil), buf...)
-	copy(check[4:6], terminusDropOrig)
+	copy(check[:2], []byte{0x77, 0})
 	if !matchPattern(check, terminusDropPattern, terminusDropMask) {
 		return TerminusDropStatus{}, fmt.Errorf("巴武掉落指令字节已变化，请重新扫描")
 	}
@@ -1686,7 +1694,7 @@ func (a *App) readTerminusDropStatus(addr uintptr) (TerminusDropStatus, error) {
 		Found:        true,
 		Address:      uint64(addr),
 		RVA:          uint64(addr - a.moduleBase),
-		Enabled:      bytesEqual(buf[4:6], terminusDropPatch),
+		Enabled:      bytesEqual(buf[:2], terminusDropPatch),
 		CurrentBytes: bytesToHex(buf),
 	}, nil
 }

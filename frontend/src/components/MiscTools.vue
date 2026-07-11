@@ -680,7 +680,7 @@ onBeforeUnmount(() => {
           <div class="memory-bytes">{{ materialConsumeStatus.currentBytes || '未读取' }}</div>
         </div>
 
-        <div v-if="showOutdatedFeatures" class="memory-card" :class="{ active: terminusDropStatus.enabled }">
+        <div class="memory-card" :class="{ active: terminusDropStatus.enabled }">
           <div class="memory-header">
             <span class="memory-title">巴武掉落 100%</span>
             <span class="info-dot" title="仅让原型巴哈姆特任务的巴武 lot 不再被 80% 排除；仍保留未拥有、角色已解锁等游戏原始检查。">!</span>
