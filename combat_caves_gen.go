@@ -14,7 +14,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR01", Len: 5},
-			{Off: 42, Aob: "", Len: 5},
+			{Off: 42, Aob: "NBGFR01", Len: 5},
 		},
 		Relocs: []caveReloc{
 			{Off: 48, Type: "return", Aob: "NBGFR01"},
@@ -36,7 +36,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR03", Len: 7},
-			{Off: 194, Aob: "", Len: 7},
+			{Off: 194, Aob: "NBGFR03", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 202, Type: "return", Aob: "NBGFR03"},
@@ -64,11 +64,11 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR04A", Len: 5},
-			{Off: 70, Aob: "", Len: 5},
+			{Off: 70, Aob: "NBGFR04A", Len: 5},
 			{Off: 80, Aob: "NBGFR04B", Len: 5},
-			{Off: 118, Aob: "", Len: 5},
+			{Off: 118, Aob: "NBGFR04B", Len: 5},
 			{Off: 128, Aob: "NBGFR04C", Len: 5},
-			{Off: 166, Aob: "", Len: 5},
+			{Off: 166, Aob: "NBGFR04C", Len: 5},
 		},
 		Relocs: []caveReloc{
 			{Off: 76, Type: "return", Aob: "NBGFR04A"},
@@ -93,7 +93,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR05", Len: 8},
-			{Off: 116, Aob: "", Len: 8},
+			{Off: 116, Aob: "NBGFR05", Len: 8},
 		},
 		Relocs: []caveReloc{
 			{Off: 125, Type: "return", Aob: "NBGFR05"},
@@ -120,7 +120,7 @@ var combatCaves = []caveDef{
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR07A", Len: 7},
 			{Off: 16, Aob: "NBGFR07B", Len: 6},
-			{Off: 176, Aob: "", Len: 7},
+			{Off: 176, Aob: "NBGFR07A", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 162, Type: "call", Aob: "NBGFR07C"},
@@ -146,10 +146,10 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR10A", Len: 7},
-			{Off: 85, Aob: "", Len: 7},
+			{Off: 85, Aob: "NBGFR10A", Len: 7},
 			{Off: 97, Aob: "NBGFR10B", Len: 8},
 			{Off: 112, Aob: "NBGFR10C", Len: 6},
-			{Off: 182, Aob: "", Len: 8},
+			{Off: 182, Aob: "NBGFR10B", Len: 8},
 		},
 		Relocs: []caveReloc{
 			{Off: 93, Type: "return", Aob: "NBGFR10A"},
@@ -175,7 +175,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR17", Len: 11},
-			{Off: 128, Aob: "", Len: 11},
+			{Off: 128, Aob: "NBGFR17", Len: 11},
 		},
 		Relocs: []caveReloc{
 			{Off: 140, Type: "return", Aob: "NBGFR17"},
@@ -198,7 +198,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR19", Len: 7},
-			{Off: 213, Aob: "", Len: 7},
+			{Off: 213, Aob: "NBGFR19", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 221, Type: "return", Aob: "NBGFR19"},
@@ -217,7 +217,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR34", Len: 7},
-			{Off: 38, Aob: "", Len: 7},
+			{Off: 38, Aob: "NBGFR34", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 46, Type: "return", Aob: "NBGFR34"},
@@ -239,7 +239,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR36", Len: 7},
-			{Off: 48, Aob: "", Len: 7},
+			{Off: 48, Aob: "NBGFR36", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 85, Type: "return", Aob: "NBGFR36"},
@@ -262,7 +262,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR37", Len: 8},
-			{Off: 40, Aob: "", Len: 8},
+			{Off: 40, Aob: "NBGFR37", Len: 8},
 		},
 		Relocs: []caveReloc{
 			{Off: 49, Type: "return", Aob: "NBGFR37"},
@@ -284,7 +284,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR38", Len: 8},
-			{Off: 70, Aob: "", Len: 8},
+			{Off: 70, Aob: "NBGFR38", Len: 8},
 		},
 		Relocs: []caveReloc{
 			{Off: 79, Type: "return", Aob: "NBGFR38"},
@@ -307,7 +307,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR40", Len: 8},
-			{Off: 48, Aob: "", Len: 8},
+			{Off: 48, Aob: "NBGFR40", Len: 8},
 		},
 		Relocs: []caveReloc{
 			{Off: 97, Type: "return", Aob: "NBGFR40"},
@@ -332,7 +332,7 @@ var combatCaves = []caveDef{
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR47A", Len: 6},
 			{Off: 16, Aob: "NBGFR47B", Len: 8},
-			{Off: 48, Aob: "", Len: 6},
+			{Off: 48, Aob: "NBGFR47A", Len: 6},
 		},
 		Relocs: []caveReloc{
 			{Off: 61, Type: "return", Aob: "NBGFR47A"},
@@ -358,9 +358,9 @@ var combatCaves = []caveDef{
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR48A", Len: 6},
 			{Off: 16, Aob: "NBGFR48C", Len: 4},
-			{Off: 82, Aob: "", Len: 6},
+			{Off: 82, Aob: "NBGFR48A", Len: 6},
 			{Off: 93, Aob: "NBGFR48B", Len: 6},
-			{Off: 144, Aob: "", Len: 6},
+			{Off: 144, Aob: "NBGFR48B", Len: 6},
 		},
 		Relocs: []caveReloc{
 			{Off: 89, Type: "return", Aob: "NBGFR48A"},
@@ -384,7 +384,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR64", Len: 8},
-			{Off: 75, Aob: "", Len: 8},
+			{Off: 75, Aob: "NBGFR64", Len: 8},
 		},
 		Relocs: []caveReloc{
 			{Off: 84, Type: "return", Aob: "NBGFR64"},
@@ -407,7 +407,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR71", Len: 6},
-			{Off: 16, Aob: "", Len: 6},
+			{Off: 16, Aob: "NBGFR71", Len: 6},
 		},
 		Relocs: []caveReloc{
 			{Off: 41, Type: "return", Aob: "NBGFR71"},
@@ -426,7 +426,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR73", Len: 7},
-			{Off: 70, Aob: "", Len: 7},
+			{Off: 70, Aob: "NBGFR73", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 78, Type: "return", Aob: "NBGFR73"},
@@ -449,7 +449,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR75", Len: 8},
-			{Off: 48, Aob: "", Len: 8},
+			{Off: 48, Aob: "NBGFR75", Len: 8},
 		},
 		Relocs: []caveReloc{
 			{Off: 79, Type: "return", Aob: "NBGFR75"},
@@ -472,7 +472,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR77", Len: 8},
-			{Off: 32, Aob: "", Len: 8},
+			{Off: 32, Aob: "NBGFR77", Len: 8},
 		},
 		Relocs: []caveReloc{
 			{Off: 49, Type: "return", Aob: "NBGFR77"},
@@ -494,7 +494,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR78", Len: 7},
-			{Off: 83, Aob: "", Len: 7},
+			{Off: 83, Aob: "NBGFR78", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 91, Type: "return", Aob: "NBGFR78"},
@@ -517,7 +517,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR82", Len: 7},
-			{Off: 83, Aob: "", Len: 7},
+			{Off: 83, Aob: "NBGFR82", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 91, Type: "return", Aob: "NBGFR82"},
@@ -540,7 +540,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR20", Len: 7},
-			{Off: 32, Aob: "", Len: 7},
+			{Off: 32, Aob: "NBGFR20", Len: 7},
 		},
 		Relocs: []caveReloc{
 			{Off: 52, Type: "return", Aob: "NBGFR20"},
@@ -562,7 +562,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR21", Len: 5},
-			{Off: 42, Aob: "", Len: 5},
+			{Off: 42, Aob: "NBGFR21", Len: 5},
 		},
 		Relocs: []caveReloc{
 			{Off: 48, Type: "return", Aob: "NBGFR21"},
@@ -586,9 +586,9 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR25A", Len: 6},
-			{Off: 27, Aob: "", Len: 6},
+			{Off: 27, Aob: "NBGFR25A", Len: 6},
 			{Off: 38, Aob: "NBGFR25B", Len: 5},
-			{Off: 55, Aob: "", Len: 5},
+			{Off: 55, Aob: "NBGFR25B", Len: 5},
 		},
 		Relocs: []caveReloc{
 			{Off: 34, Type: "return", Aob: "NBGFR25A"},
@@ -608,7 +608,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR31", Len: 5},
-			{Off: 88, Aob: "", Len: 5},
+			{Off: 88, Aob: "NBGFR31", Len: 5},
 		},
 		Relocs: []caveReloc{
 			{Off: 94, Type: "return", Aob: "NBGFR31"},
@@ -631,7 +631,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR32", Len: 5},
-			{Off: 124, Aob: "", Len: 5},
+			{Off: 124, Aob: "NBGFR32", Len: 5},
 		},
 		Relocs: []caveReloc{
 			{Off: 130, Type: "return", Aob: "NBGFR32"},
@@ -672,7 +672,7 @@ var combatCaves = []caveDef{
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFRMAG2", Len: 5},
-			{Off: 40, Aob: "", Len: 5},
+			{Off: 40, Aob: "NBGFRMAG2", Len: 5},
 		},
 		Relocs: []caveReloc{
 			{Off: 46, Type: "return", Aob: "NBGFRMAG2"},
