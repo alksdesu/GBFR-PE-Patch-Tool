@@ -1,6 +1,7 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { CharaAttach, SummonGetAll, SummonGetOptions, SummonUpdate } from '../../wailsjs/go/main/App'
+import { matchText } from '../utils/matchText.js'
 
 const emit = defineEmits(['status'])
 const connected = ref(false)
@@ -18,15 +19,15 @@ const typeByHash = computed(() => new Map(options.types.map((item) => [item.hash
 const traitByHash = computed(() => new Map(options.traits.map((item) => [item.hash, item])))
 const subParamByHash = computed(() => new Map(options.subParams.map((item) => [item.hash, item])))
 const filteredTraits = computed(() => {
-  const query = traitFilter.value.trim().toLowerCase()
+  const query = traitFilter.value.trim()
   if (!query) return options.traits
-  return options.traits.filter((item) => optionLabel(item).toLowerCase().includes(query))
+  return options.traits.filter((item) => matchText(optionLabel(item), query))
 })
 const filteredSummons = computed(() => {
-  const query = filter.value.trim().toLowerCase()
+  const query = filter.value.trim()
   if (!query) return summons.value
   return summons.value.filter((item) => [item.index, nameForType(item.typeHash), nameForTrait(item.mainTraitHash), nameForSubParam(item.subParamHash), hex(item.typeHash)]
-    .some((value) => String(value).toLowerCase().includes(query)))
+    .some((value) => matchText(value, query)))
 })
 const selected = computed(() => summons.value.find((item) => item.index === selectedIndex.value))
 const rarityLabelsByCost = { 3: 'I', 4: 'II', 5: 'III' }

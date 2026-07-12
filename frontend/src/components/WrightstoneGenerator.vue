@@ -5,6 +5,7 @@ import { GetWrightstoneList, GetTraitList, GetTraitLevels, GetDefaultTrait,
          LoadSaveFile, GetQueue, AddToQueue, RemoveFromQueue, ClearQueue,
          ApplyQueue, ApplyItems, FileExists, SelectWrightstoneInputSave,
          SelectWrightstoneOutputSave } from '../../wailsjs/go/main/WrightstoneGen'
+import { matchText } from '../utils/matchText.js'
 
 const emit = defineEmits(['status'])
 function showStatus(msg, type) { emit('status', msg, type) }
@@ -35,9 +36,9 @@ const dataError = ref('')
 const traitSearches = ref(['', '', ''])
 
 const filteredWrightstones = computed(() => {
-  if (!wrightstoneSearch.value) return wrightstones.value
-  const q = wrightstoneSearch.value.toLowerCase()
-  return wrightstones.value.filter(w => w.displayName.toLowerCase().includes(q))
+  const q = wrightstoneSearch.value
+  if (!q) return wrightstones.value
+  return wrightstones.value.filter(w => matchText(w.displayName, q))
 })
 
 const currentSelectionValid = computed(() => {
@@ -46,9 +47,9 @@ const currentSelectionValid = computed(() => {
 const canApply = computed(() => saveLoaded.value && !!outputPath.value.trim() && (queue.value.length > 0 || currentSelectionValid.value))
 
 function filteredTraits(slot) {
-  const q = traitSearches.value[slot].toLowerCase()
+  const q = traitSearches.value[slot]
   if (!q) return traits.value
-  return traits.value.filter(t => t.displayName.toLowerCase().includes(q))
+  return traits.value.filter(t => matchText(t.displayName, q))
 }
 
 onMounted(async () => {

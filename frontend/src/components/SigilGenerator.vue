@@ -8,6 +8,7 @@ import { GetSigilList, GetCompatibleSecondaryTraits, GetAllowedLevels,
          ApplyQueue, RemoveAllSigils,
          GetExistingSigils, DeleteSelectedSigils,
          SelectSigilInputSave, SelectSigilOutputSave } from '../../wailsjs/go/main/SigilGen'
+import { matchText } from '../utils/matchText.js'
 
 const emit = defineEmits(['status'])
 
@@ -55,15 +56,15 @@ const secondaryTraitSearch = ref('')
 const showSigilDropdown = ref(false)
 
 const filteredSigils = computed(() => {
-  if (!sigilSearch.value) return sigils.value
-  const q = sigilSearch.value.toLowerCase()
-  return sigils.value.filter(s => s.displayName.toLowerCase().includes(q))
+  const q = sigilSearch.value
+  if (!q) return sigils.value
+  return sigils.value.filter(s => matchText(s.displayName, q))
 })
 
 const filteredSecondaryTraits = computed(() => {
-  if (!secondaryTraitSearch.value) return secondaryTraits.value
-  const q = secondaryTraitSearch.value.toLowerCase()
-  return secondaryTraits.value.filter(t => t.displayName.toLowerCase().includes(q))
+  const q = secondaryTraitSearch.value
+  if (!q) return secondaryTraits.value
+  return secondaryTraits.value.filter(t => matchText(t.displayName, q))
 })
 
 // ── 加载数据 ──

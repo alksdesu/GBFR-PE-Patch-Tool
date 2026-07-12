@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { SigilMemoryGetOptions, SigilMemoryGetStatus, SigilMemoryEnable, SigilMemoryUpdate } from '../../wailsjs/go/main/App'
+import { matchText } from '../utils/matchText.js'
 
 const emit = defineEmits(['status'])
 const status = reactive({ found: false, hooked: false, selectedAddr: 0, sigilHash: 0, sigilLevel: 0, primaryTraitHash: 0, primaryTraitLevel: 0, secondaryTraitHash: 0, secondaryTraitLevel: 0, sigilName: '', primaryTraitName: '', secondaryTraitName: '' })
@@ -26,8 +27,8 @@ function applyStatus(next, syncForm = false) {
 }
 function hex(value) { return `0x${(Number(value) >>> 0).toString(16).toUpperCase().padStart(8, '0')}` }
 function filter(items, query) {
-  const q = query.trim().toLowerCase()
-  return !q ? items : items.filter(item => item.displayName.toLowerCase().includes(q) || hex(item.hash).toLowerCase().includes(q))
+  const q = query.trim()
+  return !q ? items : items.filter(item => matchText(item.displayName, q) || matchText(hex(item.hash), q))
 }
 const filteredSigils = computed(() => filter(options.sigils, sigilSearch.value))
 const filteredPrimaryTraits = computed(() => filter(options.traits, primarySearch.value))
