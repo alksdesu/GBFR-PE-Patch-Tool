@@ -83,8 +83,11 @@ type summonSkillFile struct {
 
 type summonSubParamFile struct {
 	SubParams []struct {
-		Hash        string `json:"hash"`
-		DisplayName string `json:"displayName"`
+		Hash        string    `json:"hash"`
+		DisplayName string    `json:"displayName"`
+		MaxLevel    int       `json:"maxLevel"`
+		IsPercent   bool      `json:"isPercent"`
+		Values      []float64 `json:"values"`
 	} `json:"subParams"`
 }
 
@@ -121,10 +124,30 @@ func (a *App) SummonGetOptions() (SummonOptions, error) {
 	for _, item := range subParams.SubParams {
 		hash, err := ParseHashHex(item.Hash)
 		if err == nil {
-			options.SubParams = append(options.SubParams, SummonOption{Hash: hash, Name: item.DisplayName})
+			options.SubParams = append(options.SubParams, SummonOption{
+				Hash:      hash,
+				Name:      item.DisplayName,
+				MaxLevel:  item.MaxLevel,
+				IsPercent: item.IsPercent,
+				Values:    item.Values,
+			})
 		}
 	}
 	return options, nil
+}
+
+func (a *App) summonSubParamMaxLevel(hash uint32) (int, bool) {
+	var subParams summonSubParamFile
+	if err := json.Unmarshal(summonSubParamsJSON, &subParams); err != nil {
+		return 0, false
+	}
+	for _, item := range subParams.SubParams {
+		h, err := ParseHashHex(item.Hash)
+		if err == nil && h == hash {
+			return item.MaxLevel, true
+		}
+	}
+	return 0, false
 }
 
 func (a *App) summonInventoryAddress() (uintptr, error) {
@@ -190,6 +213,12 @@ func (a *App) SummonUpdate(item SummonUpdate) (SummonInfo, error) {
 	}
 	if item.MainTraitLevel > math.MaxInt32 || item.SubParamLevel > math.MaxInt32 {
 		return SummonInfo{}, fmt.Errorf("召唤石等级或副参数等级超出范围")
+	}
+	// 副参数等级是档位索引(0~maxLevel), 超出会越界读到相邻档位表导致数值溢出, 按该副参数上限钳制。
+	if item.SubParamHash != 0 {
+		if max, ok := a.summonSubParamMaxLevel(item.SubParamHash); ok && item.SubParamLevel > uint32(max) {
+			return SummonInfo{}, fmt.Errorf("副参数等级超出上限，应为 0 到 %d", max)
+		}
 	}
 
 	inventory, err := a.summonInventoryAddress()

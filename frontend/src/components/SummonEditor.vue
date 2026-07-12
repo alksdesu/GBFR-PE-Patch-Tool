@@ -1,5 +1,5 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { CharaAttach, SummonGetAll, SummonGetOptions, SummonUpdate } from '../../wailsjs/go/main/App'
 import { matchText } from '../utils/matchText.js'
 
@@ -18,6 +18,25 @@ const edit = reactive({ typeHash: '', mainTraitHash: '', subParamHash: '', mainT
 const typeByHash = computed(() => new Map(options.types.map((item) => [item.hash, item])))
 const traitByHash = computed(() => new Map(options.traits.map((item) => [item.hash, item])))
 const subParamByHash = computed(() => new Map(options.subParams.map((item) => [item.hash, item])))
+const currentSubParam = computed(() => {
+  const h = Number.parseInt(String(edit.subParamHash).trim(), 16)
+  return Number.isNaN(h) ? null : subParamByHash.value.get(h) || null
+})
+const subParamMaxLevel = computed(() => {
+  const sp = currentSubParam.value
+  return sp && Number.isInteger(sp.maxLevel) && sp.maxLevel > 0 ? sp.maxLevel : 9
+})
+function subParamValueLabel(level) {
+  const sp = currentSubParam.value
+  const idx = Number.parseInt(level, 10)
+  if (!sp || !Array.isArray(sp.values) || idx < 0 || idx >= sp.values.length) return String(idx)
+  const v = sp.values[idx]
+  return sp.isPercent ? `${idx} → +${v}%` : `${idx} → +${v}`
+}
+// 切换副参数后, 若当前档位超出新副参数上限则钳制, 避免下拉显示空值
+watch(subParamMaxLevel, (max) => {
+  if (Number.parseInt(edit.subParamLevel, 10) > max) edit.subParamLevel = String(max)
+})
 const filteredTraits = computed(() => {
   const query = traitFilter.value.trim()
   if (!query) return options.traits
@@ -89,7 +108,7 @@ function save() {
       rank: Number.parseInt(edit.rank, 10),
     }
     if (!Number.isInteger(update.mainTraitLevel) || update.mainTraitLevel < 0 || update.mainTraitLevel > traitMax(mainTraitHash)) throw new Error(`主因子等级必须为 0 到 ${traitMax(mainTraitHash)}`)
-    if (!Number.isInteger(update.subParamLevel) || update.subParamLevel < 0 || update.subParamLevel > 999) throw new Error('副参数等级必须为 0 到 999')
+    if (!Number.isInteger(update.subParamLevel) || update.subParamLevel < 0 || update.subParamLevel > subParamMaxLevel.value) throw new Error(`副参数等级必须为 0 到 ${subParamMaxLevel.value}`)
   } catch (err) {
     emit('status', String(err.message || err), 'error')
     return
@@ -136,7 +155,7 @@ function save() {
           <label>主因子<select v-model="edit.mainTraitHash"><option v-for="item in filteredTraits" :key="item.hash" :value="hex(item.hash)">{{ optionLabel(item) }}</option></select></label>
           <label>主因子等级<input v-model="edit.mainTraitLevel" type="number" min="0" :max="traitMax(edit.mainTraitHash)" /></label>
           <label>副参数<select v-model="edit.subParamHash"><option v-for="item in options.subParams" :key="item.hash" :value="hex(item.hash)">{{ optionLabel(item) }}</option></select></label>
-          <label>副参数等级<select v-model="edit.subParamLevel"><option v-for="level in 10" :key="level - 1" :value="String(level - 1)">{{ level - 1 }}</option></select></label>
+          <label>副参数等级<select v-model="edit.subParamLevel"><option v-for="level in (subParamMaxLevel + 1)" :key="level - 1" :value="String(level - 1)">{{ subParamValueLabel(level - 1) }}</option></select></label>
           <button class="save" @click="save" :disabled="saving">{{ saving ? '写入中...' : '写入召唤石' }}</button>
         </template>
         <p v-else class="empty">从左侧选择召唤石。</p>
