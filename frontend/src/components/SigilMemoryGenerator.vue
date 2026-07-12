@@ -62,7 +62,7 @@ async function write() {
   try {
     const next = await SigilMemoryUpdate({ ...form })
     applyStatus(next, true)
-    show(`已写入并提交保存: ${next.sigilName}`, 'success')
+    show(`已写入并提交保存: ${next.sigilName}。请在游戏中重新选择下一个因子。`, 'success')
   } catch (e) { show(String(e), 'error') }
   finally { applying.value = false }
 }
@@ -81,7 +81,7 @@ onMounted(async () => { await loadOptions(); await refresh(true) })
         <button class="btn btn-cyan" :disabled="loading" @click="enable">{{ status.hooked ? '读取已开启' : '开启读取' }}</button>
         <button class="btn" :disabled="loading" @click="refresh(true)">{{ loading ? '读取中...' : '刷新选中因子' }}</button>
       </div>
-      <div class="hint">游戏内打开因子列表并选中目标因子。修改后切换选择或关闭界面触发游戏保存。</div>
+      <div class="hint">游戏内打开因子列表并选中目标因子。每次写入后必须重新选择目标，避免复用游戏重建背包前的旧地址。</div>
       <div class="state" :class="{ ready: status.selectedAddr }">
         {{ status.selectedAddr ? `已选中 ${hex(status.selectedAddr)}` : status.hooked ? '等待游戏内选中因子' : '未开启读取' }}
       </div>

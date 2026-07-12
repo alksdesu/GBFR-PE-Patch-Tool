@@ -298,8 +298,8 @@ function showStatus(msg, type) {
 
 <style scoped>
 .app-window { position:relative; display:flex; flex-direction:column; height:100vh; overflow:hidden; background:radial-gradient(ellipse at bottom, #12365c 0%, #06111f 52%, #020711 100%); border-radius:10px; box-shadow:0 8px 40px rgba(0,0,0,0.6); }
-.starfield { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; }
-.stars { position:absolute; top:0; left:0; border-radius:50%; background:transparent; color:#fff; opacity:0.8; }
+.starfield { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:0; opacity:0.34; }
+.stars { position:absolute; top:0; left:0; border-radius:50%; background:transparent; color:#d8efff; opacity:0.58; }
 .stars::after { content:""; position:absolute; top:100vh; left:0; border-radius:50%; background:transparent; color:#fff; }
 .stars-1,
 .stars-1::after { width:1px; height:1px; box-shadow: 6vw 9vh currentColor, 18vw 32vh currentColor, 28vw 14vh currentColor, 41vw 47vh currentColor, 54vw 7vh currentColor, 69vw 28vh currentColor, 82vw 19vh currentColor, 94vw 43vh currentColor, 12vw 71vh currentColor, 36vw 88vh currentColor, 61vw 64vh currentColor, 76vw 83vh currentColor, 90vw 72vh currentColor, 24vw 58vh currentColor, 49vw 79vh currentColor; animation: starDrift 46s linear infinite; }
@@ -312,34 +312,37 @@ function showStatus(msg, type) {
 
 .tab-bar {
   display: flex;
-  gap: 2px;
-  padding: 4px 14px;
+  gap: 0;
+  padding: 5px 8px;
   background: rgba(18,26,38,0.95);
   border-bottom: 1px solid rgba(255,255,255,0.06);
   flex-shrink: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
 }
+.tab-bar::-webkit-scrollbar { display:none; }
 .tab-btn {
-  padding: 4px 14px;
+  padding: 5px 7px;
   border-radius: 6px;
   border: none;
   background: transparent;
-  color: rgba(255,255,255,0.35);
-  font-size: 0.76rem;
+  color: rgba(255,255,255,0.58);
+  font-size: 0.66rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
-.tab-btn:hover { color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.05); }
+.tab-btn:hover { color: rgba(255,255,255,0.82); background: rgba(255,255,255,0.06); }
+.tab-btn:focus-visible { outline:1px solid rgba(103,232,249,0.58); outline-offset:-1px; }
 .tab-btn.active { color: #67e8f9; background: rgba(103,232,249,0.12); }
-.language-tab { margin-left: auto; }
+.language-tab { margin-left: 0; }
 .titlebar { display:flex; align-items:center; justify-content:space-between; height:38px; padding:0 6px 0 14px; background:rgba(18,26,38,0.95); border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; user-select:none; }
 .titlebar-left { display:flex; align-items:center; gap:8px; }
-.titlebar-title { font-size:0.8rem; font-weight:600; color:rgba(255,255,255,0.55); letter-spacing:0.5px; }
+.titlebar-title { font-size:0.8rem; font-weight:600; color:rgba(255,255,255,0.76); letter-spacing:0.5px; }
 .titlebar-controls { display:flex; align-items:center; gap:2px; }
 .win-btn { width:32px; height:28px; border:none; border-radius:6px; background:transparent; color:rgba(255,255,255,0.45); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s,color 0.15s; }
 .win-btn.minimize:hover { background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.9); }

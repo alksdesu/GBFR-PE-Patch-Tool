@@ -29,12 +29,17 @@ const filteredSummons = computed(() => {
     .some((value) => String(value).toLowerCase().includes(query)))
 })
 const selected = computed(() => summons.value.find((item) => item.index === selectedIndex.value))
+const rarityLabelsByCost = { 3: 'I', 4: 'II', 5: 'III' }
 
 function hex(value) { return '0x' + Number(value || 0).toString(16).toUpperCase().padStart(8, '0') }
 function nameForType(hash) { return typeByHash.value.get(hash)?.name || hex(hash) }
 function nameForTrait(hash) { return traitByHash.value.get(hash)?.name || (hash ? hex(hash) : '无') }
 function nameForSubParam(hash) { return subParamByHash.value.get(hash)?.name || (hash ? hex(hash) : '无') }
 function optionLabel(item) { return `${item.name} · ${hex(item.hash)}` }
+function rarityLabel(item) {
+  const cost = typeByHash.value.get(item.typeHash)?.cost
+  return rarityLabelsByCost[cost] || String(item.rank)
+}
 function parseHash(value, label) {
   const text = String(value).trim()
   const parsed = /^0x/i.test(text) ? Number.parseInt(text, 16) : Number.parseInt(text, 10)
@@ -116,7 +121,7 @@ function save() {
         <input v-model="filter" class="filter" placeholder="搜索名称或 Hash（更改类型无法写入存档）" />
         <div class="list">
           <button v-for="item in filteredSummons" :key="item.index" class="summon-row" :class="{ selected: item.index === selectedIndex }" @click="select(item)">
-            <span class="slot">#{{ item.index + 1 }}</span><span class="name">{{ nameForType(item.typeHash) }}</span><span class="rank">{{ ['-', 'I', 'II', 'III'][item.rank] || item.rank }}</span>
+            <span class="slot">#{{ item.index + 1 }}</span><span class="name">{{ nameForType(item.typeHash) }}</span><span class="rank">{{ rarityLabel(item) }}</span>
           </button>
           <p v-if="!summons.length" class="empty">未读取到召唤石。请打开游戏内召唤石背包后刷新。</p>
         </div>
