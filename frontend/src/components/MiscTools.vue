@@ -65,8 +65,7 @@ const caveLoading = ref(false)
 
 const caveToggles = computed(() => caveList.value.filter((c) => {
   if (characterSet.has(c.group)) return false
-  const m = caveMeta.value[c.id]
-  return m && (m.kind === 'capture' || (!m.floats?.length && !m.ints?.length && !m.flags?.length))
+  return caveMeta.value[c.id]?.kind !== 'modifier'
 }))
 
 const caveModifiers = computed(() => caveList.value.filter((c) => {

@@ -112,7 +112,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR006", Pattern: []byte{0x8D, 0x00, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x39}, Mask: []bool{true, false, false, true, false, false, false, false, false, true, true, false, true, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR006", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR006", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -129,7 +129,7 @@ var combatCaves = []caveDef{
 		},
 		Hooks: []caveHook{
 			{Aob: "NBGFR007A", TargetOff: 48, PatchLen: 7, NopOnly: false},
-			{Aob: "NBGFR007B", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR007B", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR007A", Len: 7},
@@ -153,7 +153,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR008", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x48, 0x89, 0x00, 0xFF, 0x00, 0x00, 0x84}, Mask: []bool{true, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, true, false, true, true, false, true, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR008", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR008", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -167,7 +167,8 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR009", Pattern: []byte{0x77, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x76}, Mask: []bool{true, false, true, false, false, false, false, false, false, false, true, false, false, false, false, true, false, true, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR009", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR009", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
+			{Aob: "NBGFR009", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchOffset: 22, PatchBytes: []byte{0xEB}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -213,7 +214,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR011", Pattern: []byte{0x0F, 0x87, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x75, 0x00, 0xC6}, Mask: []bool{true, true, false, false, false, false, true, false, false, false, false, false, false, true, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR011", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR011", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -227,7 +228,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR012", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x86}, Mask: []bool{true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR012", TargetOff: 0, PatchLen: 8, NopOnly: false},
+			{Aob: "NBGFR012", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -241,7 +242,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR013", Pattern: []byte{0x41, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x41, 0xB1, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x80}, Mask: []bool{true, true, false, false, false, false, true, true, false, true, false, false, false, false, true, true, false, false, false, false, false, true, true, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR013", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR013", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xC0, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -257,9 +258,9 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR014C", Pattern: []byte{0x7F, 0x00, 0x31, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x8B}, Mask: []bool{true, false, true, false, true, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR014A", TargetOff: 0, PatchLen: 6, NopOnly: false},
-			{Aob: "NBGFR014B", TargetOff: 0, PatchLen: 3, NopOnly: false},
-			{Aob: "NBGFR014C", TargetOff: 0, PatchLen: 2, NopOnly: false},
+			{Aob: "NBGFR014A", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
+			{Aob: "NBGFR014B", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0x90}},
+			{Aob: "NBGFR014C", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -273,7 +274,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR015", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x85, 0x00, 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x48, 0x8B}, Mask: []bool{true, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, true, false, false, false, false, false, true, true, false, true, true, false, false, false, false, true, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR015", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR015", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -289,8 +290,9 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR016C", Pattern: []byte{0x0F, 0x8C, 0x00, 0x00, 0x00, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x45, 0x8B}, Mask: []bool{true, true, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR016A", TargetOff: 0, PatchLen: 8, NopOnly: false},
-			{Aob: "NBGFR016C", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR016A", TargetOff: 0, PatchLen: 7, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0x90, 0x90, 0x90, 0x90, 0x90}},
+			{Aob: "NBGFR016B", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchOffset: 8, PatchBytes: []byte{0x00}},
+			{Aob: "NBGFR016C", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -328,8 +330,8 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR019B", Pattern: []byte{0x0F, 0x82, 0x00, 0x00, 0x00, 0x00, 0x49, 0x8B, 0x00, 0x00, 0x4C, 0x00, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x84}, Mask: []bool{true, true, false, false, false, false, true, true, false, false, true, false, false, true, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR019A", TargetOff: 0, PatchLen: 1, NopOnly: false},
-			{Aob: "NBGFR019B", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR019A", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchBytes: []byte{0xEB}},
+			{Aob: "NBGFR019B", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -362,7 +364,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR021", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0xE9, 0x00, 0x00, 0x00, 0x00, 0x41, 0x39}, Mask: []bool{true, false, false, false, false, true, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR021", TargetOff: 0, PatchLen: 5, NopOnly: false},
+			{Aob: "NBGFR021", TargetOff: 0, PatchLen: 5, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -398,7 +400,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR023", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x86, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x85}, Mask: []bool{true, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, true, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, true, false, false, false, false, false, true, true, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR023", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR023", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0xF3, 0x0F, 0x10, 0xC2}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -480,7 +482,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR027", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x83}, Mask: []bool{true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR027", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR027", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -517,7 +519,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR029", Pattern: []byte{0x0F, 0x42, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5}, Mask: []bool{true, true, false, true, false, false, false, false, false, true, true, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR029", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR029", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -531,7 +533,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR030", Pattern: []byte{0x0F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x8D, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x45, 0x31}, Mask: []bool{true, true, false, false, false, false, true, false, false, true, false, false, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR030", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR030", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -545,7 +547,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR031", Pattern: []byte{0x44, 0x0F, 0x00, 0x00, 0x44, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5}, Mask: []bool{true, true, false, false, true, true, false, false, false, false, false, true, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR031", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR031", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x44, 0x8B, 0xC1, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -559,7 +561,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR032", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x87, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x85}, Mask: []bool{true, false, false, false, false, false, false, false, true, false, false, false, true, false, false, false, true, true, false, false, false, false, true, true, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR032", TargetOff: 0, PatchLen: 8, NopOnly: false},
+			{Aob: "NBGFR032", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -573,7 +575,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR033", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x48, 0x89, 0x00, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xB9}, Mask: []bool{true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, true, false, true, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR033", TargetOff: 0, PatchLen: 8, NopOnly: false},
+			{Aob: "NBGFR033", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -587,7 +589,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR034", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x49, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5}, Mask: []bool{true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, true, true, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR034", TargetOff: 0, PatchLen: 8, NopOnly: false},
+			{Aob: "NBGFR034", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -619,13 +621,13 @@ var combatCaves = []caveDef{
 	{
 		ID:    "instant_armor_piercing_round",
 		Name:  "瞬间穿甲弹",
-		Group: "Armor-Piercing Round Modifier",
+		Group: "欧根",
 		Code:  []byte{},
 		Aobs: []caveAob{
 			{Sym: "NBGFR035BX", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3B}, Mask: []bool{true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR035BX", TargetOff: 0, PatchLen: 8, NopOnly: false},
+			{Aob: "NBGFR035BX", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -663,13 +665,13 @@ var combatCaves = []caveDef{
 	{
 		ID:    "infinite_rose_duration",
 		Name:  "无限玫瑰持续",
-		Group: "Rose Garden Modifier",
+		Group: "萝赛塔",
 		Code:  []byte{},
 		Aobs: []caveAob{
 			{Sym: "NBGFR036CX", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0x41, 0xC7}, Mask: []bool{true, false, false, false, true, false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR036CX", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR036CX", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -683,7 +685,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR037", Pattern: []byte{0x77, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x73}, Mask: []bool{true, false, true, false, false, false, false, false, false, false, true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, true, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR037", TargetOff: 0, PatchLen: 1, NopOnly: false},
+			{Aob: "NBGFR037", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchBytes: []byte{0xEB}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -697,7 +699,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR038", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B}, Mask: []bool{true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, false, false, false, false, true, true, false, false, false, false, false, true, true, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR038", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR038", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0xF3, 0x0F, 0x10, 0xC1}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -711,7 +713,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR039", Pattern: []byte{0xC4, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x86, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE9}, Mask: []bool{true, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, true, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR039", TargetOff: 0, PatchLen: 5, NopOnly: false},
+			{Aob: "NBGFR039", TargetOff: 0, PatchLen: 5, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -725,7 +727,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR040", Pattern: []byte{0x0F, 0x42, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B}, Mask: []bool{true, true, false, true, false, false, false, false, false, true, false, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR040", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR040", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -739,7 +741,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR041", Pattern: []byte{0x0F, 0x42, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0xE9}, Mask: []bool{true, true, false, true, false, false, false, false, false, true, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR041", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR041", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -753,7 +755,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR042", Pattern: []byte{0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x85, 0x00, 0x0F, 0x8E}, Mask: []bool{true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, false, false, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR042", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR042", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0xB0, 0x03, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -767,7 +769,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR043", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89, 0x00, 0x48, 0x83, 0x00, 0x00, 0x5E, 0xE9, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x56, 0x48, 0x83}, Mask: []bool{true, false, false, false, false, false, false, false, true, true, false, true, true, false, false, true, true, false, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR043", TargetOff: 0, PatchLen: 8, NopOnly: false},
+			{Aob: "NBGFR043", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC9, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -782,8 +784,8 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR044B", Pattern: []byte{0x0F, 0x4C, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x89, 0x00, 0x48, 0x8B}, Mask: []bool{true, true, false, true, false, false, false, false, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR044A", TargetOff: 0, PatchLen: 2, NopOnly: false},
-			{Aob: "NBGFR044B", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR044A", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
+			{Aob: "NBGFR044B", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x8B, 0xD0, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -797,7 +799,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR045", Pattern: []byte{0xFF, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBF, 0x00, 0x00, 0x00, 0x00, 0x4D}, Mask: []bool{true, false, true, false, false, false, false, false, true, false, false, false, false, false, true, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR045", TargetOff: 0, PatchLen: 2, NopOnly: false},
+			{Aob: "NBGFR045", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0xB1, 0x04}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -811,7 +813,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR046", Pattern: []byte{0x7D, 0x00, 0x89, 0x00, 0x48, 0x83, 0x00, 0x00, 0x5B}, Mask: []bool{true, false, true, false, true, true, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR046", TargetOff: 0, PatchLen: 1, NopOnly: false},
+			{Aob: "NBGFR046", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchBytes: []byte{0xEB}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -825,7 +827,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR047", Pattern: []byte{0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x8B}, Mask: []bool{true, false, false, false, false, false, true, false, false, false, false, false, true, true, false, false, false, false, false, true, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR047", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR047", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0xB3, 0x0A, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -839,7 +841,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR048", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x41, 0x81, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x85, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89}, Mask: []bool{true, false, false, false, true, true, false, false, false, false, false, true, true, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR048", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR048", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xF6, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -853,7 +855,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR049", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x87}, Mask: []bool{true, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR049", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR049", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0xF3, 0x0F, 0x10, 0xC2}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -867,7 +869,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR050", Pattern: []byte{0x77, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x44, 0x8D, 0x00, 0x00, 0x31, 0x00, 0x45, 0x85}, Mask: []bool{true, false, true, false, false, false, true, true, false, false, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR050", TargetOff: 0, PatchLen: 2, NopOnly: false},
+			{Aob: "NBGFR050", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -881,7 +883,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR051", Pattern: []byte{0x8D, 0x00, 0x00, 0x31, 0x00, 0x85, 0x00, 0xBA, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x4F, 0x00, 0xC5}, Mask: []bool{true, false, false, true, false, true, false, true, false, false, false, false, true, true, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR051", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR051", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x8B, 0xCF, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -918,7 +920,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR053", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0xCB, 0x01, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x85, 0x00, 0x0F}, Mask: []bool{true, false, false, false, true, false, false, false, false, true, true, true, true, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, false, true, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR053", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR053", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0xF3, 0x0F, 0x10, 0xC2}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -931,7 +933,9 @@ var combatCaves = []caveDef{
 		Aobs: []caveAob{
 			{Sym: "NBGFR054", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x83}, Mask: []bool{true, false, false, false, true, false, false, false, false, false, false, false, true, true, false, true, false, false, false, false, true, false, false, false, false, false, false, false, true}},
 		},
-		Hooks:  []caveHook{},
+		Hooks: []caveHook{
+			{Aob: "NBGFR054", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchOffset: 2, PatchBytes: []byte{0x5F}},
+		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
 	},
@@ -944,7 +948,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR055", Pattern: []byte{0x0F, 0x4C, 0x00, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x39, 0x00, 0x0F, 0x8D}, Mask: []bool{true, true, false, true, false, false, false, false, false, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR055", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR055", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x8B, 0xC1, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -958,7 +962,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR056", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x86, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89}, Mask: []bool{true, false, false, false, true, false, false, false, true, true, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, true, false, false, false, false, false, true, true, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR056", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR056", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0xF3, 0x0F, 0x10, 0xC1}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -972,7 +976,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR057", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0xCB, 0x01, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x86, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE9, 0x00, 0x00, 0x00, 0x00, 0x4C}, Mask: []bool{true, false, false, false, true, false, false, false, false, true, true, true, true, false, false, false, true, true, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR057", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR057", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0xF3, 0x0F, 0x10, 0xC2}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -986,7 +990,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR058", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8D, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x48, 0xB8}, Mask: []bool{true, false, false, false, true, false, false, false, false, false, false, false, true, true, false, false, true, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR058", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR058", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1020,8 +1024,8 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR060C", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x48, 0x89, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x48, 0x83, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x74}, Mask: []bool{true, false, false, false, true, true, false, true, false, false, false, false, true, true, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR060B", TargetOff: 0, PatchLen: 8, NopOnly: false},
-			{Aob: "NBGFR060C", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR060B", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC9, 0x90, 0x90, 0x90, 0x90, 0x90}},
+			{Aob: "NBGFR060C", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC9, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1058,7 +1062,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR062", Pattern: []byte{0x77, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x44, 0x8D}, Mask: []bool{true, false, true, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR062", TargetOff: 0, PatchLen: 2, NopOnly: false},
+			{Aob: "NBGFR062", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1095,7 +1099,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR064", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x39, 0x00, 0x0F, 0x8E}, Mask: []bool{true, false, false, false, false, false, false, false, true, true, false, true, false, false, false, false, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR064", TargetOff: 0, PatchLen: 8, NopOnly: false},
+			{Aob: "NBGFR064", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x31, 0xFF, 0x40, 0xB7, 0x0A, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1154,7 +1158,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR067", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x85, 0x00, 0x74, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x48, 0x8B}, Mask: []bool{true, false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, true, false, false, false, false, false, true, true, false, false, false, false, false, true, true, false, true, false, true, true, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR067", TargetOff: 0, PatchLen: 8, NopOnly: false},
+			{Aob: "NBGFR067", TargetOff: 0, PatchLen: 8, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1168,7 +1172,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR068", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x4C, 0xCC, 0x01, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x86, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE9}, Mask: []bool{true, false, false, false, true, false, false, false, true, true, true, true, true, false, false, false, true, false, false, false, true, true, false, false, false, false, true, false, false, false, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR068", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR068", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0xF3, 0x0F, 0x10, 0xC1}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1182,7 +1186,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR069", Pattern: []byte{0xFF, 0x00, 0x41, 0x39, 0x00, 0x41, 0x0F, 0x00, 0x00, 0x89}, Mask: []bool{true, false, true, true, false, true, true, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR069", TargetOff: 0, PatchLen: 2, NopOnly: false},
+			{Aob: "NBGFR069", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1242,7 +1246,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR072", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x86, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89, 0x00, 0x00, 0x00, 0x48, 0x8B}, Mask: []bool{true, false, false, false, true, false, false, false, true, false, false, false, true, true, false, false, false, false, true, true, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR072", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR072", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xF6, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1284,7 +1288,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR076", Pattern: []byte{0x0F, 0xB6, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5}, Mask: []bool{true, true, false, false, false, false, false, true, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR076", TargetOff: 0, PatchLen: 7, NopOnly: false},
+			{Aob: "NBGFR076", TargetOff: 0, PatchLen: 7, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0xB0, 0x01, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1361,7 +1365,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR082", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x09, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x0F, 0x83, 0x00, 0x00, 0x00, 0x00, 0xC5}, Mask: []bool{true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, false, true, false, false, true, false, false, false, false, true, false, false, true, false, false, false, true, true, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR082", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR082", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1375,7 +1379,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR083", Pattern: []byte{0x0F, 0x85, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x41, 0xB8, 0x00, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x85, 0x00, 0x74, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x4C, 0x00, 0x00, 0x00, 0x4C, 0x00, 0x00, 0x74, 0x00, 0x48, 0x8D, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66}, Mask: []bool{true, true, false, false, false, false, true, true, false, false, false, false, false, true, true, false, false, false, false, false, true, true, false, false, false, false, true, false, false, false, false, true, true, false, false, false, false, false, true, true, false, true, false, true, true, false, false, true, false, false, false, true, false, false, true, false, true, true, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR083", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR083", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1413,7 +1417,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR085", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x76, 0x00, 0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80}, Mask: []bool{true, false, false, false, true, false, false, false, true, false, true, false, false, false, true, false, false, false, false, true, true, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR085", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR085", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1427,7 +1431,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR086", Pattern: []byte{0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBA, 0x00, 0x00, 0x00, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x84}, Mask: []bool{true, true, false, false, false, false, false, false, false, false, true, true, false, false, false, false, false, true, true, false, false, false, false, false, true, false, false, false, false, true, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR086", TargetOff: 0, PatchLen: 10, NopOnly: false},
+			{Aob: "NBGFR086", TargetOff: 0, PatchLen: 10, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1441,7 +1445,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR087", Pattern: []byte{0xC5, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC5, 0x00, 0x00, 0x00, 0x72, 0x00, 0x48, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x8B}, Mask: []bool{true, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false, true, false, true, true, false, false, false, false, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR087", TargetOff: 0, PatchLen: 4, NopOnly: false},
+			{Aob: "NBGFR087", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x0F, 0x57, 0xC0, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1455,7 +1459,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR088", Pattern: []byte{0x77, 0x00, 0x45, 0x8B, 0x00, 0x00, 0x41, 0x81, 0x00, 0x00, 0x00, 0x00, 0x00, 0x74, 0x00, 0x44, 0x88}, Mask: []bool{true, false, true, true, false, false, true, true, false, false, false, false, false, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR088", TargetOff: 0, PatchLen: 2, NopOnly: false},
+			{Aob: "NBGFR088", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1469,7 +1473,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR089", Pattern: []byte{0x0F, 0x9F, 0x00, 0xEB, 0x00, 0x31, 0x00, 0x48, 0x83, 0x00, 0x00, 0x5F, 0x5E, 0xC3, 0x00, 0x00, 0xC5}, Mask: []bool{true, true, false, true, false, true, false, true, true, false, false, true, true, true, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR089", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR089", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0xB0, 0x01, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1540,18 +1544,18 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR092L", Pattern: []byte{0x41, 0xF7, 0x00, 0x44, 0x89, 0x00, 0x41, 0xB0, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x4C}, Mask: []bool{true, true, false, true, true, false, true, true, false, true, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR092A", TargetOff: 0, PatchLen: 2, NopOnly: false},
-			{Aob: "NBGFR092B", TargetOff: 0, PatchLen: 6, NopOnly: false},
-			{Aob: "NBGFR092C", TargetOff: 0, PatchLen: 3, NopOnly: false},
-			{Aob: "NBGFR092D", TargetOff: 0, PatchLen: 4, NopOnly: false},
-			{Aob: "NBGFR092E", TargetOff: 0, PatchLen: 3, NopOnly: false},
-			{Aob: "NBGFR092F", TargetOff: 0, PatchLen: 1, NopOnly: false},
-			{Aob: "NBGFR092G", TargetOff: 0, PatchLen: 4, NopOnly: false},
-			{Aob: "NBGFR092H", TargetOff: 0, PatchLen: 3, NopOnly: false},
-			{Aob: "NBGFR092I", TargetOff: 0, PatchLen: 3, NopOnly: false},
-			{Aob: "NBGFR092J", TargetOff: 0, PatchLen: 6, NopOnly: false},
-			{Aob: "NBGFR092K", TargetOff: 0, PatchLen: 6, NopOnly: false},
-			{Aob: "NBGFR092L", TargetOff: 0, PatchLen: 3, NopOnly: false},
+			{Aob: "NBGFR092A", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
+			{Aob: "NBGFR092B", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
+			{Aob: "NBGFR092C", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xC9}},
+			{Aob: "NBGFR092D", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xE4, 0x90}},
+			{Aob: "NBGFR092E", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xED}},
+			{Aob: "NBGFR092F", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchBytes: []byte{0xEB}},
+			{Aob: "NBGFR092G", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xED, 0x90}},
+			{Aob: "NBGFR092H", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90}},
+			{Aob: "NBGFR092I", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xE4}},
+			{Aob: "NBGFR092J", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
+			{Aob: "NBGFR092K", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0xB0, 0xFF, 0x90, 0x90}},
+			{Aob: "NBGFR092L", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xF6}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1565,7 +1569,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR093", Pattern: []byte{0x20, 0x00, 0x44, 0x0F, 0x00, 0x00, 0xEB, 0x00, 0x45, 0x31}, Mask: []bool{true, false, true, true, false, false, true, false, true, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR093", TargetOff: 0, PatchLen: 2, NopOnly: false},
+			{Aob: "NBGFR093", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0xB1, 0x01}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1582,10 +1586,10 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR094D", Pattern: []byte{0x29, 0x00, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x41, 0x8B, 0x00, 0x00, 0x66, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xB8}, Mask: []bool{true, false, true, false, false, false, false, true, true, false, false, true, false, false, false, false, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR094A", TargetOff: 0, PatchLen: 1, NopOnly: false},
-			{Aob: "NBGFR094B", TargetOff: 0, PatchLen: 2, NopOnly: false},
-			{Aob: "NBGFR094C", TargetOff: 0, PatchLen: 1, NopOnly: false},
-			{Aob: "NBGFR094D", TargetOff: 0, PatchLen: 2, NopOnly: false},
+			{Aob: "NBGFR094A", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchBytes: []byte{0xEB}},
+			{Aob: "NBGFR094B", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
+			{Aob: "NBGFR094C", TargetOff: 0, PatchLen: 1, NopOnly: false, PatchBytes: []byte{0xEB}},
+			{Aob: "NBGFR094D", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},
@@ -1610,16 +1614,16 @@ var combatCaves = []caveDef{
 		},
 		Hooks: []caveHook{
 			{Aob: "NBGFR095A", TargetOff: 176, PatchLen: 5, NopOnly: false},
-			{Aob: "NBGFR095B", TargetOff: 0, PatchLen: 4, NopOnly: false},
-			{Aob: "NBGFR095C", TargetOff: 0, PatchLen: 4, NopOnly: false},
-			{Aob: "NBGFR095D", TargetOff: 0, PatchLen: 4, NopOnly: false},
-			{Aob: "NBGFR095E", TargetOff: 0, PatchLen: 4, NopOnly: false},
-			{Aob: "NBGFR095F", TargetOff: 0, PatchLen: 2, NopOnly: false},
-			{Aob: "NBGFR095G", TargetOff: 0, PatchLen: 4, NopOnly: false},
-			{Aob: "NBGFR095H", TargetOff: 0, PatchLen: 6, NopOnly: false},
-			{Aob: "NBGFR095I", TargetOff: 0, PatchLen: 3, NopOnly: false},
-			{Aob: "NBGFR095J", TargetOff: 0, PatchLen: 6, NopOnly: false},
-			{Aob: "NBGFR095K", TargetOff: 0, PatchLen: 5, NopOnly: false},
+			{Aob: "NBGFR095B", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90}},
+			{Aob: "NBGFR095C", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0x90, 0x90}},
+			{Aob: "NBGFR095D", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0x90, 0x90}},
+			{Aob: "NBGFR095E", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x41, 0xB5, 0x63, 0x90}},
+			{Aob: "NBGFR095F", TargetOff: 0, PatchLen: 2, NopOnly: false, PatchBytes: []byte{0x90, 0x90}},
+			{Aob: "NBGFR095G", TargetOff: 0, PatchLen: 4, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0x90, 0x90}},
+			{Aob: "NBGFR095H", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x31, 0xC0, 0x90, 0x90, 0x90, 0x90}},
+			{Aob: "NBGFR095I", TargetOff: 0, PatchLen: 3, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xC0}},
+			{Aob: "NBGFR095J", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
+			{Aob: "NBGFR095K", TargetOff: 0, PatchLen: 5, NopOnly: false, PatchBytes: []byte{0x4D, 0x31, 0xED, 0x90, 0x90}},
 		},
 		Baks: []caveBak{
 			{Off: 0, Aob: "NBGFR095A", Len: 5},
@@ -1648,7 +1652,7 @@ var combatCaves = []caveDef{
 			{Sym: "NBGFR096", Pattern: []byte{0x0F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x45, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x45, 0x8B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC6}, Mask: []bool{true, true, false, false, false, false, true, true, false, false, false, false, false, false, true, true, false, false, false, false, false, false, true}},
 		},
 		Hooks: []caveHook{
-			{Aob: "NBGFR096", TargetOff: 0, PatchLen: 6, NopOnly: false},
+			{Aob: "NBGFR096", TargetOff: 0, PatchLen: 6, NopOnly: false, PatchBytes: []byte{0x90, 0x90, 0x90, 0x90, 0x90, 0x90}},
 		},
 		Baks:   []caveBak{},
 		Relocs: []caveReloc{},

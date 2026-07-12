@@ -14,11 +14,12 @@ type caveAob struct {
 }
 
 type caveHook struct {
-	Aob        string
-	TargetOff  int
-	PatchLen   int
-	NopOnly    bool
-	PatchBytes []byte
+	Aob         string
+	PatchOffset int
+	TargetOff   int
+	PatchLen    int
+	NopOnly     bool
+	PatchBytes  []byte
 }
 
 type caveBak struct {
@@ -174,7 +175,8 @@ func (a *App) caveCaptureHookStates(def *caveDef, rt *caveRuntime, multi map[str
 			hits = hits[:1] // 代码洞型只用唯一命中(跳转锚点)
 		}
 		st := caveHookState{}
-		for _, addr := range hits {
+		for _, hit := range hits {
+			addr := hit + uintptr(h.PatchOffset)
 			orig := make([]byte, h.PatchLen)
 			if err := readProcessMemory(a.hProcess, addr, unsafe.Pointer(&orig[0]), uintptr(h.PatchLen)); err != nil {
 				return fmt.Errorf("%s 读取 hook 原字节失败: %w", def.Name, err)
