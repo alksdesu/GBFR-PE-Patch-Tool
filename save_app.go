@@ -16,27 +16,32 @@ var questCSVData []byte
 // ── Exported types for Wails binding ──
 
 type SaveSummary struct {
-	FilePath       string  `json:"filePath"`
-	FileName       string  `json:"fileName"`
-	Rupees         int32   `json:"rupees"`
-	MasteryPoints  int32   `json:"masteryPoints"`
-	Commendations  int32   `json:"commendations"`
-	StageID        uint32  `json:"stageId"`
-	PartyHealth    []int32 `json:"partyHealth"`
-	FavoriteChara  uint32  `json:"favoriteChara"`
-	ItemCount      int     `json:"itemCount"`
-	WeaponCount    int     `json:"weaponCount"`
-	GemCount       int     `json:"gemCount"`
-	QuestClears    int     `json:"questClears"`
-	QuestTotalClears uint32 `json:"questTotalClears"`
-	Unlocks        int     `json:"unlocks"`
+	FilePath         string  `json:"filePath"`
+	FileName         string  `json:"fileName"`
+	Rupees           int32   `json:"rupees"`
+	MasteryPoints    int32   `json:"masteryPoints"`
+	Commendations    int32   `json:"commendations"`
+	StageID          uint32  `json:"stageId"`
+	PartyHealth      []int32 `json:"partyHealth"`
+	FavoriteChara    uint32  `json:"favoriteChara"`
+	ItemCount        int     `json:"itemCount"`
+	WeaponCount      int     `json:"weaponCount"`
+	GemCount         int     `json:"gemCount"`
+	QuestClears      int     `json:"questClears"`
+	QuestTotalClears uint32  `json:"questTotalClears"`
+	Unlocks          int     `json:"unlocks"`
 }
 
 type QuestEntry struct {
-	QuestID   uint32 `json:"questId"`
-	QuestName string `json:"questName"`
+	QuestID     uint32 `json:"questId"`
+	QuestName   string `json:"questName"`
 	QuestNameCN string `json:"questNameCn"`
-	Clears    uint32 `json:"clears"`
+	Clears      uint32 `json:"clears"`
+}
+
+type CharacterStat struct {
+	Name  string `json:"name"`
+	Count int32  `json:"count"`
 }
 
 type SaveSlot struct {
@@ -194,6 +199,46 @@ func (a *App) LoadSave(path string) (*SaveSummary, error) {
 	}
 
 	return s, nil
+}
+
+// GetCharacterStats reads character-use counters from 40 save character slots.
+func (a *App) GetCharacterStats(path string) ([]CharacterStat, error) {
+	save, err := LoadSaveFile(path)
+	if err != nil {
+		return nil, err
+	}
+	if save.SlotData == nil {
+		return nil, fmt.Errorf("存档SlotData为空")
+	}
+	return characterStatsForSave(save.SlotData), nil
+}
+
+func characterStatsForSave(data *SaveDataBinary) []CharacterStat {
+	const firstCharacterSlot uint32 = 10000
+
+	characterNames := [...]string{
+		"古兰", "姬塔", "卡塔莉娜", "拉卡姆", "伊欧", "欧根", "", "萝赛塔", "冈达葛萨", "菲莉",
+		"兰斯洛特", "巴恩", "珀西瓦尔", "", "齐格飞", "夏洛特", "索恩", "尤达拉哈", "娜露梅", "伽兰查",
+		"塞达", "伊德", "巴萨拉卡", "", "卡莉奥丝特罗", "", "", "圣德芬", "希耶提", "",
+		"", "", "", "", "", "", "菲迪埃尔", "贝阿朵丽丝", "玛琪拉菲菈", "尤斯提斯",
+	}
+
+	counts := make(map[uint32]int32, 40)
+	for _, unit := range data.UIntTable {
+		if unit.IDType == SaveID_CharacterQuestUse && len(unit.ValueData) > 0 && unit.UnitID >= firstCharacterSlot && unit.UnitID < firstCharacterSlot+40 {
+			counts[unit.UnitID-firstCharacterSlot] = int32(unit.ValueData[0])
+		}
+	}
+
+	stats := make([]CharacterStat, 0, 40)
+	for slot := uint32(0); slot < 40; slot++ {
+		name := fmt.Sprintf("槽位 %d", slot)
+		if slot < uint32(len(characterNames)) && characterNames[slot] != "" {
+			name = characterNames[slot]
+		}
+		stats = append(stats, CharacterStat{Name: name, Count: counts[slot]})
+	}
+	return stats
 }
 
 // GetQuests returns the full quest list with names and clear counts

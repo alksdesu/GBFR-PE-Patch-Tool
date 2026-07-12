@@ -24,7 +24,7 @@ const (
 	steamAppID  = "881020"
 	gameExeName = "granblue_fantasy_relink.exe"
 	gameFolder  = "Granblue Fantasy Relink"
-	appVersion  = "v1.7.4"
+	appVersion  = "v1.7.5"
 	repoOwner   = "BitterG"
 	repoName    = "GBFR-PE-Patch-Tool"
 )
@@ -111,6 +111,7 @@ type App struct {
 	hProcess            windows.Handle
 	moduleBase          uintptr
 	managerPtr          uintptr
+	charaListBase       uintptr
 	charaPID            uint32
 	countdownAddr       uintptr
 	faceAccessoryAddr   uintptr
@@ -872,10 +873,9 @@ func parseLibraryPaths(content string) []string {
 
 const (
 	charaProcessName = "granblue_fantasy_relink.exe"
-	managerPtrRVA    = 0x68CFBB8
-	charalistOffset  = 0xD80
-	countOffset      = 0x3114
-	charaStride      = 0x3120
+	charaStride      = 0x5B70
+	charaCountOffset = 0x68
+	charaStateOffset = 0x6C
 	maxCharacters    = 40
 )
 
@@ -969,19 +969,15 @@ func (a *App) CharaAttach() (CharaProcessInfo, error) {
 		return CharaProcessInfo{}, fmt.Errorf("无法获取模块基址 (ptrSize=%d): %v", unsafe.Sizeof(uintptr(0)), err)
 	}
 
-	// Read manager pointer
-	ptrAddr := modBase + managerPtrRVA
-	var manager uintptr
-	err = readProcessMemory(h, ptrAddr, unsafe.Pointer(&manager), unsafe.Sizeof(manager))
-	if err != nil || manager == 0 {
-		windows.CloseHandle(h)
-		return CharaProcessInfo{}, fmt.Errorf("管理器指针为空，请确保已进入游戏存档")
-	}
-
 	a.hProcess = h
 	a.moduleBase = modBase
-	a.managerPtr = manager
 	a.charaPID = pid
+	manager, err := a.charaManager()
+	if err != nil {
+		a.CharaDetach()
+		return CharaProcessInfo{}, err
+	}
+	a.managerPtr = manager
 
 	return CharaProcessInfo{
 		PID:        pid,
@@ -989,6 +985,96 @@ func (a *App) CharaAttach() (CharaProcessInfo, error) {
 		Manager:    uint64(manager),
 		Connected:  true,
 	}, nil
+}
+
+// charaManager locates current 40-entry runtime character-use list.
+// Game 1.7.5 stores records 0x5B70 bytes apart; use count is at +0x68.
+func (a *App) charaManager() (uintptr, error) {
+	if a.hProcess == 0 {
+		return 0, fmt.Errorf("未连接游戏进程")
+	}
+	if a.charaListBase != 0 {
+		if a.isCharaListAddress(a.charaListBase) {
+			return a.charaListBase, nil
+		}
+		a.charaListBase = 0
+	}
+
+	const (
+		memCommit  = 0x1000
+		memPrivate = 0x20000
+	)
+	const chunkSize = uintptr(0x100000)
+	const listSize = uintptr((maxCharacters-1)*charaStride + charaStateOffset + 4)
+	for addr := uintptr(0); ; {
+		var mbi memoryBasicInformation
+		ret, _, _ := procVirtualQueryEx.Call(uintptr(a.hProcess), addr, uintptr(unsafe.Pointer(&mbi)), unsafe.Sizeof(mbi))
+		if ret == 0 {
+			break
+		}
+		next := mbi.BaseAddress + mbi.RegionSize
+		if mbi.State == memCommit && mbi.Type == memPrivate && mbi.RegionSize >= listSize {
+			for off := uintptr(0); off+listSize <= mbi.RegionSize; off += chunkSize {
+				size := chunkSize
+				if off+size > mbi.RegionSize {
+					size = mbi.RegionSize - off
+				}
+				if size < listSize {
+					break
+				}
+				buf := make([]byte, size)
+				chunkBase := mbi.BaseAddress + off
+				if err := readProcessMemory(a.hProcess, chunkBase, unsafe.Pointer(&buf[0]), uintptr(len(buf))); err != nil {
+					continue
+				}
+				for countIndex := int(charaCountOffset); countIndex+int(listSize)-int(charaCountOffset) <= len(buf); countIndex += 8 {
+					if binary.LittleEndian.Uint32(buf[countIndex:]) == 0 || !isCharaListData(buf, countIndex) {
+						continue
+					}
+					base := chunkBase + uintptr(countIndex) - charaCountOffset
+					a.charaListBase = base
+					a.managerPtr = base
+					return base, nil
+				}
+			}
+		}
+		if next <= addr {
+			break
+		}
+		addr = next
+	}
+	return 0, fmt.Errorf("未定位角色场次列表，请先进入游戏存档")
+}
+
+func (a *App) isCharaListAddress(base uintptr) bool {
+	var data [maxCharacters * 8]byte
+	for i := 0; i < maxCharacters; i++ {
+		addr := base + uintptr(i)*charaStride + charaCountOffset
+		if err := readProcessMemory(a.hProcess, addr, unsafe.Pointer(&data[i*8]), 8); err != nil {
+			return false
+		}
+	}
+	return isCharaListData(data[:], 0)
+}
+
+func isCharaListData(data []byte, countIndex int) bool {
+	active := 0
+	positive := 0
+	for i := 0; i < maxCharacters; i++ {
+		offset := countIndex + i*charaStride
+		count := int32(binary.LittleEndian.Uint32(data[offset:]))
+		state := int32(binary.LittleEndian.Uint32(data[offset+charaStateOffset-charaCountOffset:]))
+		if count < 0 || count > 10_000_000 || (state != 0 && state != -1) {
+			return false
+		}
+		if state == 0 {
+			active++
+			if count > 0 {
+				positive++
+			}
+		}
+	}
+	return active >= 20 && positive >= 3
 }
 
 // CharaDetach closes the process handle.
@@ -1003,6 +1089,7 @@ func (a *App) CharaDetach() {
 	}
 	a.moduleBase = 0
 	a.managerPtr = 0
+	a.charaListBase = 0
 	a.charaPID = 0
 	a.countdownAddr = 0
 	a.faceAccessoryAddr = 0
@@ -1023,21 +1110,20 @@ func (a *App) CharaGetAll() ([]CharaInfo, error) {
 		return nil, fmt.Errorf("未连接游戏进程")
 	}
 
-	// Re-read manager pointer each time (handles game restart)
-	var manager uintptr
-	ptrAddr := a.moduleBase + managerPtrRVA
-	err := readProcessMemory(a.hProcess, ptrAddr, unsafe.Pointer(&manager), unsafe.Sizeof(manager))
-	if err != nil || manager == 0 {
-		return nil, fmt.Errorf("管理器指针无效，请确保在游戏存档中")
+	manager, err := a.charaManager()
+	if err != nil {
+		return nil, err
 	}
-	a.managerPtr = manager
 
 	var result []CharaInfo
 	for i := 0; i < maxCharacters; i++ {
-		countAddr := manager + charalistOffset + uintptr(i)*charaStride + countOffset
-		var val int32
+		countAddr := manager + uintptr(i)*charaStride + charaCountOffset
+		var val, state int32
 		err := readProcessMemory(a.hProcess, countAddr, unsafe.Pointer(&val), unsafe.Sizeof(val))
 		if err != nil {
+			continue
+		}
+		if err := readProcessMemory(a.hProcess, countAddr+(charaStateOffset-charaCountOffset), unsafe.Pointer(&state), unsafe.Sizeof(state)); err != nil || state != 0 {
 			continue
 		}
 		if charaNames[i] == "" && val == 0 {
@@ -1064,15 +1150,16 @@ func (a *App) CharaSetOne(index int, value int) error {
 		return fmt.Errorf("无效的角色索引: %d", index)
 	}
 
-	// Re-read manager pointer
-	var manager uintptr
-	ptrAddr := a.moduleBase + managerPtrRVA
-	err := readProcessMemory(a.hProcess, ptrAddr, unsafe.Pointer(&manager), unsafe.Sizeof(manager))
-	if err != nil || manager == 0 {
-		return fmt.Errorf("管理器指针无效")
+	manager, err := a.charaManager()
+	if err != nil {
+		return err
 	}
 
-	countAddr := manager + charalistOffset + uintptr(index)*charaStride + countOffset
+	countAddr := manager + uintptr(index)*charaStride + charaCountOffset
+	var state int32
+	if err := readProcessMemory(a.hProcess, countAddr+(charaStateOffset-charaCountOffset), unsafe.Pointer(&state), unsafe.Sizeof(state)); err != nil || state != 0 {
+		return fmt.Errorf("角色槽位未初始化: %d", index)
+	}
 	val := int32(value)
 	return writeProcessMemory(a.hProcess, countAddr, unsafe.Pointer(&val), unsafe.Sizeof(val))
 }
@@ -1083,25 +1170,25 @@ func (a *App) CharaSetAll(value int) (int, error) {
 		return 0, fmt.Errorf("未连接游戏进程")
 	}
 
-	// Re-read manager pointer
-	var manager uintptr
-	ptrAddr := a.moduleBase + managerPtrRVA
-	err := readProcessMemory(a.hProcess, ptrAddr, unsafe.Pointer(&manager), unsafe.Sizeof(manager))
-	if err != nil || manager == 0 {
-		return 0, fmt.Errorf("管理器指针无效")
+	manager, err := a.charaManager()
+	if err != nil {
+		return 0, err
 	}
 
 	modified := 0
 	newVal := int32(value)
 	for i := 0; i < maxCharacters; i++ {
-		countAddr := manager + charalistOffset + uintptr(i)*charaStride + countOffset
-		var cur int32
+		countAddr := manager + uintptr(i)*charaStride + charaCountOffset
+		var cur, state int32
 		err := readProcessMemory(a.hProcess, countAddr, unsafe.Pointer(&cur), unsafe.Sizeof(cur))
 		if err != nil {
 			continue
 		}
-		if cur == -1 {
-			continue // skip empty slots
+		if err := readProcessMemory(a.hProcess, countAddr+(charaStateOffset-charaCountOffset), unsafe.Pointer(&state), unsafe.Sizeof(state)); err != nil || state != 0 {
+			continue
+		}
+		if charaNames[i] == "" {
+			continue // skip unused and uninitialized slots
 		}
 		err = writeProcessMemory(a.hProcess, countAddr, unsafe.Pointer(&newVal), unsafe.Sizeof(newVal))
 		if err == nil {
