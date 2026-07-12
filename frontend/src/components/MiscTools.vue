@@ -11,7 +11,6 @@ import { CharaAttach, CharaDetach,
          UnlockAllTrophyGetStatus, UnlockAllTrophyScan, UnlockAllTrophySetEnabled,
          OtherSkinPurpleRuneGetStatus, OtherSkinPurpleRuneSetEnabled,
          MonsterEnhanceSetPatchValueEnabled,
-         CombatPatchList, CombatPatchSetEnabled,
          CaveList, CaveSetEnabled, CaveSetFloat, CaveSetInt, CaveSetFlag, CaveMeta,
          HighlightedItemRead, HighlightedItemUpdate, HighlightedWeaponRead, HighlightedWeaponUpdate,
          DamageMeterGetStatus, DamageMeterReset,
@@ -53,33 +52,10 @@ const potionLoading = ref(false)
 const damageOverlayEnabled = ref(false)
 const damageOverlayFontSize = ref(Number(localStorage.getItem('gbfrDamageOverlayFontSize') || 48))
 const showOutdatedFeatures = false
-const combatPatches = ref([])
-const combatLoading = ref(false)
-const combatBusy = reactive({})
-const combatGroupOrder = ['战斗', '通用角色', '任务', '生活品质']
-const characterOrder = ['古兰', '卡塔莉娜', '拉卡姆', '伊欧', '欧根', '萝赛塔', '娜露梅', '菲莉', '夏洛特', '尤达拉哈', '巴萨拉卡', '塞达', '冈达葛萨', '巴恩', '伊德', '圣德芬', '希耶提', '索恩', '贝阿朵丽丝', '尤斯提斯', '玛琪拉菲菈']
+const characterOrder = ['古兰', '卡塔莉娜', '拉卡姆', '伊欧', '欧根', '萝赛塔', '娜露梅', '菲莉', '夏洛特', '尤达拉哈', '巴萨拉卡', '塞达', '冈达葛萨', '巴恩', '伊德', '圣德芬', '希耶提', '索恩', '贝阿朵丽丝', '尤斯提斯', '玛琪拉菲菈', '伽兰查', '芙劳', '菲迪耶尔']
 const characterSet = new Set(characterOrder)
 const selectedCharacter = ref('')
 let damageMeterTimer = 0
-
-const combatGroups = computed(() => {
-  const map = new Map()
-  combatPatches.value.forEach((item) => {
-    if (characterSet.has(item.group)) return
-    if (!map.has(item.group)) map.set(item.group, [])
-    map.get(item.group).push(item)
-  })
-  const entries = Array.from(map.entries())
-  entries.sort((a, b) => {
-    const ia = combatGroupOrder.indexOf(a[0])
-    const ib = combatGroupOrder.indexOf(b[0])
-    if (ia !== ib) return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib)
-    return 0
-  })
-  return entries.map(([group, items]) => ({ group, items }))
-})
-
-const combatActiveCount = computed(() => combatPatches.value.filter((item) => item.enabled).length)
 
 const caveList = ref([])
 const caveMeta = ref({})
@@ -120,15 +96,9 @@ const caveActiveCount = computed(() => caveList.value.filter((c) => c.enabled).l
 const characterList = computed(() => {
   const stat = new Map()
   const ensure = (name) => {
-    if (!stat.has(name)) stat.set(name, { name, patchCount: 0, caveCount: 0, activeCount: 0 })
+    if (!stat.has(name)) stat.set(name, { name, caveCount: 0, activeCount: 0 })
     return stat.get(name)
   }
-  combatPatches.value.forEach((item) => {
-    if (!characterSet.has(item.group)) return
-    const s = ensure(item.group)
-    s.patchCount++
-    if (item.enabled) s.activeCount++
-  })
   caveList.value.forEach((c) => {
     if (!characterSet.has(c.group)) return
     const s = ensure(c.group)
@@ -141,7 +111,7 @@ const characterList = computed(() => {
 const characterActiveTotal = computed(() => characterList.value.reduce((sum, c) => sum + c.activeCount, 0))
 
 const selectedCharacterPatches = computed(() =>
-  combatPatches.value.filter((item) => item.group === selectedCharacter.value))
+  caveList.value.filter((c) => c.group === selectedCharacter.value && caveMeta.value[c.id]?.kind !== 'modifier'))
 
 const selectedCharacterModifiers = computed(() =>
   caveList.value.filter((c) => c.group === selectedCharacter.value && caveMeta.value[c.id]?.kind === 'modifier'))
@@ -170,7 +140,6 @@ function connect() {
       }
       if (showOutdatedFeatures) loadInfiniteChallengeStatus()
       loadMaterialConsumeStatus()
-      loadCombatPatches()
       loadCaves()
       if (showOutdatedFeatures) {
         loadTerminusDropStatus()
@@ -195,8 +164,6 @@ function disconnect() {
       Object.assign(faceAccessoryStatus, { found: false, address: 0, rva: 0, hidden: false, jumpOpcode: '', currentBytes: '' })
       Object.assign(infiniteChallengeStatus, { rva: 0, enabled: false, currentBytes: '' })
       Object.assign(materialConsumeStatus, { rva: 0, enabled: false, currentBytes: '' })
-      combatPatches.value = []
-      Object.keys(combatBusy).forEach((key) => delete combatBusy[key])
       caveList.value = []
       Object.keys(caveBusy).forEach((key) => delete caveBusy[key])
       expandedCapture.value = ''
@@ -315,30 +282,6 @@ function setInfiniteChallengeEnabled(enabled) {
     .then((status) => { applyInfiniteChallengeStatus(status); emit('status', enabled ? '已开启无限挑战' : '已恢复挑战次数递增', 'success') })
     .catch((err) => emit('status', String(err), 'error'))
     .finally(() => { infiniteChallengeLoading.value = false })
-}
-
-function loadCombatPatches() {
-  if (!connected.value) return
-  combatLoading.value = true
-  CombatPatchList()
-    .then((items) => { combatPatches.value = Array.isArray(items) ? items : [] })
-    .catch((err) => emit('status', String(err), 'error'))
-    .finally(() => { combatLoading.value = false })
-}
-
-function toggleCombatPatch(item) {
-  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
-  if (combatBusy[item.id]) return
-  const next = !item.enabled
-  combatBusy[item.id] = true
-  CombatPatchSetEnabled(item.id, next)
-    .then((state) => {
-      const index = combatPatches.value.findIndex((entry) => entry.id === state.id)
-      if (index >= 0) combatPatches.value.splice(index, 1, state)
-      emit('status', `${state.name}已${next ? '开启' : '关闭'}`, 'success')
-    })
-    .catch((err) => emit('status', String(err), 'error'))
-    .finally(() => { delete combatBusy[item.id] })
 }
 
 function loadCaves() {
@@ -987,35 +930,6 @@ onBeforeUnmount(() => {
           <div class="memory-bytes">{{ materialConsumeStatus.currentBytes || '未读取' }}</div>
         </div>
 
-        <div class="memory-card" :class="{ active: combatActiveCount > 0 }">
-          <div class="memory-header">
-            <span class="memory-title">战斗辅助（开关类）</span>
-            <span class="info-dot" title="即开即用的运行时字节补丁，含通用战斗、角色专属机制、任务与生活品质。断开连接会自动还原全部补丁。">!</span>
-            <span class="memory-hint">已开启 {{ combatActiveCount }} / {{ combatPatches.length }}</span>
-          </div>
-          <div v-if="!combatPatches.length" class="combat-empty">{{ combatLoading ? '加载中...' : '未定位到战斗功能' }}</div>
-          <div v-for="grp in combatGroups" :key="grp.group" class="combat-group">
-            <div class="combat-group-title">{{ grp.group }}</div>
-            <div class="combat-toggle-grid">
-              <button
-                v-for="item in grp.items"
-                :key="item.id"
-                class="combat-toggle"
-                :class="{ on: item.enabled, warn: item.mismatch }"
-                :disabled="combatBusy[item.id]"
-                :title="item.mismatch ? '指令字节异常，可能游戏版本不匹配' : ''"
-                @click="toggleCombatPatch(item)"
-              >
-                <span class="combat-dot"></span>
-                <span class="combat-label">{{ item.name }}</span>
-              </button>
-            </div>
-          </div>
-          <div class="memory-row">
-            <button class="btn-refresh" @click="loadCombatPatches" :disabled="combatLoading">刷新状态</button>
-          </div>
-        </div>
-
         <div class="memory-card" :class="{ active: caveActiveCount > 0 }">
           <div class="memory-header">
             <span class="memory-title">高级功能（代码注入 · 开关类）</span>
@@ -1162,7 +1076,7 @@ onBeforeUnmount(() => {
             <span class="info-dot" title="按角色收纳的专属机制。点击角色展开其全部开关与参数修改。">!</span>
             <span class="memory-hint">已开启 {{ characterActiveTotal }}</span>
           </div>
-          <div v-if="!characterList.length" class="combat-empty">{{ combatLoading || caveLoading ? '加载中...' : '无可用角色功能' }}</div>
+          <div v-if="!characterList.length" class="combat-empty">{{ caveLoading ? '加载中...' : '无可用角色功能' }}</div>
           <div class="char-grid">
             <button
               v-for="c in characterList"
@@ -1183,10 +1097,9 @@ onBeforeUnmount(() => {
                 v-for="item in selectedCharacterPatches"
                 :key="item.id"
                 class="combat-toggle"
-                :class="{ on: item.enabled, warn: item.mismatch }"
-                :disabled="combatBusy[item.id]"
-                :title="item.mismatch ? '指令字节异常，可能游戏版本不匹配' : ''"
-                @click="toggleCombatPatch(item)"
+                :class="{ on: item.enabled }"
+                :disabled="caveBusy[item.id]"
+                @click="toggleCave(item)"
               >
                 <span class="combat-dot"></span>
                 <span class="combat-label">{{ item.name }}</span>

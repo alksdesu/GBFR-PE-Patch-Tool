@@ -14,10 +14,11 @@ type caveAob struct {
 }
 
 type caveHook struct {
-	Aob       string
-	TargetOff int
-	PatchLen  int
-	NopOnly   bool
+	Aob        string
+	TargetOff  int
+	PatchLen   int
+	NopOnly    bool
+	PatchBytes []byte
 }
 
 type caveBak struct {
@@ -51,9 +52,11 @@ type caveRuntime struct {
 	active   bool
 }
 
+// caveHookState 记录一个 hook 的全部命中地址及各自原始字节。
+// 代码洞型 hook 只有单地址; 纯字节 patch 型的多命中 AOB 会有多个地址, 全部应用同一 patch。
 type caveHookState struct {
-	addr     uintptr
-	orig     []byte
+	addrs []uintptr
+	origs [][]byte
 }
 
 type CaveState struct {
@@ -75,10 +78,10 @@ func findCaveDef(id string) *caveDef {
 	return nil
 }
 
-func (a *App) scanCaveAob(pattern []byte, mask []bool) (uintptr, error) {
+func (a *App) scanCaveAobAll(pattern []byte, mask []bool) ([]uintptr, error) {
 	moduleSize, err := getRemoteModuleSize(a.hProcess, a.moduleBase)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	const chunkSize uintptr = 0x10000
 	var matches []uintptr
@@ -105,48 +108,42 @@ func (a *App) scanCaveAob(pattern []byte, mask []bool) (uintptr, error) {
 			carry = append([]byte{}, buf[len(buf)-len(pattern)+1:]...)
 			carryBase = addr + uintptr(len(buf)-len(pattern)+1)
 		}
-		if len(matches) > 1 {
-			return 0, fmt.Errorf("特征码命中多处，版本可能不匹配")
-		}
 	}
 	if len(matches) == 0 {
-		return 0, fmt.Errorf("未找到特征码")
+		return nil, fmt.Errorf("未找到特征码")
+	}
+	return matches, nil
+}
+
+func (a *App) scanCaveAob(pattern []byte, mask []bool) (uintptr, error) {
+	matches, err := a.scanCaveAobAll(pattern, mask)
+	if err != nil {
+		return 0, err
+	}
+	if len(matches) > 1 {
+		return 0, fmt.Errorf("特征码命中多处，版本可能不匹配")
 	}
 	return matches[0], nil
 }
 
-func (a *App) caveResolveAobs(def *caveDef) (map[string]uintptr, error) {
+// caveResolveAobs 解析 cave 全部 AOB。代码洞型要求每个 AOB 唯一命中(跳转锚点须确定);
+// 纯字节 patch 型(Code 为空)允许 AOB 多命中, 运行时对所有命中处应用同一 patch。
+func (a *App) caveResolveAobs(def *caveDef) (map[string]uintptr, map[string][]uintptr, error) {
 	addrs := make(map[string]uintptr, len(def.Aobs))
+	multi := make(map[string][]uintptr, len(def.Aobs))
+	pureByte := len(def.Code) == 0
 	for _, ab := range def.Aobs {
-		addr, err := a.scanCaveAob(ab.Pattern, ab.Mask)
+		hits, err := a.scanCaveAobAll(ab.Pattern, ab.Mask)
 		if err != nil {
-			return nil, fmt.Errorf("%s 定位 %s 失败: %w", def.Name, ab.Sym, err)
+			return nil, nil, fmt.Errorf("%s 定位 %s 失败: %w", def.Name, ab.Sym, err)
 		}
-		addrs[ab.Sym] = addr
-	}
-	return addrs, nil
-}
-
-func (a *App) caveIsEnabled(def *caveDef) (bool, map[string]uintptr, error) {
-	addrs, err := a.caveResolveAobs(def)
-	if err != nil {
-		return false, nil, err
-	}
-	for _, h := range def.Hooks {
-		addr := addrs[h.Aob]
-		buf := make([]byte, 1)
-		if err := readProcessMemory(a.hProcess, addr, unsafe.Pointer(&buf[0]), 1); err != nil {
-			return false, addrs, err
+		if len(hits) > 1 && !pureByte {
+			return nil, nil, fmt.Errorf("%s 定位 %s 失败: 特征码命中多处，版本可能不匹配", def.Name, ab.Sym)
 		}
-		if h.NopOnly {
-			if buf[0] != 0x90 {
-				return false, addrs, nil
-			}
-		} else if buf[0] != 0xE9 {
-			return false, addrs, nil
-		}
+		addrs[ab.Sym] = hits[0]
+		multi[ab.Sym] = hits
 	}
-	return true, addrs, nil
+	return addrs, multi, nil
 }
 
 func (a *App) caveState(def *caveDef, enabled bool) CaveState {
@@ -168,7 +165,43 @@ func hasSuffix(s, suf string) bool {
 	return len(s) >= len(suf) && s[len(s)-len(suf):] == suf
 }
 
-func (a *App) caveBuildAndWrite(def *caveDef, addrs map[string]uintptr) (*caveRuntime, error) {
+// caveCaptureHookStates 为每个 hook 记录全部命中地址(纯 patch 型可多命中)及原始字节。
+func (a *App) caveCaptureHookStates(def *caveDef, rt *caveRuntime, multi map[string][]uintptr) error {
+	pureByte := len(def.Code) == 0
+	for _, h := range def.Hooks {
+		hits := multi[h.Aob]
+		if !pureByte {
+			hits = hits[:1] // 代码洞型只用唯一命中(跳转锚点)
+		}
+		st := caveHookState{}
+		for _, addr := range hits {
+			orig := make([]byte, h.PatchLen)
+			if err := readProcessMemory(a.hProcess, addr, unsafe.Pointer(&orig[0]), uintptr(h.PatchLen)); err != nil {
+				return fmt.Errorf("%s 读取 hook 原字节失败: %w", def.Name, err)
+			}
+			st.addrs = append(st.addrs, addr)
+			st.origs = append(st.origs, orig)
+		}
+		rt.hooks = append(rt.hooks, st)
+	}
+	return nil
+}
+
+func (a *App) caveBuildAndWrite(def *caveDef, addrs map[string]uintptr, multi map[string][]uintptr) (*caveRuntime, error) {
+	// 纯字节 patch 型 (Code 为空): 无需代码洞, 仅按 hook 覆盖字节(支持 AOB 多命中)。
+	if len(def.Code) == 0 {
+		rt := &caveRuntime{aobAddrs: addrs}
+		if err := a.caveCaptureHookStates(def, rt, multi); err != nil {
+			a.caveRestoreRuntime(rt)
+			return nil, err
+		}
+		if err := a.caveWriteHooks(def, rt); err != nil {
+			a.caveRestoreRuntime(rt)
+			return nil, err
+		}
+		return rt, nil
+	}
+
 	anchor := addrs[def.Aobs[0].Sym]
 	cave, err := virtualAllocRemoteNear(a.hProcess, anchor, 0x1000)
 	if err != nil {
@@ -227,14 +260,9 @@ func (a *App) caveBuildAndWrite(def *caveDef, addrs map[string]uintptr) (*caveRu
 	}
 
 	rt := &caveRuntime{base: cave, aobAddrs: addrs}
-	for _, h := range def.Hooks {
-		addr := addrs[h.Aob]
-		orig := make([]byte, h.PatchLen)
-		if err := readProcessMemory(a.hProcess, addr, unsafe.Pointer(&orig[0]), uintptr(h.PatchLen)); err != nil {
-			a.caveRestoreRuntime(rt)
-			return nil, fmt.Errorf("%s 读取 hook 原字节失败: %w", def.Name, err)
-		}
-		rt.hooks = append(rt.hooks, caveHookState{addr: addr, orig: orig})
+	if err := a.caveCaptureHookStates(def, rt, multi); err != nil {
+		a.caveRestoreRuntime(rt)
+		return nil, err
 	}
 	if err := a.caveWriteHooks(def, rt); err != nil {
 		a.caveRestoreRuntime(rt)
@@ -246,21 +274,29 @@ func (a *App) caveBuildAndWrite(def *caveDef, addrs map[string]uintptr) (*caveRu
 func (a *App) caveWriteHooks(def *caveDef, rt *caveRuntime) error {
 	for i := range def.Hooks {
 		h := def.Hooks[i]
-		addr := rt.hooks[i].addr
-		patch := make([]byte, h.PatchLen)
-		for j := range patch {
-			patch[j] = 0x90
-		}
-		if !h.NopOnly {
-			rel := int64(rt.base+uintptr(h.TargetOff)) - int64(addr+5)
-			if rel < math.MinInt32 || rel > math.MaxInt32 {
-				return fmt.Errorf("%s hook 跳转超过 rel32", def.Name)
+		for _, addr := range rt.hooks[i].addrs {
+			patch := make([]byte, h.PatchLen)
+			switch {
+			case len(h.PatchBytes) > 0:
+				copy(patch, h.PatchBytes)
+			case h.NopOnly:
+				for j := range patch {
+					patch[j] = 0x90
+				}
+			default:
+				for j := range patch {
+					patch[j] = 0x90
+				}
+				rel := int64(rt.base+uintptr(h.TargetOff)) - int64(addr+5)
+				if rel < math.MinInt32 || rel > math.MaxInt32 {
+					return fmt.Errorf("%s hook 跳转超过 rel32", def.Name)
+				}
+				patch[0] = 0xE9
+				binary.LittleEndian.PutUint32(patch[1:5], uint32(int32(rel)))
 			}
-			patch[0] = 0xE9
-			binary.LittleEndian.PutUint32(patch[1:5], uint32(int32(rel)))
-		}
-		if err := writeCodeMemory(a.hProcess, addr, patch); err != nil {
-			return fmt.Errorf("%s 写入 hook 失败: %w", def.Name, err)
+			if err := writeCodeMemory(a.hProcess, addr, patch); err != nil {
+				return fmt.Errorf("%s 写入 hook 失败: %w", def.Name, err)
+			}
 		}
 	}
 	return nil
@@ -268,7 +304,9 @@ func (a *App) caveWriteHooks(def *caveDef, rt *caveRuntime) error {
 
 func (a *App) caveRestoreRuntime(rt *caveRuntime) {
 	for _, h := range rt.hooks {
-		_ = writeCodeMemory(a.hProcess, h.addr, h.orig)
+		for i, addr := range h.addrs {
+			_ = writeCodeMemory(a.hProcess, addr, h.origs[i])
+		}
 	}
 }
 
@@ -311,11 +349,11 @@ func (a *App) CaveSetEnabled(id string, enabled bool) (CaveState, error) {
 			rt.active = true
 			return a.caveState(def, true), nil
 		}
-		addrs, err := a.caveResolveAobs(def)
+		addrs, multi, err := a.caveResolveAobs(def)
 		if err != nil {
 			return CaveState{}, err
 		}
-		newRt, err := a.caveBuildAndWrite(def, addrs)
+		newRt, err := a.caveBuildAndWrite(def, addrs, multi)
 		if err != nil {
 			return CaveState{}, err
 		}

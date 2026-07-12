@@ -9,8 +9,8 @@ import (
 const (
 	highlightedItemCaveID   = "highlighted_item"
 	highlightedWeaponCaveID = "highlighted_weapon"
-	highlightedItemPtrSym   = "NBGFR20_ptr"
-	highlightedWeaponPtrSym = "NBGFR21_ptr"
+	highlightedItemPtrSym   = "NBGFR078_ptr"
+	highlightedWeaponPtrSym = "NBGFR079_ptr"
 
 	hlItemOffID     = uintptr(0x00)
 	hlItemOffAmount = uintptr(0x04)
@@ -35,7 +35,7 @@ const (
 	hlWeaponSaveStep  = uintptr(4)
 )
 
-var hlWeaponTraitSlots = []uintptr{0xA4, 0xAC, 0xB4, 0xBC}
+var hlWeaponTraitSlots = []uintptr{0xA4, 0xAC, 0xB4, 0xBC, 0xC4}
 var hlWeaponImbuedSlots = []uintptr{0x20, 0x28, 0x30}
 
 type HighlightedItem struct {

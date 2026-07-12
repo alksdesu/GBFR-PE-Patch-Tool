@@ -994,7 +994,6 @@ func (a *App) CharaAttach() (CharaProcessInfo, error) {
 
 // CharaDetach closes the process handle.
 func (a *App) CharaDetach() {
-	a.combatPatchRestoreAll()
 	a.caveRestoreAll()
 	if a.hProcess != 0 {
 		windows.CloseHandle(a.hProcess)
