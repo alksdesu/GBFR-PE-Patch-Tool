@@ -1058,7 +1058,7 @@
                    {
                        "internalId":  "SKILL_120_00",
                        "hash":  "0xD908223D",
-                       "displayName":  "Phantasm\u0027s Concord",
+                       "displayName":  "Phantasm\u0027s Harmony",
                        "category":  "character_trait",
                        "maxLevel":  15,
                        "allowedLevels":  null,
@@ -1075,7 +1075,7 @@
                    {
                        "internalId":  "SKILL_120_01",
                        "hash":  "0x7351D602",
-                       "displayName":  "Phantasm\u0027s Harmony",
+                       "displayName":  "Phantasm\u0027s Concord",
                        "category":  "character_trait",
                        "maxLevel":  15,
                        "allowedLevels":  null,
