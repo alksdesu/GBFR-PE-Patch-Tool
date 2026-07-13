@@ -40,6 +40,15 @@ function toEntry(form) {
   }
 }
 
+function sameEntry(a, b) {
+  return a.sigilHash === b.sigilHash &&
+    a.sigilLevel === b.sigilLevel &&
+    a.primaryTraitHash === b.primaryTraitHash &&
+    a.primaryTraitLevel === b.primaryTraitLevel &&
+    a.secondaryTraitHash === b.secondaryTraitHash &&
+    a.secondaryTraitLevel === b.secondaryTraitLevel
+}
+
 export function saveTemplate(name, form) {
   const trimmed = String(name || '').trim()
   if (!trimmed) return null
@@ -59,8 +68,14 @@ export function deleteTemplate(id) {
 }
 
 export function pushHistory(form) {
-  const entry = { id: newId(), createdAt: Date.now(), ...toEntry(form) }
-  const next = [entry, ...history.value]
+  const entry = toEntry(form)
+  const now = Date.now()
+  const existing = history.value.find(item => sameEntry(item, entry))
+  const next = [{ id: existing?.id || newId(), createdAt: now, ...entry }, ...history.value.filter(item => !sameEntry(item, entry))]
   if (next.length > HISTORY_MAX) next.length = HISTORY_MAX
   history.value = next
+}
+
+export function clearHistory() {
+  history.value = []
 }

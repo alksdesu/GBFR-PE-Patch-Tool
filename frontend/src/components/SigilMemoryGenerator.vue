@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { SigilMemoryGetOptions, SigilMemoryGetStatus, SigilMemoryEnable, SigilMemoryUpdate } from '../../wailsjs/go/main/App'
 import { matchText } from '../utils/matchText.js'
-import { deleteTemplate, history, pushHistory, renameTemplate, saveTemplate, templates } from '../utils/sigilMemoryStore.js'
+import { clearHistory, deleteTemplate, history, pushHistory, renameTemplate, saveTemplate, templates } from '../utils/sigilMemoryStore.js'
 import SigilMemoryPicker from './SigilMemoryPicker.vue'
 
 const emit = defineEmits(['status'])
@@ -246,6 +246,12 @@ function cancelRename() {
   renameBuffer.value = ''
 }
 
+function clearWriteHistory() {
+  if (!history.value.length || !window.confirm('清空全部最近写入记录？')) return
+  clearHistory()
+  show('最近写入已清空', 'success')
+}
+
 function onRenameOutsideClick(e) {
   if (!renamingId.value) return
   if (renameEl.value && !renameEl.value.contains(e.target)) cancelRename()
@@ -370,6 +376,7 @@ onMounted(async () => {
         <div v-if="tab === 'templates'">
           <input v-model="templateSearch" class="search-input" placeholder="搜索模板..." />
         </div>
+        <button v-else-if="history.length" class="row-tool" title="清空最近写入" @click="clearWriteHistory">清空</button>
       </div>
 
       <div v-if="tab === 'templates'">
