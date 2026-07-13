@@ -30,6 +30,14 @@ var (
 type SigilMemoryOption struct {
 	Hash        uint32 `json:"hash"`
 	DisplayName string `json:"displayName"`
+
+	// Level metadata — populated for catalog entries, nil for memory-only.
+	MaxLevel                    *int     `json:"maxLevel,omitempty"`
+	AllowedLevels               []int    `json:"allowedLevels,omitempty"`
+	FirstTraitMaxLevel          *int     `json:"firstTraitMaxLevel,omitempty"`          // sigils only
+	AllowedSecondaryTraitHashes []uint32 `json:"allowedSecondaryTraitHashes,omitempty"` // sigils only
+	SupportsSecondaryTrait      *bool    `json:"supportsSecondaryTrait,omitempty"`      // sigils only
+	Source                      string   `json:"source"`                                // "catalog" | "memory-only"
 }
 
 type SigilMemoryOptions struct {
@@ -79,17 +87,46 @@ func (a *App) SigilMemoryGetOptions() (SigilMemoryOptions, error) {
 		return SigilMemoryOptions{}, err
 	}
 
-	result := SigilMemoryOptions{
-		Sigils: make([]SigilMemoryOption, 0, len(catalog.Sigils)),
-		Traits: make([]SigilMemoryOption, 0, len(catalog.Traits)),
+	// Build traitID → hash map once for allowedSecondaryTraitIds translation.
+	traitHashByID := make(map[string]uint32, len(catalog.Traits))
+	for i := range catalog.Traits {
+		t := &catalog.Traits[i]
+		if h, err := ParseHashHex(t.Hash); err == nil {
+			traitHashByID[t.InternalID] = h
+		}
 	}
+
+	result := SigilMemoryOptions{
+		Sigils: make([]SigilMemoryOption, 0, len(catalog.Sigils)+len(sigilMemorySigils)),
+		Traits: make([]SigilMemoryOption, 0, len(catalog.Traits)+len(sigilMemoryTraits)),
+	}
+
 	for _, sigil := range catalog.GetSigilSortedList() {
 		hash, err := ParseHashHex(sigil.Hash)
 		if err != nil {
 			continue
 		}
-		result.Sigils = append(result.Sigils, SigilMemoryOption{Hash: hash, DisplayName: displaySigilName(sigil)})
+		var allowedSecHashes []uint32
+		if len(sigil.AllowedSecondaryTraitIDs) > 0 {
+			allowedSecHashes = make([]uint32, 0, len(sigil.AllowedSecondaryTraitIDs))
+			for _, id := range sigil.AllowedSecondaryTraitIDs {
+				if h, ok := traitHashByID[id]; ok {
+					allowedSecHashes = append(allowedSecHashes, h)
+				}
+			}
+		}
+		result.Sigils = append(result.Sigils, SigilMemoryOption{
+			Hash:                        hash,
+			DisplayName:                 displaySigilName(sigil),
+			MaxLevel:                    sigil.MaxSigilLevel,
+			AllowedLevels:               sigil.AllowedSigilLevels,
+			FirstTraitMaxLevel:          sigil.FirstTraitMaxLevel,
+			AllowedSecondaryTraitHashes: allowedSecHashes,
+			SupportsSecondaryTrait:      sigil.SupportsSecondaryTrait,
+			Source:                      "catalog",
+		})
 	}
+
 	for i := range catalog.Traits {
 		trait := &catalog.Traits[i]
 		if !isSelectableTrait(trait) {
@@ -99,13 +136,20 @@ func (a *App) SigilMemoryGetOptions() (SigilMemoryOptions, error) {
 		if err != nil {
 			continue
 		}
-		result.Traits = append(result.Traits, SigilMemoryOption{Hash: hash, DisplayName: cnTrait(trait.DisplayName)})
+		result.Traits = append(result.Traits, SigilMemoryOption{
+			Hash:          hash,
+			DisplayName:   cnTrait(trait.DisplayName),
+			MaxLevel:      trait.MaxLevel,
+			AllowedLevels: trait.AllowedLevels,
+			Source:        "catalog",
+		})
 	}
+
 	for _, entry := range sigilMemorySigils {
-		result.Sigils = append(result.Sigils, SigilMemoryOption{Hash: entry.Hash, DisplayName: entry.Name})
+		result.Sigils = append(result.Sigils, SigilMemoryOption{Hash: entry.Hash, DisplayName: entry.Name, Source: "memory-only"})
 	}
 	for _, entry := range sigilMemoryTraits {
-		result.Traits = append(result.Traits, SigilMemoryOption{Hash: entry.Hash, DisplayName: entry.Name})
+		result.Traits = append(result.Traits, SigilMemoryOption{Hash: entry.Hash, DisplayName: entry.Name, Source: "memory-only"})
 	}
 	return result, nil
 }
