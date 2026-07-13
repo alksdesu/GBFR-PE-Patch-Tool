@@ -716,6 +716,23 @@
                        "confidence":  "medium"
                    },
                    {
+                       "internalId":  "SKILL_109_00",
+                       "hash":  "0x7EDD69D0",
+                       "displayName":  "Precise Wrath",
+                       "category":  "support_trait",
+                       "maxLevel":  15,
+                       "allowedLevels":  null,
+                       "observedLevels":  [
+                                              15
+                                          ],
+                       "canAppearAsPrimary":  true,
+                       "canAppearAsSecondary":  true,
+                       "bannedAsSecondaryOnPlusSigils":  false,
+                       "notes":  "Copied from factor trait catalog so wrightstone generation can select Precise Wrath in any trait slot.",
+                       "source":  "data/traits.json SKILL_109_00",
+                       "confidence":  "medium"
+                   },
+                   {
                        "internalId":  "SKILL_110_00",
                        "hash":  "0x8F502F0D",
                        "displayName":  "Life on the Line",

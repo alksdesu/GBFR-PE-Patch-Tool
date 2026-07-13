@@ -2638,7 +2638,6 @@ const translations = {
   "— 未设置": "— Not set",
   "未设置": "Not set",
   "未知条目": "Unknown entry",
-  "未知": "Unknown",
   "选择因子": "Select sigil",
   "选择主词条": "Select primary trait",
   "选择副词条": "Select secondary trait",
