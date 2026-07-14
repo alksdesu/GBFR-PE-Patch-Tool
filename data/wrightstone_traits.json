@@ -467,7 +467,7 @@
                        "category":  "support_trait",
                        "maxLevel":  15,
                        "allowedLevels":  null,
-                       "observedLevels":  [],gi
+                       "observedLevels":  [],
                        "canAppearAsPrimary":  true,
                        "canAppearAsSecondary":  true,
                        "bannedAsSecondaryOnPlusSigils":  false,
