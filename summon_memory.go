@@ -208,8 +208,9 @@ func (a *App) SummonUpdate(item SummonUpdate) (SummonInfo, error) {
 	if item.TypeHash == 0 {
 		return SummonInfo{}, fmt.Errorf("召唤石种类不能为空")
 	}
-	if item.Rank == 0 || item.Rank > 3 {
-		return SummonInfo{}, fmt.Errorf("阶级必须为 1 到 3")
+	// 游戏记录存在阶级 0 的合法召唤石。
+	if item.Rank > 3 {
+		return SummonInfo{}, fmt.Errorf("阶级必须为 0 到 3")
 	}
 	if item.MainTraitLevel > math.MaxInt32 || item.SubParamLevel > math.MaxInt32 {
 		return SummonInfo{}, fmt.Errorf("召唤石等级或副参数等级超出范围")
