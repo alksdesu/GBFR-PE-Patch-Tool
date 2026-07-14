@@ -410,7 +410,7 @@ var ctHashToNameEN = map[uint32]string{
 	0x803F64BD: "Ebony's Poise",
 	0x80A6DD30: "Power Hungry",
 	0x80CCCD83: "Founder's Truth",
-	0x80DC0FB8: "Firm Stance V",
+	0xB1CCC211: "Firm Stance V",
 	0x811D8A6A: "Lucky Charge III+",
 	0x81742849: "Stronghold IV",
 	0x81B293D9: "Dark Huntress's Warpath",

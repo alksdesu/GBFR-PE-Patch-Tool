@@ -86,7 +86,7 @@ var sigilCN = map[string]string{
 	"Mage's Awakening+":  "魔法师之觉醒+",
 	"Mage's Aspiration+": "魔法师的心愿+",
 	"Mage's Savvy+":      "魔法师的伶俐+",
-	"Mage's Warpath+":    "法师的战气+",
+	"Mage's Warpath+":    "魔法师的战气+",
 	//岁月老根
 	"Veteran's Awakening+": "老兵之觉醒+",
 	"Veteran's Insight+":   "老兵的智慧+",
@@ -313,7 +313,7 @@ var traitCN = map[string]string{
 	"Helmsman's Warpath":         "舵手的战气",
 	"Mage's Aspiration":          "魔法师的心愿",
 	"Mage's Savvy":               "魔法师的伶俐",
-	"Mage's Warpath":             "法师的战气",
+	"Mage's Warpath":             "魔法师的战气",
 	"Veteran's Insight":          "老兵的智慧",
 	"Veteran's Vision":           "老兵的天眼",
 	"Veteran's Warpath":          "老兵的战气",

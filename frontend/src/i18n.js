@@ -488,7 +488,7 @@ const translations = {
   "0x803F64BD: \"冥暗自若\",": "0x803F64BD: \"Ebony's Poise\",",
   "0x80A6DD30: \"修罗\",": "0x80A6DD30: \"Power Hungry\",",
   "0x80CCCD83: \"极致真理\",": "0x80CCCD83: \"Founder's Truth\",",
-  "0x80DC0FB8: \"不动V\",": "0x80DC0FB8: \"Firm Stance V\",",
+  "0xB0DC0FB8: \"不动V\",": "0xB1CCC211: \"Firm Stance V\",",
   "0x811D8A6A: \"蓄力会心III+\",": "0x811D8A6A: \"Lucky Charge III+\",",
   "0x81742849: \"刚健IV\",": "0x81742849: \"Stronghold IV\",",
   "0x81B293D9: \"魔眼的战气\",": "0x81B293D9: \"Dark Huntress's Warpath\",",

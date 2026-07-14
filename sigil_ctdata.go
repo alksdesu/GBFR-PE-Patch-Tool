@@ -408,7 +408,7 @@ var ctHashToName = map[uint32]string{
 	0x803F64BD: "冥暗自若",
 	0x80A6DD30: "修罗",
 	0x80CCCD83: "极致真理",
-	0x80DC0FB8: "不动V",
+	0xB0DC0FB8: "不动V",
 	0x811D8A6A: "蓄力会心III+",
 	0x81742849: "刚健IV",
 	0x81B293D9: "魔眼的战气",
