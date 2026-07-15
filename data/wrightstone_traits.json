@@ -461,6 +461,21 @@
                        "confidence":  "medium"
                    },
                    {
+                       "internalId":  "SKILL_066_00",
+                       "hash":  "0x6085DA25",
+                       "displayName":  "Regen",
+                       "category":  "support_trait",
+                       "maxLevel":  15,
+                       "allowedLevels":  null,
+                       "observedLevels":  [],
+                       "canAppearAsPrimary":  true,
+                       "canAppearAsSecondary":  true,
+                       "bannedAsSecondaryOnPlusSigils":  false,
+                       "notes":  "Added for blessing generation with observed levels 1, 2, and 3.",
+                       "source":  "data/traits.json SKILL_066_00; user-provided game-memory observation",
+                       "confidence":  "high"
+                   },
+                   {
                        "internalId":  "SKILL_067_00",
                        "hash":  "0x7CCFF74F",
                        "displayName":  "Drain",
@@ -614,6 +629,40 @@
                        "confidence":  "medium"
                    },
                    {
+                       "internalId":  "SKILL_087_00",
+                       "hash":  "0xB6E31F76",
+                       "displayName":  "Firm Stance",
+                       "category":  "support_trait",
+                       "maxLevel":  15,
+                       "allowedLevels":  null,
+                       "observedLevels":  [
+                                              15
+                                          ],
+                       "canAppearAsPrimary":  true,
+                       "canAppearAsSecondary":  true,
+                       "bannedAsSecondaryOnPlusSigils":  false,
+                       "notes":  "Copied from factor trait catalog so wrightstone generation can select Firm Stance in any trait slot.",
+                       "source":  "data/traits.json SKILL_087_00",
+                       "confidence":  "medium"
+                   },
+                   {
+                       "internalId":  "SKILL_094_00",
+                       "hash":  "0x0053599E",
+                       "displayName":  "Steady Focus",
+                       "category":  "support_trait",
+                       "maxLevel":  15,
+                       "allowedLevels":  null,
+                       "observedLevels":  [
+                                              15
+                                          ],
+                       "canAppearAsPrimary":  true,
+                       "canAppearAsSecondary":  true,
+                       "bannedAsSecondaryOnPlusSigils":  false,
+                       "notes":  "Copied from factor trait catalog so wrightstone generation can select Steady Focus in any trait slot.",
+                       "source":  "data/traits.json SKILL_094_00",
+                       "confidence":  "medium"
+                   },
+                   {
                        "internalId":  "SKILL_096_00",
                        "hash":  "0x1470F860",
                        "displayName":  "Steel Nerves",
@@ -679,6 +728,23 @@
                        "bannedAsSecondaryOnPlusSigils":  false,
                        "notes":  "Added from current sigil pool base-trait mapping. Max level is null unless present in public trait max-level tables.",
                        "source":  "Nenkai Trait/Skill IDs; public trait max-level tables; temporary broad secondary pool",
+                       "confidence":  "medium"
+                   },
+                   {
+                       "internalId":  "SKILL_109_00",
+                       "hash":  "0x7EDD69D0",
+                       "displayName":  "Precise Wrath",
+                       "category":  "support_trait",
+                       "maxLevel":  15,
+                       "allowedLevels":  null,
+                       "observedLevels":  [
+                                              15
+                                          ],
+                       "canAppearAsPrimary":  true,
+                       "canAppearAsSecondary":  true,
+                       "bannedAsSecondaryOnPlusSigils":  false,
+                       "notes":  "Copied from factor trait catalog so wrightstone generation can select Precise Wrath in any trait slot.",
+                       "source":  "data/traits.json SKILL_109_00",
                        "confidence":  "medium"
                    },
                    {
@@ -1024,7 +1090,7 @@
                    {
                        "internalId":  "SKILL_120_00",
                        "hash":  "0xD908223D",
-                       "displayName":  "Phantasm\u0027s Concord",
+                       "displayName":  "Phantasm\u0027s Harmony",
                        "category":  "character_trait",
                        "maxLevel":  15,
                        "allowedLevels":  null,
@@ -1041,7 +1107,7 @@
                    {
                        "internalId":  "SKILL_120_01",
                        "hash":  "0x7351D602",
-                       "displayName":  "Phantasm\u0027s Harmony",
+                       "displayName":  "Phantasm\u0027s Concord",
                        "category":  "character_trait",
                        "maxLevel":  15,
                        "allowedLevels":  null,
