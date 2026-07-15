@@ -30,6 +30,7 @@ const (
 	SaveID_GemWornBy          = 2706
 	SaveID_WeaponID           = 2803
 	SaveID_WeaponXP           = 2804
+	SaveID_CharacterQuestUse  = 1314
 	SaveID_FavoriteChara      = 4601
 	SaveID_IsUnlocked         = 7102
 )
@@ -57,8 +58,8 @@ type SaveDataBinary struct {
 }
 
 type IntSaveDataUnit struct {
-	IDType    uint32 `json:"idType"`
-	UnitID    uint32 `json:"unitID"`
+	IDType    uint32  `json:"idType"`
+	UnitID    uint32  `json:"unitID"`
 	ValueData []int32 `json:"valueData"`
 }
 type UIntSaveDataUnit struct {
@@ -87,18 +88,18 @@ type UByteSaveDataUnit struct {
 	ValueData []byte `json:"valueData"`
 }
 type ShortSaveDataUnit struct {
-	IDType    uint32 `json:"idType"`
-	UnitID    uint32 `json:"unitID"`
+	IDType    uint32  `json:"idType"`
+	UnitID    uint32  `json:"unitID"`
 	ValueData []int16 `json:"valueData"`
 }
 type UShortSaveDataUnit struct {
-	IDType    uint32  `json:"idType"`
-	UnitID    uint32  `json:"unitID"`
+	IDType    uint32   `json:"idType"`
+	UnitID    uint32   `json:"unitID"`
 	ValueData []uint16 `json:"valueData"`
 }
 type LongSaveDataUnit struct {
-	IDType    uint32 `json:"idType"`
-	UnitID    uint32 `json:"unitID"`
+	IDType    uint32  `json:"idType"`
+	UnitID    uint32  `json:"unitID"`
 	ValueData []int64 `json:"valueData"`
 }
 type ULongSaveDataUnit struct {
@@ -289,18 +290,28 @@ func parseSaveDataBinary(data []byte) (*SaveDataBinary, error) {
 
 func parseUIntUnits(r *fbReader, tpos int, fo uint16) []UIntSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]UIntSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := UIntSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]uint32, vc)
-				for j := 0; j < vc; j++ { u.ValueData[j] = r.u32(vd + j*4) }
+				for j := 0; j < vc; j++ {
+					u.ValueData[j] = r.u32(vd + j*4)
+				}
 			}
 		}
 		result = append(result, u)
@@ -338,18 +349,28 @@ func (v *tableVectorReader) read(i int) (int, int, uint16) {
 
 func parseIntUnits(r *fbReader, tpos int, fo uint16) []IntSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]IntSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := IntSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]int32, vc)
-				for j := 0; j < vc; j++ { u.ValueData[j] = r.i32(vd + j*4) }
+				for j := 0; j < vc; j++ {
+					u.ValueData[j] = r.i32(vd + j*4)
+				}
 			}
 		}
 		result = append(result, u)
@@ -359,18 +380,28 @@ func parseIntUnits(r *fbReader, tpos int, fo uint16) []IntSaveDataUnit {
 
 func parseBoolUnits(r *fbReader, tpos int, fo uint16) []BoolSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]BoolSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := BoolSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]bool, vc)
-				for j := 0; j < vc; j++ { u.ValueData[j] = r.data[vd+j] != 0 }
+				for j := 0; j < vc; j++ {
+					u.ValueData[j] = r.data[vd+j] != 0
+				}
 			}
 		}
 		result = append(result, u)
@@ -380,18 +411,28 @@ func parseBoolUnits(r *fbReader, tpos int, fo uint16) []BoolSaveDataUnit {
 
 func parseFloatUnits(r *fbReader, tpos int, fo uint16) []FloatSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]FloatSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := FloatSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]float32, vc)
-				for j := 0; j < vc; j++ { u.ValueData[j] = float32(r.u32(vd + j*4)) }
+				for j := 0; j < vc; j++ {
+					u.ValueData[j] = float32(r.u32(vd + j*4))
+				}
 			}
 		}
 		result = append(result, u)
@@ -401,14 +442,22 @@ func parseFloatUnits(r *fbReader, tpos int, fo uint16) []FloatSaveDataUnit {
 
 func parseByteUnits(r *fbReader, tpos int, fo uint16) []ByteSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]ByteSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := ByteSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]byte, vc)
@@ -422,14 +471,22 @@ func parseByteUnits(r *fbReader, tpos int, fo uint16) []ByteSaveDataUnit {
 
 func parseUByteUnits(r *fbReader, tpos int, fo uint16) []UByteSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]UByteSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := UByteSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]byte, vc)
@@ -443,18 +500,28 @@ func parseUByteUnits(r *fbReader, tpos int, fo uint16) []UByteSaveDataUnit {
 
 func parseShortUnits(r *fbReader, tpos int, fo uint16) []ShortSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]ShortSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := ShortSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]int16, vc)
-				for j := 0; j < vc; j++ { u.ValueData[j] = int16(r.u16(vd + j*2)) }
+				for j := 0; j < vc; j++ {
+					u.ValueData[j] = int16(r.u16(vd + j*2))
+				}
 			}
 		}
 		result = append(result, u)
@@ -464,18 +531,28 @@ func parseShortUnits(r *fbReader, tpos int, fo uint16) []ShortSaveDataUnit {
 
 func parseUShortUnits(r *fbReader, tpos int, fo uint16) []UShortSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]UShortSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := UShortSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]uint16, vc)
-				for j := 0; j < vc; j++ { u.ValueData[j] = r.u16(vd + j*2) }
+				for j := 0; j < vc; j++ {
+					u.ValueData[j] = r.u16(vd + j*2)
+				}
 			}
 		}
 		result = append(result, u)
@@ -485,14 +562,22 @@ func parseUShortUnits(r *fbReader, tpos int, fo uint16) []UShortSaveDataUnit {
 
 func parseLongUnits(r *fbReader, tpos int, fo uint16) []LongSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]LongSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := LongSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]int64, vc)
@@ -508,14 +593,22 @@ func parseLongUnits(r *fbReader, tpos int, fo uint16) []LongSaveDataUnit {
 
 func parseULongUnits(r *fbReader, tpos int, fo uint16) []ULongSaveDataUnit {
 	tv := makeTableVec(r, tpos, fo)
-	if tv == nil { return nil }
+	if tv == nil {
+		return nil
+	}
 	result := make([]ULongSaveDataUnit, 0, tv.count)
 	for i := 0; i < tv.count; i++ {
 		ts, vp, vs := tv.read(i)
-		if vs == 0 { continue }
+		if vs == 0 {
+			continue
+		}
 		u := ULongSaveDataUnit{}
-		if f, ok := r.fieldOff(vp, vs, 0); ok { u.IDType = r.u32(ts + int(f)) }
-		if f, ok := r.fieldOff(vp, vs, 1); ok { u.UnitID = r.u32(ts + int(f)) }
+		if f, ok := r.fieldOff(vp, vs, 0); ok {
+			u.IDType = r.u32(ts + int(f))
+		}
+		if f, ok := r.fieldOff(vp, vs, 1); ok {
+			u.UnitID = r.u32(ts + int(f))
+		}
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]uint64, vc)
