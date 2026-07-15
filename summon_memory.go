@@ -42,21 +42,22 @@ type SummonMemoryOptions struct {
 }
 
 type SummonEntry struct {
-	Index            int    `json:"index"`
-	Address          uint64 `json:"address"`
-	TypeHash         uint32 `json:"typeHash"`
-	TypeName         string `json:"typeName"`
-	PrimaryHash      uint32 `json:"primaryHash"`
-	PrimaryName      string `json:"primaryName"`
-	PrimaryLevel     uint32 `json:"primaryLevel"`
-	SecondaryHash    uint32 `json:"secondaryHash"`
-	SecondaryName    string `json:"secondaryName"`
-	SecondaryParam   uint32 `json:"secondaryParam"`
-	Rank             uint32 `json:"rank"`
+	Index          int    `json:"index"`
+	Address        uint64 `json:"address"`
+	TypeHash       uint32 `json:"typeHash"`
+	TypeName       string `json:"typeName"`
+	PrimaryHash    uint32 `json:"primaryHash"`
+	PrimaryName    string `json:"primaryName"`
+	PrimaryLevel   uint32 `json:"primaryLevel"`
+	SecondaryHash  uint32 `json:"secondaryHash"`
+	SecondaryName  string `json:"secondaryName"`
+	SecondaryParam uint32 `json:"secondaryParam"`
+	Rank           uint32 `json:"rank"`
 }
 
 type SummonUpdate struct {
 	Index          int    `json:"index"`
+	TypeHash       uint32 `json:"typeHash"`
 	PrimaryHash    uint32 `json:"primaryHash"`
 	PrimaryLevel   uint32 `json:"primaryLevel"`
 	SecondaryHash  uint32 `json:"secondaryHash"`
@@ -204,12 +205,23 @@ func (a *App) SummonMemoryUpdate(update SummonUpdate) (SummonEntry, error) {
 	if err != nil {
 		return SummonEntry{}, err
 	}
-	_, ok, err := a.readSummonEntry(catalog, records, update.Index)
+	current, ok, err := a.readSummonEntry(catalog, records, update.Index)
 	if err != nil {
 		return SummonEntry{}, err
 	}
 	if !ok {
 		return SummonEntry{}, fmt.Errorf("该槽位召唤石为空")
+	}
+
+	// 本体种类: 0 表示前端未传(旧行为), 沿用原种类; 传了则校验为合法种类后改写。
+	// 空槽标志(EmptyHash)不允许写入, 否则会把已有召唤石变成空槽。
+	typeHash := update.TypeHash
+	if typeHash == 0 {
+		typeHash = current.TypeHash
+	} else if typeHash == EmptyHash {
+		return SummonEntry{}, fmt.Errorf("召唤石种类无效")
+	} else if catalog.LookupSummonByHash(typeHash) == nil {
+		return SummonEntry{}, fmt.Errorf("未知的召唤石种类: 0x%08X", typeHash)
 	}
 
 	if update.PrimaryLevel < 1 {
@@ -218,9 +230,7 @@ func (a *App) SummonMemoryUpdate(update SummonUpdate) (SummonEntry, error) {
 	if update.PrimaryLevel > summonTraitMaxLevel {
 		update.PrimaryLevel = summonTraitMaxLevel
 	}
-	if update.Rank < 1 {
-		update.Rank = 1
-	}
+	// 游戏存在阶级 0 的合法召唤石(莉莉丝/路西法/罗兰等), 不能强制拉到 1
 	if update.Rank > 3 {
 		update.Rank = 3
 	}
@@ -236,6 +246,7 @@ func (a *App) SummonMemoryUpdate(update SummonUpdate) (SummonEntry, error) {
 		value  uint32
 		name   string
 	}{
+		{summonOffType, typeHash, "种类"},
 		{summonOffPrimary, update.PrimaryHash, "主因子"},
 		{summonOffSecondary, update.SecondaryHash, "副特性"},
 		{summonOffPrimaryLv, update.PrimaryLevel, "主因子等级"},

@@ -6,9 +6,10 @@ const emit = defineEmits(['status'])
 const options = reactive({ summons: [], traits: [], subTraits: [], maxTraitLevel: 15 })
 const entries = ref([])
 const selected = ref(null)
-const form = reactive({ index: -1, primaryHash: 0, primaryLevel: 15, secondaryHash: 0, secondaryParam: 0, rank: 1 })
+const form = reactive({ index: -1, typeHash: 0, primaryHash: 0, primaryLevel: 15, secondaryHash: 0, secondaryParam: 0, rank: 1 })
 const loading = ref(false)
 const applying = ref(false)
+const typeSearch = ref('')
 const primarySearch = ref('')
 const secondarySearch = ref('')
 
@@ -30,6 +31,7 @@ function filterList(items, query) {
   const q = query.trim().toLowerCase()
   return !q ? items : items.filter(i => i.displayName.toLowerCase().includes(q) || hex(i.hash).toLowerCase().includes(q))
 }
+const filteredTypes = computed(() => filterList(options.summons, typeSearch.value))
 const filteredPrimary = computed(() => filterList(options.traits, primarySearch.value))
 const filteredSecondary = computed(() => filterList(options.subTraits, secondarySearch.value))
 
@@ -69,11 +71,13 @@ function clearSelection() {
 function selectEntry(entry) {
   selected.value = entry.index
   form.index = entry.index
+  form.typeHash = entry.typeHash >>> 0
   form.primaryHash = entry.primaryHash >>> 0
   form.primaryLevel = entry.primaryLevel >>> 0
   form.secondaryHash = entry.secondaryHash >>> 0
   form.secondaryParam = entry.secondaryParam >>> 0
-  form.rank = entry.rank >>> 0 || 1
+  form.rank = entry.rank >>> 0
+  typeSearch.value = entry.typeName || ''
   primarySearch.value = entry.primaryName || ''
   secondarySearch.value = entry.secondaryName || ''
 }
@@ -83,6 +87,7 @@ async function write() {
   try {
     const next = await SummonMemoryUpdate({
       index: form.index,
+      typeHash: form.typeHash >>> 0,
       primaryHash: form.primaryHash >>> 0,
       primaryLevel: form.primaryLevel >>> 0,
       secondaryHash: form.secondaryHash >>> 0,
@@ -96,6 +101,7 @@ async function write() {
   } catch (e) { show(String(e), 'error') }
   finally { applying.value = false }
 }
+function chooseType(item) { if (item) { form.typeHash = item.hash >>> 0; typeSearch.value = item.displayName } }
 function choosePrimary(item) { if (item) { form.primaryHash = item.hash >>> 0; primarySearch.value = item.displayName } }
 function chooseSecondary(item) { if (item) { form.secondaryHash = item.hash >>> 0; secondarySearch.value = item.displayName } }
 
@@ -141,12 +147,17 @@ onMounted(async () => { await loadOptions() })
         <div class="section-title">编辑 <span v-if="form.index >= 0" class="count">#{{ form.index }}</span></div>
         <template v-if="form.index >= 0">
           <div class="field">
-            <label>种类</label>
-            <div class="readonly">{{ (entries.find(e => e.index === form.index) || {}).typeName }}</div>
+            <label>种类（本体）</label>
+            <input v-model="typeSearch" class="input" placeholder="搜索召唤石种类或 0x 哈希" />
+            <select class="select list" size="5" :value="form.typeHash" @change="chooseType(filteredTypes.find(v => (v.hash >>> 0) === Number($event.target.value)))">
+              <option v-for="item in filteredTypes" :key="item.hash" :value="item.hash >>> 0">{{ item.displayName }} · {{ hex(item.hash) }}</option>
+            </select>
           </div>
           <div class="field">
             <label>阶级</label>
             <div class="rank-row">
+              <!-- 阶级 0 是部分召唤石(莉莉丝/路西法等)的合法内部值, 读到时显示该档位以便保持 -->
+              <button v-if="form.rank === 0" class="rank-btn on" disabled>0</button>
               <button v-for="r in [1,2,3]" :key="r" class="rank-btn" :class="{ on: form.rank === r }" @click="form.rank = r">
                 {{ ['Ⅰ','Ⅱ','Ⅲ'][r-1] }}
               </button>
