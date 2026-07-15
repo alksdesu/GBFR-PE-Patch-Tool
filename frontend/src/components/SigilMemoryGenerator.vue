@@ -25,6 +25,10 @@ const runtimeOptions = reactive({ sigils: new Map(), traits: new Map() })
 
 const allSigilOptions = computed(() => [...backendOptions.sigils, ...runtimeOptions.sigils.values()])
 const allTraitOptions = computed(() => [...backendOptions.traits, ...runtimeOptions.traits.values()])
+const secondaryTraitOptions = computed(() => [
+  { hash: 0x887AE0B0, displayName: '不选择 0x887AE0B0', source: 'empty' },
+  ...allTraitOptions.value,
+])
 
 const sigilByHash = computed(() => new Map(allSigilOptions.value.map(o => [o.hash >>> 0, o])))
 const traitByHash = computed(() => new Map(allTraitOptions.value.map(o => [o.hash >>> 0, o])))
@@ -345,7 +349,7 @@ onMounted(async () => {
           <span v-if="status.secondaryTraitHash" class="ed-current-lv">Lv {{ status.secondaryTraitLevel }}</span>
         </div>
         <span class="ed-arrow">→</span>
-        <SigilMemoryPicker v-model="form.secondaryTraitHash" :options="allTraitOptions" @pick="onPickSecondary" optional placeholder="未选择 (可选)" />
+        <SigilMemoryPicker v-model="form.secondaryTraitHash" :options="secondaryTraitOptions" @pick="onPickSecondary" optional placeholder="未选择 (可选)" />
         <div class="ed-level" :class="{ maxed: secondaryAtMax }">
           <input v-model.number="form.secondaryTraitLevel" type="number" min="0" max="999" />
           <span v-if="secondaryMax != null" class="ed-level-hint">/ {{ secondaryMax }}</span>
