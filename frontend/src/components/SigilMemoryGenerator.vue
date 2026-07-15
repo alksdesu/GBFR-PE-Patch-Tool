@@ -22,6 +22,9 @@ function applyStatus(next, syncForm = false) {
     form.primaryTraitLevel = next.primaryTraitLevel >>> 0
     form.secondaryTraitHash = next.secondaryTraitHash >>> 0
     form.secondaryTraitLevel = next.secondaryTraitLevel >>> 0
+    sigilSearch.value = options.sigils.find(item => item.hash === form.sigilHash)?.displayName || next.sigilName || ''
+    primarySearch.value = options.traits.find(item => item.hash === form.primaryTraitHash)?.displayName || next.primaryTraitName || ''
+    secondarySearch.value = options.traits.find(item => item.hash === form.secondaryTraitHash)?.displayName || next.secondaryTraitName || ''
   }
 }
 function hex(value) { return `0x${(Number(value) >>> 0).toString(16).toUpperCase().padStart(8, '0')}` }
