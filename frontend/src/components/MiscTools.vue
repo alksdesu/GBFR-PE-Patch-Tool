@@ -6,7 +6,6 @@ import { CharaAttach, CharaDetach,
          CountdownGetStatus, CountdownScan, CountdownSet,
          FaceAccessoryGetStatus, FaceAccessoryScan, FaceAccessorySetHidden,
          InfiniteChallengeGetStatus, InfiniteChallengeSetEnabled,
-         MaterialConsumeGetStatus, MaterialConsumeSetEnabled,
          TerminusDropGetStatus, TerminusDropScan, TerminusDropSetEnabled,
          UnlockAllTrophyGetStatus, UnlockAllTrophyScan, UnlockAllTrophySetEnabled,
          OtherSkinPurpleRuneGetStatus, OtherSkinPurpleRuneSetEnabled,
@@ -30,8 +29,6 @@ const faceAccessoryStatus = reactive({ found: false, address: 0, rva: 0, hidden:
 const faceAccessoryLoading = ref(false)
 const infiniteChallengeStatus = reactive({ rva: 0, enabled: false, currentBytes: '' })
 const infiniteChallengeLoading = ref(false)
-const materialConsumeStatus = reactive({ rva: 0, enabled: false, currentBytes: '' })
-const materialConsumeLoading = ref(false)
 const terminusDropStatus = reactive({ found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
 const terminusDropLoading = ref(false)
 const unlockAllTrophyStatus = reactive({ found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
@@ -138,7 +135,6 @@ function connect() {
         loadFaceAccessoryStatus()
       }
       if (showOutdatedFeatures) loadInfiniteChallengeStatus()
-      loadMaterialConsumeStatus()
       loadCaves()
       if (showOutdatedFeatures) {
         loadTerminusDropStatus()
@@ -162,7 +158,6 @@ function disconnect() {
       Object.assign(countdownStatus, { found: false, address: 0, rva: 0, value1: 0, value2: 0, currentBytes: '' })
       Object.assign(faceAccessoryStatus, { found: false, address: 0, rva: 0, hidden: false, jumpOpcode: '', currentBytes: '' })
       Object.assign(infiniteChallengeStatus, { rva: 0, enabled: false, currentBytes: '' })
-      Object.assign(materialConsumeStatus, { rva: 0, enabled: false, currentBytes: '' })
       caveList.value = []
       Object.keys(caveBusy).forEach((key) => delete caveBusy[key])
       expandedCapture.value = ''
@@ -455,28 +450,6 @@ function writeWeapon() {
     .then((data) => { fillWeaponEditor(data); emit('status', '武器已写入', 'success') })
     .catch((err) => emit('status', String(err), 'error'))
     .finally(() => { delete captureBusy.highlighted_weapon })
-}
-
-function applyMaterialConsumeStatus(status) {
-  Object.assign(materialConsumeStatus, status || { rva: 0, enabled: false, currentBytes: '' })
-}
-
-function loadMaterialConsumeStatus() {
-  if (!connected.value) return
-  materialConsumeLoading.value = true
-  MaterialConsumeGetStatus()
-    .then(applyMaterialConsumeStatus)
-    .catch((err) => emit('status', String(err), 'error'))
-    .finally(() => { materialConsumeLoading.value = false })
-}
-
-function setMaterialConsumeEnabled(enabled) {
-  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
-  materialConsumeLoading.value = true
-  MaterialConsumeSetEnabled(enabled)
-    .then((status) => { applyMaterialConsumeStatus(status); emit('status', enabled ? '已开启升级/强化不材料消耗' : '已恢复升级/强化材料变化', 'success') })
-    .catch((err) => emit('status', String(err), 'error'))
-    .finally(() => { materialConsumeLoading.value = false })
 }
 
 function applyTerminusDropStatus(status) {
@@ -909,24 +882,6 @@ onBeforeUnmount(() => {
             <button class="btn-refresh" @click="loadInfiniteChallengeStatus" :disabled="infiniteChallengeLoading">刷新</button>
           </div>
           <div class="memory-bytes">{{ infiniteChallengeStatus.currentBytes || '未读取' }}</div>
-        </div>
-
-        <div class="memory-card" :class="{ active: materialConsumeStatus.enabled }">
-          <div class="memory-header">
-            <span class="memory-title">升级/强化/练成不材料消耗</span>
-            <span class="info-dot" title="开启后材料数量不会减少；同一指令也会阻止材料增加。">!</span>
-            <span class="memory-hint">NOP add [r14+04],esi</span>
-          </div>
-          <div class="memory-info">
-            <span>RVA: {{ formatHex(materialConsumeStatus.rva) }}</span>
-            <span>状态: {{ materialConsumeStatus.enabled ? '开启' : '默认' }}</span>
-          </div>
-          <div class="memory-row">
-            <button class="btn-batch" @click="setMaterialConsumeEnabled(true)" :disabled="materialConsumeLoading || materialConsumeStatus.enabled">开启不消耗</button>
-            <button class="btn-refresh" @click="setMaterialConsumeEnabled(false)" :disabled="materialConsumeLoading || !materialConsumeStatus.enabled">恢复默认</button>
-            <button class="btn-refresh" @click="loadMaterialConsumeStatus" :disabled="materialConsumeLoading">刷新</button>
-          </div>
-          <div class="memory-bytes">{{ materialConsumeStatus.currentBytes || '未读取' }}</div>
         </div>
 
         <div class="memory-card" :class="{ active: caveActiveCount > 0 }">
