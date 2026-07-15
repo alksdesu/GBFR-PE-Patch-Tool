@@ -11,7 +11,7 @@ var sigilMemoryTraits = []sigilMemoryName{
 	{0x73220725, "天星之止息"},
 	{0x9232DC17, "天星之界"},
 	{0x3EB345D7, "雷狼的战气"},
-	{0x0DE887A0, "天星之练"},
+	{0x0DE887A0, "天星之炼"},
 	{0xA898E283, "天星之雪"},
 	{0xF26BAEA5, "分歧"},
 	{0x36E3848D, "天星之焰"},
@@ -37,7 +37,6 @@ var sigilMemoryTraits = []sigilMemoryName{
 	{0xBF78FBFC, "可怕的漆黑钳蟹因子"},
 	{0x46EE3116, "漆黑之谊"},
 	{0x89C66ACB, "相扑斗力"},
-	{0xE5E2AD4B, "闪避性能"},
 }
 
 // Third column supplied from game memory: sigil hashes.
@@ -53,7 +52,7 @@ var sigilMemorySigils = []sigilMemoryName{
 	{0xB5B23F02, "体力"},
 	{0x3ED16FB2, "药水携带数"},
 	{0xD340651C, "自动复活"},
-	{0x8B8085C0, "天星之练"},
+	{0x8B8085C0, "天星之炼"},
 	{0xE14E1598, "天星之雪"},
 	{0x7B4AAB30, "分歧"},
 	{0x74061B0C, "天星之焰"},

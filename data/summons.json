@@ -1505,7 +1505,7 @@
   },
   {
    "hash": "0x9389CC06",
-   "displayName": "提升治疗",
+   "displayName": "回复性能",
    "gameMaxLevel": 30
   },
   {
@@ -1705,7 +1705,7 @@
   },
   {
    "hash": "0xC00163B3",
-   "displayName": "法师的战气",
+   "displayName": "魔法师的战气",
    "gameMaxLevel": 15
   },
   {
@@ -2175,7 +2175,7 @@
   },
   {
    "hash": "0x0DE887A0",
-   "displayName": "天星之练",
+   "displayName": "天星之炼",
    "gameMaxLevel": 15
   },
   {
@@ -2345,7 +2345,7 @@
   },
   {
    "hash": "0x8B8085C0",
-   "displayName": "天星之练",
+   "displayName": "天星之炼",
    "gameMaxLevel": 15
   },
   {
