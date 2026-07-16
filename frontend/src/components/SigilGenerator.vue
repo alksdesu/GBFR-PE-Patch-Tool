@@ -225,7 +225,7 @@ watch(selectedSigilID, async (id) => {
   }
 
   // 默认等级
-  selectedLevel.value = sigilLevels.value[0] || 0
+  selectedLevel.value = sigilLevels.value.includes(15) ? 15 : (sigilLevels.value[0] || 0)
   selectedPrimaryLevel.value = primaryTraitLevels.value[0] || 0
 })
 

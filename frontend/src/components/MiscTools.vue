@@ -735,7 +735,7 @@ onBeforeUnmount(() => {
           <div class="memory-header">
             <span class="memory-title">小钳蟹相关</span>
             <span class="info-dot" title="使用后需要拾取一次对应种类螃蟹，不要提前开，拾取之前开，记得用完关闭">!</span>
-            <span class="memory-hint">{{ inventorySet45Enabled ? `${inventorySet45Seconds} 秒后自动恢复` : '使用后需要拾取一次对应种类螃蟹，不要提前开，拾取之前开，记得用完关闭' }}</span>
+            <span class="memory-hint">{{ inventorySet45Enabled ? `${inventorySet45Seconds} 秒后自动恢复` : '使用后需要拾取一次对应种类螃蟹，不要提前开，拾取之前开，记得用完关闭（黑蟹steam成就可能不触发，可用Watt Toolkit改）' }}</span>
           </div>
           <div class="memory-row">
             <button class="btn-batch" @click="setInventorySet45Enabled(true, 45)" :disabled="inventorySet45Loading || inventorySet45Enabled">小钳蟹背包数量</button>

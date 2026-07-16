@@ -130,11 +130,11 @@ function onPickSigil(opt) {
   else if (!opt) form.sigilLevel = 0
 }
 function onPickPrimary(opt) {
-  if (opt && opt.maxLevel != null) form.primaryTraitLevel = opt.maxLevel
+  if (opt && opt.maxLevel != null) form.primaryTraitLevel = Math.min(15, opt.maxLevel)
   else if (!opt) form.primaryTraitLevel = 0
 }
 function onPickSecondary(opt) {
-  if (opt && opt.maxLevel != null) form.secondaryTraitLevel = opt.maxLevel
+  if (opt && opt.maxLevel != null) form.secondaryTraitLevel = Math.min(15, opt.maxLevel)
   else if (!opt) form.secondaryTraitLevel = 0
 }
 
