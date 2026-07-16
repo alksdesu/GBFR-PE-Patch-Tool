@@ -738,8 +738,8 @@ onBeforeUnmount(() => {
             <span class="memory-hint">{{ inventorySet45Enabled ? `${inventorySet45Seconds} 秒后自动恢复` : '使用后需要拾取一次对应种类螃蟹，不要提前开，拾取之前开，记得用完关闭' }}</span>
           </div>
           <div class="memory-row">
-            <button class="btn-batch" @click="setInventorySet45Enabled(true, 45)" :disabled="inventorySet45Loading || inventorySet45Enabled">小钳蟹</button>
-            <button class="btn-batch" @click="setInventorySet45Enabled(true, 20)" :disabled="inventorySet45Loading || inventorySet45Enabled">漆黑小钳蟹</button>
+            <button class="btn-batch" @click="setInventorySet45Enabled(true, 45)" :disabled="inventorySet45Loading || inventorySet45Enabled">小钳蟹背包数量</button>
+            <button class="btn-batch" @click="setInventorySet45Enabled(true, 20)" :disabled="inventorySet45Loading || inventorySet45Enabled">漆黑小钳蟹背包数量</button>
             <button class="btn-refresh" @click="setInventorySet45Enabled(false)" :disabled="inventorySet45Loading || !inventorySet45Enabled">恢复正常</button>
             <button class="btn-batch" @click="completeCollectibleTask" :disabled="collectibleTaskLoading">{{ collectibleTaskLoading ? '收集任务处理中...' : '小钳蟹成就' }}</button>
           </div>
