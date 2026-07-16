@@ -907,7 +907,7 @@
     {
       "hash": "0x01B80951",
       "displayName": "永暗藏匿者 · 史诗 · 伤害",
-      "baseName": "黑龙伊弗欧",
+      "baseName": "永暗藏匿者",
       "code": "4000",
       "cost": 4,
       "typeName": "伤害"
@@ -923,7 +923,7 @@
     {
       "hash": "0x6D6CB496",
       "displayName": "永暗藏匿者 · 史诗 · 伤害",
-      "baseName": "黑龙伊弗欧",
+      "baseName": "永暗藏匿者",
       "code": "4000",
       "cost": 4,
       "typeName": "伤害"
