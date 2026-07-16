@@ -2567,7 +2567,7 @@ const translations = {
   "钳蟹的报恩": "Crabvestment Returns",
   "锁定": "Lock",
   "锁定=持续写入；自动OD=非红条时写一次满黄条": "Lock continuously writes the value. Auto OD fills the yellow gauge once when it is not red.",
-  "闪避性能": "Improved Dodge",
+  "躲避性能": "Improved Dodge",
   "队列": "Queue",
   "队列 (": "Queue (",
   "队列 ({{ queue.length }})": "Queue ({{ queue.length }})",

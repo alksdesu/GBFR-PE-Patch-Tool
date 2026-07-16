@@ -123,7 +123,7 @@ var sigilMemoryEnglishNames = map[string]string{
 	"转世的恩宠":     "Enchantress's Blessing",
 	"转世的战气":     "Enchantress's Warpath",
 	"转世的跃动":     "Enchantress's Rhythm",
-	"闪避性能":      "Improved Dodge",
+	"躲避性能":      "Improved Dodge",
 	"雷狼之觉醒":     "Thunderwolf's Awakening",
 	"雷狼的弹匣":     "Thunderwolf's Recharge",
 	"雷狼的慧眼":     "Thunderwolf's Acuity",
