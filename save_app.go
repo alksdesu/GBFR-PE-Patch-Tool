@@ -43,6 +43,7 @@ type QuestEntry struct {
 }
 
 type CharacterStat struct {
+	Slot  uint32 `json:"slot"`
 	Name  string `json:"name"`
 	Count int32  `json:"count"`
 }
@@ -428,41 +429,79 @@ func (a *App) GetCharacterStats(path string, newSave bool) ([]CharacterStat, err
 	return characterStatsForSave(save.SlotData, newSave), nil
 }
 
-func characterStatsForSave(data *SaveDataBinary, newSave bool) []CharacterStat {
-	const firstCharacterSlot uint32 = 10000
+func (a *App) UpdateCharacterStat(path string, newSave bool, slot, count uint32) error {
+	if count > uint32(^uint32(0)>>1) {
+		return fmt.Errorf("角色次数不能超过 %d", uint32(^uint32(0)>>1))
+	}
+	characterNames := characterNamesForSave(newSave)
+	if int(slot) >= len(characterNames) || characterNames[slot] == "" {
+		return fmt.Errorf("角色槽位与当前存档版本不匹配")
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("读取存档失败: %w", err)
+	}
+	original := append([]byte(nil), raw...)
+	if len(raw) < 52 {
+		return fmt.Errorf("文件太小，不是有效的存档")
+	}
+	slotOffset := int(binary.LittleEndian.Uint64(raw[28:36]))
+	slotSize := int(binary.LittleEndian.Uint64(raw[44:52]))
+	if slotOffset < 0 || slotSize <= 0 || slotOffset+slotSize > len(raw) {
+		return fmt.Errorf("存档SlotData范围无效")
+	}
+	slotData := raw[slotOffset : slotOffset+slotSize]
+	valueOffsets, err := flatBufferUIntValueOffsets(slotData, 7, SaveID_CharacterQuestUse, 10000+slot)
+	if err != nil || len(valueOffsets) == 0 {
+		return fmt.Errorf("读取角色次数失败: %w", err)
+	}
+	binary.LittleEndian.PutUint32(slotData[valueOffsets[0]:], count)
+	if err := fixSlotDataHash(slotData); err != nil {
+		return err
+	}
+	backupPath := path + ".character." + time.Now().Format("20060102_150405") + ".bak"
+	if err := os.WriteFile(backupPath, original, 0o644); err != nil {
+		return fmt.Errorf("创建备份失败: %w", err)
+	}
+	if err := os.WriteFile(path, raw, 0o644); err != nil {
+		return fmt.Errorf("写入存档失败: %w", err)
+	}
+	return nil
+}
 
-	oldCharacterNames := [...]string{
+func characterNamesForSave(newSave bool) []string {
+	oldCharacterNames := []string{
 		"古兰", "姬塔", "卡塔莉娜", "拉卡姆", "伊欧", "欧根", "", "萝赛塔", "冈达葛萨", "菲莉",
 		"兰斯洛特", "巴恩", "珀西瓦尔", "", "齐格飞", "夏洛特", "索恩", "尤达拉哈", "娜露梅", "伽兰查",
 		"塞达", "伊德", "巴萨拉卡", "", "卡莉奥丝特罗", "", "", "圣德芬", "希耶提", "",
-		"", "", "", "", "", "", "菲迪埃尔", "贝阿朵丽丝", "玛琪拉菲菈", "尤斯提斯",
-		"芙劳", "", "", "", "", "", "", "", "", "",
+		"", "", "", "", "", "", "菲迪埃尔", "贝阿朵丽丝", "玛琪拉菲菈", "尤斯提斯", "芙劳",
 	}
-	newCharacterNames := [...]string{
+	if !newSave {
+		return oldCharacterNames
+	}
+	return []string{
 		"古兰", "姬塔", "菲迪埃尔", "卡塔莉娜", "拉卡姆", "伊欧", "欧根", "", "萝赛塔", "冈达葛萨",
 		"菲莉", "兰斯洛特", "贝阿朵丽丝", "巴恩", "珀西瓦尔", "", "齐格飞", "夏洛特", "索恩", "尤达拉哈",
 		"娜露梅", "伽兰查", "塞达", "伊德", "巴萨拉卡", "", "卡莉奥丝特罗", "", "", "圣德芬",
-		"希耶提", "玛琪拉菲菈", "尤斯提斯", "", "芙劳", "", "", "", "", "",
+		"希耶提", "玛琪拉菲菈", "尤斯提斯", "", "芙劳",
 	}
-	characterNames := oldCharacterNames[:]
-	if newSave {
-		characterNames = newCharacterNames[:]
-	}
+}
 
-	counts := make(map[uint32]int32, 41)
+func characterStatsForSave(data *SaveDataBinary, newSave bool) []CharacterStat {
+	const firstCharacterSlot uint32 = 10000
+	characterNames := characterNamesForSave(newSave)
+	counts := make(map[uint32]int32, len(characterNames))
 	for _, unit := range data.UIntTable {
-		if unit.IDType == SaveID_CharacterQuestUse && len(unit.ValueData) > 0 && unit.UnitID >= firstCharacterSlot && unit.UnitID < firstCharacterSlot+41 {
+		if unit.IDType == SaveID_CharacterQuestUse && len(unit.ValueData) > 0 && unit.UnitID >= firstCharacterSlot && unit.UnitID < firstCharacterSlot+uint32(len(characterNames)) {
 			counts[unit.UnitID-firstCharacterSlot] = int32(unit.ValueData[0])
 		}
 	}
 
 	stats := make([]CharacterStat, 0, len(characterNames))
 	for slot, name := range characterNames {
-		if name == "" {
-			continue
-			//name = fmt.Sprintf("位置 %d", slot+1)
+		if name != "" {
+			stats = append(stats, CharacterStat{Slot: uint32(slot), Name: name, Count: counts[uint32(slot)]})
 		}
-		stats = append(stats, CharacterStat{Name: name, Count: counts[uint32(slot)]})
 	}
 	return stats
 }
