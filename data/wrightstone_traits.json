@@ -595,6 +595,23 @@
                        "confidence":  "medium"
                    },
                    {
+                       "internalId":  "SKILL_078_00",
+                       "hash":  "0x6018372B",
+                       "displayName":  "Provoke",
+                       "category":  "support_trait",
+                       "maxLevel":  15,
+                       "allowedLevels":  null,
+                       "observedLevels":  [
+                                              15
+                                          ],
+                       "canAppearAsPrimary":  true,
+                       "canAppearAsSecondary":  true,
+                       "bannedAsSecondaryOnPlusSigils":  false,
+                       "notes":  "挑衅。",
+                       "source":  "User-provided SKILL_078_00 / 6018372B",
+                       "confidence":  "high"
+                   },
+                   {
                        "internalId":  "SKILL_083_00",
                        "hash":  "0xEAE321EB",
                        "displayName":  "Skilled Assault",
