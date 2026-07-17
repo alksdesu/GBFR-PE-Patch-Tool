@@ -19,6 +19,7 @@ type SigilDef struct {
 	Category                     *string                       `json:"category"`
 	IsPlusSigil                  *bool                         `json:"isPlusSigil"`
 	SupportsSecondaryTrait       *bool                         `json:"supportsSecondaryTrait"`
+	OptionalSecondaryTrait       *bool                         `json:"optionalSecondaryTrait"`
 	AllowedSigilLevels           []int                         `json:"allowedSigilLevels"`
 	DefaultSigilLevel            *int                          `json:"defaultSigilLevel"`
 	MaxSigilLevel                *int                          `json:"maxSigilLevel"`
@@ -93,6 +94,9 @@ func LoadCatalog() (*Catalog, error) {
 		return nil, fmt.Errorf("加载特性数据失败: %w", err)
 	}
 	c.Traits = traits.Traits
+	memorySigils, memoryTraits := memoryCatalogDefs()
+	c.Sigils = append(c.Sigils, memorySigils...)
+	c.Traits = append(c.Traits, memoryTraits...)
 
 	rules, err := loadJSON[RuleFile]("data/secondary-trait-rules.json")
 	if err != nil {
@@ -265,10 +269,7 @@ func displaySigilName(sigil *SigilDef) string {
 		return ""
 	}
 	if supportsGeneratedPlusSigil(sigil) {
-		if sigil.SupportsSecondaryTrait != nil && *sigil.SupportsSecondaryTrait {
-			return cnName(sigil.DisplayName)
-		}
-		return cnName(sigil.DisplayName) + "+"
+		return generatedPlusDisplayName(cnName(sigil.DisplayName))
 	}
 	return cnName(sigil.DisplayName)
 }

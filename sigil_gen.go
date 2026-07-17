@@ -16,6 +16,7 @@ type SigilInfo struct {
 	Hash                    string `json:"hash"`
 	DisplayName             string `json:"displayName"`
 	SupportsSecondaryTrait  bool   `json:"supportsSecondaryTrait"`
+	OptionalSecondaryTrait  bool   `json:"optionalSecondaryTrait"`
 	AllowedSigilLevels      []int  `json:"allowedSigilLevels"`
 	DefaultSigilLevel       int    `json:"defaultSigilLevel"`
 	PrimaryTraitID          string `json:"primaryTraitId"`
@@ -98,6 +99,7 @@ func (sg *SigilGen) GetSigilList() ([]SigilInfo, error) {
 			Hash:                    s.Hash,
 			DisplayName:             displaySigilName(s),
 			SupportsSecondaryTrait:  supportsGeneratedPlusSigil(s),
+			OptionalSecondaryTrait:  s.OptionalSecondaryTrait != nil && *s.OptionalSecondaryTrait,
 			AllowedSigilLevels:      s.AllowedSigilLevels,
 			DefaultSigilLevel:       derefInt(s.DefaultSigilLevel),
 			PrimaryTraitID:          s.PrimaryTraitID,
@@ -371,34 +373,36 @@ func (sg *SigilGen) AddToQueue(item QueueItem) error {
 	// 验证副特性
 	supports := supportsGeneratedPlusSigil(sigil)
 	if supports {
-		if item.SecondaryTraitID == "" {
+		if item.SecondaryTraitID == "" && (sigil.OptionalSecondaryTrait == nil || !*sigil.OptionalSecondaryTrait) {
 			return fmt.Errorf("%s 需要选择副特性", sigil.DisplayName)
 		}
-		secondaryTrait, err := sg.catalog.RequireTrait(item.SecondaryTraitID)
-		if err != nil {
-			return err
-		}
-		item.SecondaryTraitName = cnTrait(secondaryTrait.DisplayName)
-
-		// 验证 secondary trait is allowed
-		allowed, _ := sg.catalog.GetAllowedSecondaryTraits(sigil)
-		found := false
-		for _, a := range allowed {
-			if a.InternalID == item.SecondaryTraitID {
-				found = true
-				break
+		if item.SecondaryTraitID != "" {
+			secondaryTrait, err := sg.catalog.RequireTrait(item.SecondaryTraitID)
+			if err != nil {
+				return err
 			}
-		}
-		if !found {
-			return fmt.Errorf("%s 不是 %s 的已验证副特性", secondaryTrait.DisplayName, sigil.DisplayName)
-		}
+			item.SecondaryTraitName = cnTrait(secondaryTrait.DisplayName)
 
-		secondaryLevels, err := sg.catalog.RequireSecondaryTraitLevels(sigil, secondaryTrait)
-		if err != nil {
-			return err
-		}
-		if !containsInt(secondaryLevels, item.SecondaryLevel) {
-			return fmt.Errorf("%s 不允许副特性等级 %d", secondaryTrait.DisplayName, item.SecondaryLevel)
+			// 验证 secondary trait is allowed
+			allowed, _ := sg.catalog.GetAllowedSecondaryTraits(sigil)
+			found := false
+			for _, a := range allowed {
+				if a.InternalID == item.SecondaryTraitID {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("%s 不是 %s 的已验证副特性", secondaryTrait.DisplayName, sigil.DisplayName)
+			}
+
+			secondaryLevels, err := sg.catalog.RequireSecondaryTraitLevels(sigil, secondaryTrait)
+			if err != nil {
+				return err
+			}
+			if !containsInt(secondaryLevels, item.SecondaryLevel) {
+				return fmt.Errorf("%s 不允许副特性等级 %d", secondaryTrait.DisplayName, item.SecondaryLevel)
+			}
 		}
 	} else if item.SecondaryTraitID != "" {
 		return fmt.Errorf("%s 不支持副特性", sigil.DisplayName)

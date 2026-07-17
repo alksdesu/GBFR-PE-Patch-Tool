@@ -39,6 +39,7 @@ const secondaryTraits = ref([])
 const secondaryTraitLevels = ref([])
 const primaryTraitName = ref('')
 const supportsSecondary = ref(false)
+const optionalSecondary = ref(false)
 
 // 队列
 const queue = ref([])
@@ -191,6 +192,7 @@ watch(selectedSigilID, async (id) => {
   if (!sigil) return
 
   supportsSecondary.value = sigil.supportsSecondaryTrait
+  optionalSecondary.value = sigil.optionalSecondaryTrait
 
   // 加载等级
   try {
@@ -434,7 +436,7 @@ function onSecondaryTraitSelect() {
             placeholder="输入关键词过滤副特性..." />
           <select v-model="selectedSecondaryTraitID" class="select-input sigil-select"
             size="6" :disabled="!secondaryTraits.length" @change="onSecondaryTraitSelect">
-            <option value="">— 不选择 —</option>
+            <option v-if="optionalSecondary" value="">— 不选择 —</option>
             <option v-for="t in filteredSecondaryTraits" :key="t.internalId" :value="t.internalId">
               {{ t.displayName }}
             </option>
