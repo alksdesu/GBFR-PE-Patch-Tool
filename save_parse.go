@@ -651,6 +651,61 @@ func (s *SaveDataBinary) GetBoolUnit(idType uint32) *BoolSaveDataUnit {
 	return nil
 }
 
+// flatBufferUIntValueOffsets returns byte offsets for an existing uint vector.
+// It only supports in-place writes, preserving the original FlatBuffers layout.
+func flatBufferUIntValueOffsets(data []byte, tableField, idType, unitID uint32) ([]int, error) {
+	r := &fbReader{data: data}
+	if len(data) < 4 {
+		return nil, fmt.Errorf("存档数据太小")
+	}
+	root := int(r.u32(0))
+	if root < 0 || root+4 > len(data) {
+		return nil, fmt.Errorf("存档根表无效")
+	}
+	vtable := root - int(r.i32(root))
+	if vtable < 0 || vtable+4 > len(data) {
+		return nil, fmt.Errorf("存档根表vtable无效")
+	}
+	vsize := r.u16(vtable)
+	vectorField, ok := r.fieldOff(vtable, vsize, int(tableField))
+	if !ok {
+		return nil, fmt.Errorf("存档字段 %d 不存在", tableField)
+	}
+	tables := makeTableVec(r, root, vectorField)
+	if tables == nil {
+		return nil, fmt.Errorf("存档字段 %d 为空", tableField)
+	}
+	for i := 0; i < tables.count; i++ {
+		table, unitVtable, unitVsize := tables.read(i)
+		if unitVsize == 0 {
+			continue
+		}
+		idField, hasID := r.fieldOff(unitVtable, unitVsize, 0)
+		unitField, hasUnit := r.fieldOff(unitVtable, unitVsize, 1)
+		valuesField, hasValues := r.fieldOff(unitVtable, unitVsize, 2)
+		if !hasID || !hasValues || r.u32(table+int(idField)) != idType {
+			continue
+		}
+		storedUnitID := uint32(0)
+		if hasUnit {
+			storedUnitID = r.u32(table + int(unitField))
+		}
+		if storedUnitID != unitID {
+			continue
+		}
+		count, start := r.readVectorAt(table, valuesField)
+		if start+count*4 > len(data) {
+			return nil, fmt.Errorf("存档值向量越界")
+		}
+		offsets := make([]int, count)
+		for j := range offsets {
+			offsets[j] = start + j*4
+		}
+		return offsets, nil
+	}
+	return nil, fmt.Errorf("存档字段 %d/%d/%d 不存在", tableField, idType, unitID)
+}
+
 // ── XXHash64 utilities ──
 
 func xxHash64(data []byte, seed uint64) uint64 {

@@ -2,12 +2,15 @@ package main
 
 import (
 	_ "embed"
+	"encoding/binary"
 	"encoding/csv"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 //go:embed data/quest_names_i18n.csv
@@ -48,6 +51,11 @@ type SaveSlot struct {
 	Index int    `json:"index"`
 	Path  string `json:"path"`
 	Name  string `json:"name"`
+}
+
+type SaveCounters struct {
+	Likes      uint32 `json:"likes"`
+	Challenges uint32 `json:"challenges"`
 }
 
 // ── Quest name mapping ──
@@ -199,6 +207,213 @@ func (a *App) LoadSave(path string) (*SaveSummary, error) {
 	}
 
 	return s, nil
+}
+
+// GetSaveCounters returns counters stored in the save file.
+func (a *App) GetSaveCounters(path string) (*SaveCounters, error) {
+	save, err := LoadSaveFile(path)
+	if err != nil {
+		return nil, err
+	}
+	if save.SlotData == nil {
+		return nil, fmt.Errorf("存档SlotData为空")
+	}
+
+	counters := &SaveCounters{}
+	if unit := save.SlotData.GetIntUnit(SaveID_Commendations); unit != nil && len(unit.ValueData) > 0 && unit.ValueData[0] >= 0 {
+		counters.Likes = uint32(unit.ValueData[0])
+	}
+	if unit := save.SlotData.GetUIntUnit(SaveID_QuestCompleteCount); unit != nil {
+		for _, count := range unit.ValueData {
+			counters.Challenges += count
+		}
+	}
+	return counters, nil
+}
+
+// UpdateSaveCounters writes counters in place, preserving FlatBuffers offsets.
+func (a *App) UpdateSaveCounters(path string, likes, challenges uint32) (*SaveCounters, error) {
+	if likes > uint32(^uint32(0)>>1) {
+		return nil, fmt.Errorf("点赞数不能超过 %d", uint32(^uint32(0)>>1))
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("读取存档失败: %w", err)
+	}
+	original := append([]byte(nil), raw...)
+	if len(raw) < 52 {
+		return nil, fmt.Errorf("文件太小，不是有效的存档")
+	}
+	slotOffset := int(binary.LittleEndian.Uint64(raw[28:36]))
+	slotSize := int(binary.LittleEndian.Uint64(raw[44:52]))
+	if slotOffset < 0 || slotSize <= 0 || slotOffset+slotSize > len(raw) {
+		return nil, fmt.Errorf("存档SlotData范围无效")
+	}
+	slot := raw[slotOffset : slotOffset+slotSize]
+
+	likesOffsets, err := flatBufferUIntValueOffsets(slot, 6, SaveID_Commendations, 0)
+	if err != nil {
+		return nil, err
+	}
+	profileLikesOffsets, err := flatBufferUIntValueOffsets(slot, 6, 4703, 10600)
+	if err != nil {
+		return nil, err
+	}
+	questOffsets, err := flatBufferUIntValueOffsets(slot, 7, SaveID_QuestCompleteCount, 0)
+	if err != nil {
+		return nil, err
+	}
+	targetQuestOffset, err := questCounterOffset(slot, 401303)
+	if err != nil {
+		return nil, err
+	}
+	profileChallengeOffsets, err := flatBufferUIntValueOffsets(slot, 6, 4901, 10600)
+	if err != nil {
+		return nil, err
+	}
+	if len(likesOffsets) == 0 || len(profileLikesOffsets) == 0 || len(questOffsets) == 0 || len(profileChallengeOffsets) == 0 {
+		return nil, fmt.Errorf("存档计数字段为空")
+	}
+
+	binary.LittleEndian.PutUint32(slot[likesOffsets[0]:], likes)
+	binary.LittleEndian.PutUint32(slot[profileLikesOffsets[0]:], likes)
+	currentChallenges := uint64(0)
+	for _, offset := range questOffsets {
+		currentChallenges += uint64(binary.LittleEndian.Uint32(slot[offset:]))
+	}
+	if uint64(challenges) >= currentChallenges {
+		increase := uint64(challenges) - currentChallenges
+		current := binary.LittleEndian.Uint32(slot[targetQuestOffset:])
+		if uint64(^uint32(0)-current) < increase {
+			return nil, fmt.Errorf("目标挑战次数过大")
+		}
+		binary.LittleEndian.PutUint32(slot[targetQuestOffset:], current+uint32(increase))
+	} else {
+		if challenges == 0 {
+			return nil, fmt.Errorf("挑战次数不能低于 1：担心爸爸至少保留 1 次")
+		}
+		decrease := currentChallenges - uint64(challenges)
+		targetCount := binary.LittleEndian.Uint32(slot[targetQuestOffset:])
+		if targetCount > 1 && uint64(targetCount-1) >= decrease {
+			binary.LittleEndian.PutUint32(slot[targetQuestOffset:], targetCount-uint32(decrease))
+		} else {
+			binary.LittleEndian.PutUint32(slot[targetQuestOffset:], 1)
+			if err := proportionallyReduceQuestCounts(slot, questOffsets, targetQuestOffset, challenges-1); err != nil {
+				return nil, err
+			}
+		}
+	}
+	binary.LittleEndian.PutUint32(slot[profileChallengeOffsets[0]:], challenges)
+	if err := fixSlotDataHash(slot); err != nil {
+		return nil, err
+	}
+
+	backupPath := path + ".counters." + time.Now().Format("20060102_150405") + ".bak"
+	if err := os.WriteFile(backupPath, original, 0o644); err != nil {
+		return nil, fmt.Errorf("创建备份失败: %w", err)
+	}
+	if err := os.WriteFile(path, raw, 0o644); err != nil {
+		return nil, fmt.Errorf("写入存档失败: %w", err)
+	}
+	return a.GetSaveCounters(path)
+}
+
+func proportionallyReduceQuestCounts(slot []byte, questOffsets []int, targetQuestOffset int, targetTotal uint32) error {
+	type questCount struct {
+		offset int
+		count  uint64
+	}
+
+	active := make([]questCount, 0, len(questOffsets))
+	excessTotal := uint64(0)
+	for _, offset := range questOffsets {
+		if offset == targetQuestOffset {
+			continue
+		}
+		count := uint64(binary.LittleEndian.Uint32(slot[offset:]))
+		if count == 0 {
+			continue
+		}
+		active = append(active, questCount{offset: offset, count: count})
+		excessTotal += count - 1
+	}
+	if uint64(targetTotal) < uint64(len(active)) {
+		return fmt.Errorf("目标挑战次数不能低于已有通关副本数量 %d", len(active))
+	}
+	if len(active) == 0 {
+		if targetTotal != 0 {
+			return fmt.Errorf("没有可扣减的副本次数")
+		}
+		return nil
+	}
+
+	type remainder struct {
+		offset int
+		value  uint64
+	}
+	remaining := uint64(targetTotal) - uint64(len(active))
+	remainders := make([]remainder, 0, len(active))
+	assigned := uint64(0)
+	for _, entry := range active {
+		value := uint64(0)
+		fraction := uint64(0)
+		if excessTotal > 0 {
+			scaled := (entry.count - 1) * remaining
+			value = scaled / excessTotal
+			fraction = scaled % excessTotal
+		}
+		binary.LittleEndian.PutUint32(slot[entry.offset:], uint32(value+1))
+		assigned += value
+		remainders = append(remainders, remainder{offset: entry.offset, value: fraction})
+	}
+
+	// Largest remainders receive rounding units first; vector order breaks ties.
+	sort.SliceStable(remainders, func(i, j int) bool { return remainders[i].value > remainders[j].value })
+	for i := uint64(0); i < remaining-assigned; i++ {
+		entry := remainders[i%uint64(len(remainders))]
+		current := binary.LittleEndian.Uint32(slot[entry.offset:])
+		binary.LittleEndian.PutUint32(slot[entry.offset:], current+1)
+	}
+	return nil
+}
+
+func questCounterOffset(slot []byte, questID uint32) (int, error) {
+	questIDs, err := flatBufferUIntValueOffsets(slot, 7, SaveID_QuestIDs, 0)
+	if err != nil {
+		return 0, err
+	}
+	questCounts, err := flatBufferUIntValueOffsets(slot, 7, SaveID_QuestCompleteCount, 0)
+	if err != nil {
+		return 0, err
+	}
+	for i := 0; i < len(questIDs) && i < len(questCounts); i++ {
+		if storedToQuestID(binary.LittleEndian.Uint32(slot[questIDs[i]:])) == questID {
+			return questCounts[i], nil
+		}
+	}
+	return 0, fmt.Errorf("存档中未找到任务 %d", questID)
+}
+
+func fixSlotDataHash(slot []byte) error {
+	if len(slot) < 0x14 {
+		return fmt.Errorf("SlotData太小")
+	}
+	hashesOffset := int(binary.LittleEndian.Uint32(slot[len(slot)-0x14:]))
+	if hashesOffset < 0 || hashesOffset+len(hashSectionInfos)*8 > len(slot) {
+		return fmt.Errorf("存档哈希区无效")
+	}
+	seedOffsets, err := flatBufferUIntValueOffsets(slot, 7, SaveID_HashSeed, 0)
+	if err != nil || len(seedOffsets) == 0 {
+		return fmt.Errorf("读取存档哈希种子失败: %w", err)
+	}
+	index := int(binary.LittleEndian.Uint32(slot[seedOffsets[0]:]) % uint32(len(hashSectionInfos)))
+	section := hashSectionInfos[index]
+	end := hashesOffset - section.SubSize
+	if end < section.StartOffset {
+		return fmt.Errorf("存档哈希范围无效")
+	}
+	binary.LittleEndian.PutUint64(slot[hashesOffset+index*8:], xxHash64(slot[section.StartOffset:end], XXHash64SaveSeed))
+	return nil
 }
 
 // GetCharacterStats reads character-use counters from save character slots.
