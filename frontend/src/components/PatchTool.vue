@@ -186,9 +186,6 @@ function showStatus(msg, type) {
       <button class="tab-btn" :class="{ active: activeTab === 'monster' }" @click="activeTab = 'monster'">
         怪物增强（未修复）
       </button>
-      <button class="tab-btn" :class="{ active: activeTab === 'patch' }" @click="activeTab = 'patch'">
-        补丁修改（未修复）
-      </button>
     </div>
 
     <main v-if="activeTab === 'patch'" class="container" style="--wails-draggable:no-drag">
