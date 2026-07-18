@@ -87,6 +87,13 @@ func (a *App) WrightstoneMemoryGetStatus() (WrightstoneMemoryStatus, error) {
 	return a.readWrightstoneMemoryStatus()
 }
 
+func (a *App) WrightstoneMemoryDisable() (WrightstoneMemoryStatus, error) {
+	if err := a.releaseWrightstoneMemoryHook(); err != nil {
+		return WrightstoneMemoryStatus{}, fmt.Errorf("关闭祝福读取失败: %w", err)
+	}
+	return WrightstoneMemoryStatus{}, nil
+}
+
 func (a *App) WrightstoneMemoryEnable() (WrightstoneMemoryStatus, error) {
 	status, err := a.WrightstoneMemoryGetStatus()
 	if err != nil || status.Hooked {
@@ -147,7 +154,15 @@ func (a *App) WrightstoneMemoryUpdate(update WrightstoneMemoryUpdate) (Wrightsto
 			return WrightstoneMemoryStatus{}, fmt.Errorf("保存祝福字段 +0x%02X 失败: %w", offset, err)
 		}
 	}
-	return a.readWrightstoneMemoryStatus()
+	result, err := a.readWrightstoneMemoryStatus()
+	if err != nil {
+		return WrightstoneMemoryStatus{}, err
+	}
+	if err := a.clearWrightstoneMemorySelection(); err != nil {
+		return WrightstoneMemoryStatus{}, err
+	}
+	result.SelectedAddr = 0
+	return result, nil
 }
 
 func (a *App) readWrightstoneMemoryStatus() (WrightstoneMemoryStatus, error) {
@@ -232,9 +247,9 @@ func buildWrightstoneMemoryCave(cave, returnAddr uintptr, original []byte) ([]by
 	if !isWrightstoneMemoryOriginal(original) {
 		return nil, fmt.Errorf("祝福原始指令签名异常")
 	}
-	code := []byte{0x49, 0xBA}
+	code := []byte{0x41, 0x52, 0x49, 0xBA} // push r10; mov r10, cave data address
 	code = binary.LittleEndian.AppendUint64(code, uint64(cave+wrightstoneMemoryCaveDataOffset))
-	code = append(code, 0x49, 0x89, 0x12) // mov [r10], rdx
+	code = append(code, 0x49, 0x89, 0x12, 0x41, 0x5A) // mov [r10], rdx; pop r10
 	code = append(code, original...)
 	jump, err := makeRelJump(cave+uintptr(len(code)), returnAddr, 5)
 	if err != nil {
@@ -250,31 +265,61 @@ func (a *App) recoverWrightstoneMemoryHook(cave uintptr) ([]byte, error) {
 	if cave == 0 {
 		return nil, fmt.Errorf("祝福代码洞地址为空")
 	}
-	prologue := make([]byte, 21)
+	prologue := make([]byte, 25)
 	if err := readProcessMemory(a.hProcess, cave, unsafe.Pointer(&prologue[0]), uintptr(len(prologue))); err != nil {
 		return nil, fmt.Errorf("读取祝福代码洞失败: %w", err)
 	}
-	if prologue[0] != 0x49 || prologue[1] != 0xBA || prologue[10] != 0x49 || prologue[11] != 0x89 || prologue[12] != 0x12 {
+	if prologue[0] != 0x41 || prologue[1] != 0x52 || prologue[2] != 0x49 || prologue[3] != 0xBA || prologue[12] != 0x49 || prologue[13] != 0x89 || prologue[14] != 0x12 || prologue[15] != 0x41 || prologue[16] != 0x5A {
 		return nil, fmt.Errorf("祝福代码洞签名不匹配")
 	}
-	dataAddr := uintptr(binary.LittleEndian.Uint64(prologue[2:10]))
+	dataAddr := uintptr(binary.LittleEndian.Uint64(prologue[4:12]))
 	if dataAddr != cave+wrightstoneMemoryCaveDataOffset {
 		return nil, fmt.Errorf("祝福代码洞数据地址不匹配")
 	}
-	original := append([]byte{}, prologue[13:21]...)
+	original := append([]byte{}, prologue[17:25]...)
 	if !isWrightstoneMemoryOriginal(original) {
 		return nil, fmt.Errorf("祝福原始指令签名不匹配: %s", bytesToHex(original))
 	}
 	return original, nil
 }
 
-func (a *App) releaseWrightstoneMemoryHook() error {
-	if a.hProcess == 0 || a.wrightstoneMemoryHookAddr == 0 || a.wrightstoneMemoryCaveAddr == 0 {
+func (a *App) clearWrightstoneMemorySelection() error {
+	if a.hProcess == 0 || a.wrightstoneMemoryCaveAddr == 0 {
 		return nil
 	}
-	if err := writeCodeMemory(a.hProcess, a.wrightstoneMemoryHookAddr, a.wrightstoneMemoryOriginal); err != nil {
+	var zero uintptr
+	if err := writeProcessMemory(a.hProcess, a.wrightstoneMemoryCaveAddr+wrightstoneMemoryCaveDataOffset, unsafe.Pointer(&zero), unsafe.Sizeof(zero)); err != nil {
+		return fmt.Errorf("清空旧的选中祝福石指针失败: %w", err)
+	}
+	return nil
+}
+
+func (a *App) releaseWrightstoneMemoryHook() error {
+	if a.hProcess == 0 || a.wrightstoneMemoryHookAddr == 0 {
+		return nil
+	}
+	current := make([]byte, wrightstoneMemoryHookSize)
+	if err := readProcessMemory(a.hProcess, a.wrightstoneMemoryHookAddr, unsafe.Pointer(&current[0]), uintptr(len(current))); err != nil {
 		return err
 	}
-	a.wrightstoneMemoryHookAddr, a.wrightstoneMemoryCaveAddr, a.wrightstoneMemoryOriginal = 0, 0, nil
+	if !isWrightstoneMemoryJump(current) {
+		return nil
+	}
+	cave := relJumpTarget(a.wrightstoneMemoryHookAddr, current)
+	original := a.wrightstoneMemoryOriginal
+	if len(original) != wrightstoneMemoryHookSize {
+		var err error
+		original, err = a.recoverWrightstoneMemoryHook(cave)
+		if err != nil {
+			return err
+		}
+	}
+	if err := writeCodeMemory(a.hProcess, a.wrightstoneMemoryHookAddr, original); err != nil {
+		return fmt.Errorf("恢复祝福原始指令失败: %w", err)
+	}
+	// Do not free remote page: a game thread may already be executing in it.
+	a.wrightstoneMemoryHookAddr = 0
+	a.wrightstoneMemoryCaveAddr = 0
+	a.wrightstoneMemoryOriginal = nil
 	return nil
 }
