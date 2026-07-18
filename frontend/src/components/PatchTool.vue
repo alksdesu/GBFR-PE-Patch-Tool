@@ -24,7 +24,7 @@ const state = reactive({
   patches: [],
 })
 
-const activeTab = ref(hasStoredLanguage() ? 'patch' : 'language')
+const activeTab = ref(hasStoredLanguage() ? 'sigil' : 'language')
 const manualPath = ref('')
 const patchValues = reactive({}) // { patchID: 'value' }
 const isLoaded = ref(false)
