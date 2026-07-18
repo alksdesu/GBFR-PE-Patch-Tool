@@ -6,6 +6,7 @@ import SigilGenerator from './SigilGenerator.vue'
 import SigilMemoryGenerator from './SigilMemoryGenerator.vue'
 import SigilLoadoutRestore from './SigilLoadoutRestore.vue'
 import WrightstoneGenerator from './WrightstoneGenerator.vue'
+import WrightstoneMemoryGenerator from './WrightstoneMemoryGenerator.vue'
 import SaveEditor from './SaveEditor.vue'
 import CharaStats from './CharaStats.vue'
 import MiscTools from './MiscTools.vue'
@@ -168,6 +169,9 @@ function showStatus(msg, type) {
       <button class="tab-btn" :class="{ active: activeTab === 'wrightstone' }" @click="activeTab = 'wrightstone'">
         祝福生成
       </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'wrightstoneMemory' }" @click="activeTab = 'wrightstoneMemory'">
+        祝福生成-新
+      </button>
       <button class="tab-btn" :class="{ active: activeTab === 'chara' }" @click="activeTab = 'chara'">
         角色次数统计
       </button>
@@ -269,6 +273,10 @@ function showStatus(msg, type) {
 
     <main v-else-if="activeTab === 'wrightstone'" class="container" style="--wails-draggable:no-drag">
       <WrightstoneGenerator @status="showStatus" />
+    </main>
+
+    <main v-else-if="activeTab === 'wrightstoneMemory'" class="container" style="--wails-draggable:no-drag">
+      <WrightstoneMemoryGenerator @status="showStatus" />
     </main>
 
     <main v-else-if="activeTab === 'chara'" class="container" style="--wails-draggable:no-drag">

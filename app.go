@@ -24,7 +24,7 @@ const (
 	steamAppID  = "881020"
 	gameExeName = "granblue_fantasy_relink.exe"
 	gameFolder  = "Granblue Fantasy Relink"
-	appVersion  = "v1.8.2"
+	appVersion  = "v1.8.3"
 	repoOwner   = "BitterG"
 	repoName    = "GBFR-PE-Patch-Tool"
 )
@@ -106,30 +106,33 @@ type AppConfig struct {
 // ── App ──
 
 type App struct {
-	ctx                 context.Context
-	exePath             string
-	hProcess            windows.Handle
-	moduleBase          uintptr
-	managerPtr          uintptr
-	charaListBase       uintptr
-	charaPID            uint32
-	countdownAddr       uintptr
-	faceAccessoryAddr   uintptr
-	overLimitHookAddr   uintptr
-	overLimitCaveAddr   uintptr
-	overLimitCommitAddr uintptr
-	unlockAllTrophyAddr uintptr
-	terminusDropAddr    uintptr
-	terminusDropOrig    []byte
-	collectibleTaskBase uintptr
-	sigilMemoryHookAddr uintptr
-	sigilMemoryCaveAddr uintptr
-	sigilMemoryOriginal []byte
-	damageMeterMapping  windows.Handle
-	damageMeterView     uintptr
-	damageOverlay       *damageOverlayWindow
-	config              AppConfig
-	configLoaded        bool
+	ctx                       context.Context
+	exePath                   string
+	hProcess                  windows.Handle
+	moduleBase                uintptr
+	managerPtr                uintptr
+	charaListBase             uintptr
+	charaPID                  uint32
+	countdownAddr             uintptr
+	faceAccessoryAddr         uintptr
+	overLimitHookAddr         uintptr
+	overLimitCaveAddr         uintptr
+	overLimitCommitAddr       uintptr
+	unlockAllTrophyAddr       uintptr
+	terminusDropAddr          uintptr
+	terminusDropOrig          []byte
+	collectibleTaskBase       uintptr
+	sigilMemoryHookAddr       uintptr
+	sigilMemoryCaveAddr       uintptr
+	sigilMemoryOriginal       []byte
+	wrightstoneMemoryHookAddr uintptr
+	wrightstoneMemoryCaveAddr uintptr
+	wrightstoneMemoryOriginal []byte
+	damageMeterMapping        windows.Handle
+	damageMeterView           uintptr
+	damageOverlay             *damageOverlayWindow
+	config                    AppConfig
+	configLoaded              bool
 }
 
 func NewApp() *App { return &App{} }
@@ -1194,6 +1197,7 @@ func (a *App) CharaDetach() {
 	// jump installed makes a later tool instance mistake it for an unsupported
 	// game build and can also leave the game executing tool-owned code.
 	_ = a.releaseSigilMemoryHook()
+	_ = a.releaseWrightstoneMemoryHook()
 	if a.hProcess != 0 {
 		windows.CloseHandle(a.hProcess)
 		a.hProcess = 0
@@ -1214,6 +1218,9 @@ func (a *App) CharaDetach() {
 	a.sigilMemoryHookAddr = 0
 	a.sigilMemoryCaveAddr = 0
 	a.sigilMemoryOriginal = nil
+	a.wrightstoneMemoryHookAddr = 0
+	a.wrightstoneMemoryCaveAddr = 0
+	a.wrightstoneMemoryOriginal = nil
 }
 
 // CharaGetAll reads all character counts, returns valid characters (skipping empty slots).
