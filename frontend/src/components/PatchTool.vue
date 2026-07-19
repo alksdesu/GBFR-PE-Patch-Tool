@@ -4,6 +4,7 @@ import { AutoDetect, SetExePath, GetStatus, PatchFile, BackupFile, RestoreFile }
 import { WindowMinimise, Quit } from '../../wailsjs/runtime/runtime'
 import SigilGenerator from './SigilGenerator.vue'
 import SigilMemoryGenerator from './SigilMemoryGenerator.vue'
+import SigilLoadoutRestore from './SigilLoadoutRestore.vue'
 import SummonMemoryGenerator from './SummonMemoryGenerator.vue'
 import WrightstoneGenerator from './WrightstoneGenerator.vue'
 import SaveEditor from './SaveEditor.vue'
@@ -159,6 +160,9 @@ function showStatus(msg, type) {
       <button class="tab-btn" :class="{ active: activeTab === 'sigilMemory' }" @click="activeTab = 'sigilMemory'">
         因子生成-新
       </button>
+      <button class="tab-btn" :class="{ active: activeTab === 'sigilLoadout' }" @click="activeTab = 'sigilLoadout'">
+        因子配装复出
+      </button>
       <button class="tab-btn" :class="{ active: activeTab === 'summon' }" @click="activeTab = 'summon'">
         召唤石
       </button>
@@ -255,6 +259,10 @@ function showStatus(msg, type) {
 
     <main v-else-if="activeTab === 'sigilMemory'" class="container" style="--wails-draggable:no-drag">
       <SigilMemoryGenerator @status="showStatus" />
+    </main>
+
+    <main v-else-if="activeTab === 'sigilLoadout'" class="container" style="--wails-draggable:no-drag">
+      <SigilLoadoutRestore @status="showStatus" />
     </main>
 
     <main v-else-if="activeTab === 'summon'" class="container" style="--wails-draggable:no-drag">
