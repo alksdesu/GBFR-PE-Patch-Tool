@@ -7,7 +7,6 @@ import { CharaAttach, CharaDetach,
          FaceAccessoryGetStatus, FaceAccessoryScan, FaceAccessorySetHidden,
          InfiniteChallengeGetStatus, InfiniteChallengeSetEnabled,
          TerminusDropGetStatus, TerminusDropScan, TerminusDropSetEnabled,
-         UnlockAllTrophyGetStatus, UnlockAllTrophyScan, UnlockAllTrophySetEnabled,
          OtherSkinPurpleRuneGetStatus, OtherSkinPurpleRuneSetEnabled,
          MonsterEnhanceSetPatchValueEnabled,
          CaveList, CaveSetEnabled, CaveSetFloat, CaveSetInt, CaveSetFlag, CaveMeta,
@@ -31,9 +30,6 @@ const infiniteChallengeStatus = reactive({ rva: 0, enabled: false, currentBytes:
 const infiniteChallengeLoading = ref(false)
 const terminusDropStatus = reactive({ found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
 const terminusDropLoading = ref(false)
-const unlockAllTrophyStatus = reactive({ found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
-const unlockAllTrophyLoading = ref(false)
-const showUnlockAllTrophyConfirm = ref(false)
 const otherSkinPurpleRuneStatus = reactive({ rva: 0, enabled: false, jumpOpcode: '', currentBytes: '' })
 const otherSkinPurpleRuneLoading = ref(false)
 const updateInfo = reactive({ currentVersion: 'v1.5.0', latestVersion: '', hasUpdate: false, releaseUrl: '', body: '', assets: [] })
@@ -138,7 +134,6 @@ function connect() {
       loadCaves()
       if (showOutdatedFeatures) {
         loadTerminusDropStatus()
-        loadUnlockAllTrophyStatus()
         loadOtherSkinPurpleRuneStatus()
       }
       loadCurrencyValues()
@@ -166,7 +161,6 @@ function disconnect() {
       weaponEditor.captured = false
       selectedCharacter.value = ''
       Object.assign(terminusDropStatus, { found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
-      Object.assign(unlockAllTrophyStatus, { found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
       Object.assign(otherSkinPurpleRuneStatus, { rva: 0, enabled: false, jumpOpcode: '', currentBytes: '' })
       Object.assign(damageMeterStatus, { connected: false, totalDamage: 0, monsterDamage: 0, crocodileDamage: 0 })
       currencies.value = []
@@ -481,47 +475,6 @@ function setTerminusDropEnabled(enabled) {
     .then((status) => { applyTerminusDropStatus(status); emit('status', enabled ? '已开启巴武掉落 100%' : '已恢复巴武默认掉率', 'success') })
     .catch((err) => emit('status', String(err), 'error'))
     .finally(() => { terminusDropLoading.value = false })
-}
-
-function applyUnlockAllTrophyStatus(status) {
-  Object.assign(unlockAllTrophyStatus, status || { found: false, address: 0, rva: 0, enabled: false, currentBytes: '' })
-}
-
-function loadUnlockAllTrophyStatus() {
-  if (!connected.value) return
-  unlockAllTrophyLoading.value = true
-  UnlockAllTrophyGetStatus()
-    .then(applyUnlockAllTrophyStatus)
-    .catch((err) => emit('status', String(err), 'error'))
-    .finally(() => { unlockAllTrophyLoading.value = false })
-}
-
-function scanUnlockAllTrophy() {
-  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
-  unlockAllTrophyLoading.value = true
-  UnlockAllTrophyScan()
-    .then((status) => { applyUnlockAllTrophyStatus(status); emit('status', '全称号解锁特征定位成功', 'success') })
-    .catch((err) => emit('status', String(err), 'error'))
-    .finally(() => { unlockAllTrophyLoading.value = false })
-}
-
-function setUnlockAllTrophyEnabled(enabled) {
-  if (!connected.value) { emit('status', '请先连接游戏进程', 'error'); return }
-  if (enabled) { showUnlockAllTrophyConfirm.value = true; return }
-  applyUnlockAllTrophyEnabled(false)
-}
-
-function confirmUnlockAllTrophy() {
-  showUnlockAllTrophyConfirm.value = false
-  applyUnlockAllTrophyEnabled(true)
-}
-
-function applyUnlockAllTrophyEnabled(enabled) {
-  unlockAllTrophyLoading.value = true
-  UnlockAllTrophySetEnabled(enabled)
-    .then((status) => { applyUnlockAllTrophyStatus(status); emit('status', enabled ? '已开启游戏内全称号解锁' : '已恢复称号默认判断', 'success') })
-    .catch((err) => emit('status', String(err), 'error'))
-    .finally(() => { unlockAllTrophyLoading.value = false })
 }
 
 function applyOtherSkinPurpleRuneStatus(status) {
@@ -1113,24 +1066,6 @@ onBeforeUnmount(() => {
           <div class="memory-bytes">{{ terminusDropStatus.currentBytes || '未定位' }}</div>
         </div>
 
-        <div v-if="showOutdatedFeatures" class="memory-card" :class="{ active: unlockAllTrophyStatus.enabled }">
-          <div class="memory-header">
-            <span class="memory-title">游戏内全称号解锁</span>
-            <span class="memory-hint">AOB 定位后切换 SETNE/SETNO</span>
-          </div>
-          <div class="memory-info">
-            <span>RVA: {{ formatHex(unlockAllTrophyStatus.rva) }}</span>
-            <span>状态: {{ unlockAllTrophyStatus.enabled ? '开启' : '默认' }}</span>
-          </div>
-          <div class="memory-row">
-            <button class="btn-batch" @click="setUnlockAllTrophyEnabled(true)" :disabled="unlockAllTrophyLoading || unlockAllTrophyStatus.enabled">开启全称号</button>
-            <button class="btn-refresh" @click="setUnlockAllTrophyEnabled(false)" :disabled="unlockAllTrophyLoading || !unlockAllTrophyStatus.enabled">恢复默认</button>
-            <button class="btn-refresh" @click="loadUnlockAllTrophyStatus" :disabled="unlockAllTrophyLoading">刷新</button>
-            <button class="btn-sort" @click="scanUnlockAllTrophy" :disabled="unlockAllTrophyLoading">重新扫描</button>
-          </div>
-          <div class="memory-bytes">{{ unlockAllTrophyStatus.currentBytes || '未定位' }}</div>
-        </div>
-
         <div v-if="showOutdatedFeatures" class="memory-card" :class="{ active: otherSkinPurpleRuneStatus.enabled }">
           <div class="memory-header">
             <span class="memory-title">在其他皮肤显示紫色符文</span>
@@ -1151,16 +1086,6 @@ onBeforeUnmount(() => {
 
       </template>
       <div v-else class="empty">请先连接游戏进程</div>
-    </div>
-    <div v-if="showUnlockAllTrophyConfirm" class="confirm-overlay" @click.self="showUnlockAllTrophyConfirm = false">
-      <div class="confirm-dialog">
-        <div class="confirm-title">确认开启游戏内全称号解锁</div>
-        <div class="confirm-body">目前存档时机尚不明确，可以领取任务奖励、佩戴选定称号、选择佩戴界面有多个“未设置”是正常现象</div>
-        <div class="confirm-actions">
-          <button class="btn-refresh" @click="showUnlockAllTrophyConfirm = false">取消</button>
-          <button class="btn-warn" @click="confirmUnlockAllTrophy" :disabled="unlockAllTrophyLoading">确认开启</button>
-        </div>
-      </div>
     </div>
   </div>
 </template>

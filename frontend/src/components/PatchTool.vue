@@ -278,7 +278,7 @@ function showStatus(msg, type) {
     </main>
 
     <main v-else-if="activeTab === 'save'" class="container" style="--wails-draggable:no-drag">
-      <SaveEditor />
+      <SaveEditor @status="showStatus" />
     </main>
 
     <main v-else-if="activeTab === 'misc'" class="container" style="--wails-draggable:no-drag">

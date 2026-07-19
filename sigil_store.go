@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/cespare/xxhash/v2"
 )
 
 const (
-	HashSeedIDType   uint32 = 1003
 	TraitHashIDType  uint32 = 1701
 	TraitLevelIDType uint32 = 1702
 	GemMaxSlotIDType uint32 = 2701
@@ -21,15 +18,9 @@ const (
 	GemFlagsIDType   uint32 = 2707
 	EmptyHash        uint32 = 0x887AE0B0
 	NormalSigilFlags uint32 = 2
-	SaveHashSeed     uint64 = 0x2F1A43EBCD
 	GemSlotBaseID           = 30000
 	TraitSlotBase           = 120000000
 )
-
-var hashSections = []struct{ start, subSize int }{
-	{0x58, 0x80}, {0x30, 0xA0}, {0x28, 0x30}, {0x38, 0xC0}, {0x40, 0xB0},
-	{0x68, 0x50}, {0x48, 0x60}, {0x70, 0x90}, {0x50, 0x40}, {0x60, 0x70},
-}
 
 // unitEntry holds the position and value info for one FlatBuffer unit entry.
 type unitEntry struct {
@@ -362,31 +353,29 @@ func (s *SaveData) FixChecksums() error {
 	slot := s.slotSpan()
 
 	// Read hash seed (IDType 1003)
-	seedEntry, ok := s.findUnit(HashSeedIDType, 0)
+	seedEntry, ok := s.findUnit(SaveID_HashSeed, 0)
 	if !ok {
 		return fmt.Errorf("找不到 SAVEDATA_HASHSEED (1003)")
 	}
-	idx := int(seedEntry.Uint32() % uint32(len(hashSections)))
+	idx := int(seedEntry.Uint32() % uint32(len(hashSectionInfos)))
 
 	// Hash table offset is stored at (slotLen - 0x14)
 	if int(s.slotLen) < 0x14 {
 		return fmt.Errorf("slot data 太小，无 hash table")
 	}
 	hashesOff := int(binary.LittleEndian.Uint32(slot[s.slotLen-0x14:]))
-	if hashesOff+(len(hashSections)*8) > int(s.slotLen) {
+	if hashesOff+(len(hashSectionInfos)*8) > int(s.slotLen) {
 		return fmt.Errorf("hash table 偏移超出 slot data 范围")
 	}
 
-	section := hashSections[idx]
-	hashStart := section.start
-	hashLen := hashesOff - (section.start + section.subSize)
+	section := hashSectionInfos[idx]
+	hashStart := section.StartOffset
+	hashLen := hashesOff - (section.StartOffset + section.SubSize)
 	if hashLen <= 0 || hashStart+hashLen > len(slot) {
 		return fmt.Errorf("hash 区间无效")
 	}
 
-	d := xxhash.NewWithSeed(SaveHashSeed)
-	d.Write(slot[hashStart : hashStart+hashLen])
-	hash := d.Sum64()
+	hash := xxHash64(slot[hashStart:hashStart+hashLen], XXHash64SaveSeed)
 	binary.LittleEndian.PutUint64(slot[hashesOff+idx*8:], hash)
 	return nil
 }

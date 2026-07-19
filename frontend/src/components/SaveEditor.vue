@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { FindSaveFiles, GetQuests, LoadSave } from '../../wailsjs/go/main/App'
+import { FindSaveFiles, GetBadgeUnlockStatus, GetQuests, LoadSave, UnlockAllBadges } from '../../wailsjs/go/main/App'
 
 const slots = ref([])
 const quests = ref([])
@@ -8,6 +8,11 @@ const total = ref(0)
 const loading = ref(false)
 const savePath = ref('')
 const sortDesc = ref(true)
+const badgeStatus = ref(null)
+const markViewed = ref(false)
+const unlocking = ref(false)
+const backupPath = ref('')
+const emit = defineEmits(['status'])
 
 const sortedQuests = computed(() => {
   if (!sortDesc.value) return quests.value
@@ -22,10 +27,29 @@ async function load(path) {
   loading.value = true
   savePath.value = path
   try {
-    const [summary, qs] = await Promise.all([LoadSave(path), GetQuests(path)])
+    const [summary, qs, badges] = await Promise.all([LoadSave(path), GetQuests(path), GetBadgeUnlockStatus(path)])
     quests.value = qs || []
     total.value = summary?.questTotalClears || 0
+    badgeStatus.value = badges
+    backupPath.value = ''
   } catch (err) { console.error(err) } finally { loading.value = false }
+}
+
+async function unlockBadges() {
+  if (!savePath.value || unlocking.value) return
+  if (!window.confirm('请先完全退出游戏。将永久解锁 1615 个有效称号，并自动备份当前存档。确认继续吗？')) return
+  unlocking.value = true
+  try {
+    const result = await UnlockAllBadges(savePath.value, markViewed.value)
+    badgeStatus.value = result.status
+    backupPath.value = result.backupPath || ''
+    const changed = result.changed + result.viewedChanged
+    emit('status', changed ? `称号解锁完成，修改 ${changed} 项` : '全部称号已经解锁', 'success')
+  } catch (err) {
+    emit('status', String(err), 'error')
+  } finally {
+    unlocking.value = false
+  }
 }
 
 scanSaves()
@@ -41,6 +65,19 @@ scanSaves()
       </button>
       <button class="refresh" @click="scanSaves">刷新</button>
     </div>
+
+
+    <section v-if="badgeStatus" class="badge-card">
+      <div class="badge-summary">
+        <div><strong>{{ badgeStatus.unlocked }} / {{ badgeStatus.total }}</strong><span>已解锁称号</span></div>
+        <button class="unlock-btn" :disabled="unlocking || badgeStatus.allUnlocked" @click="unlockBadges">
+          {{ unlocking ? '正在写入…' : badgeStatus.allUnlocked ? '已全部解锁' : '一键解锁全部称号' }}
+        </button>
+      </div>
+      <label class="view-option"><input v-model="markViewed" type="checkbox"> 同时标记为已查看</label>
+      <p class="badge-note">仅适配 2.0.2 存档；不会修改称号奖励领取状态。操作前请退出游戏。</p>
+      <p v-if="backupPath" class="backup">备份：{{ backupPath }}</p>
+    </section>
 
     <div v-if="loading" class="loading">解析中...</div>
 
@@ -95,4 +132,15 @@ scanSaves()
 .name { flex:1; font-size:0.8rem; color:rgba(255,255,255,0.5); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .count { width:40px; text-align:right; font-size:0.8rem; font-weight:600; color:rgba(255,255,255,0.35); font-family:'Courier New',monospace; flex-shrink:0; }
 .count.hot { color:#fbbf24; }
+.badge-card { padding:14px; border:1px solid var(--badge-border, rgba(103,232,249,.25)); border-radius:12px; background:var(--badge-bg, rgba(103,232,249,.06)); }
+.badge-summary { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.badge-summary div { display:flex; flex-direction:column; gap:3px; }
+.badge-summary strong { color:#67e8f9; font-size:1.15rem; }
+.badge-summary span,.view-option,.badge-note,.backup { color:rgba(255,255,255,.65); font-size:.75rem; }
+.unlock-btn { padding:9px 16px; border:1px solid rgba(103,232,249,.45); border-radius:8px; background:rgba(103,232,249,.16); color:#cffafe; cursor:pointer; }
+.unlock-btn:disabled { cursor:not-allowed; opacity:.5; }
+.view-option { display:flex; align-items:center; gap:7px; margin-top:12px; }
+.badge-note,.backup { margin:8px 0 0; line-height:1.5; overflow-wrap:anywhere; }
+.backup { color:#86efac; }
+
 </style>

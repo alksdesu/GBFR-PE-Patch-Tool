@@ -43,6 +43,7 @@
 
 # Local notes
 /src_dll/todo.txt
+/.tmp_badge/
 
 #Git Bash/MSYS
 *.stackdump

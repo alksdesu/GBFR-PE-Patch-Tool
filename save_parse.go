@@ -32,6 +32,9 @@ const (
 	SaveID_WeaponXP           = 2804
 	SaveID_CharacterQuestUse  = 1314
 	SaveID_FavoriteChara      = 4601
+	SaveID_BadgeUnlocked      = 5801
+	SaveID_BadgeRewardClaimed = 5814
+	SaveID_BadgeViewed        = 5816
 	SaveID_IsUnlocked         = 7102
 )
 
@@ -71,6 +74,7 @@ type BoolSaveDataUnit struct {
 	IDType    uint32 `json:"idType"`
 	UnitID    uint32 `json:"unitID"`
 	ValueData []bool `json:"valueData"`
+	valueOff  int
 }
 type FloatSaveDataUnit struct {
 	IDType    uint32    `json:"idType"`
@@ -399,6 +403,7 @@ func parseBoolUnits(r *fbReader, tpos int, fo uint16) []BoolSaveDataUnit {
 		if f, ok := r.fieldOff(vp, vs, 2); ok {
 			if vc, vd := r.readVectorAt(ts, f); vc > 0 {
 				u.ValueData = make([]bool, vc)
+				u.valueOff = vd
 				for j := 0; j < vc; j++ {
 					u.ValueData[j] = r.data[vd+j] != 0
 				}
